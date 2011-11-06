@@ -1,5 +1,5 @@
 -- Schema for PrOCAV database
--- DROP DATABASE IF EXISTS procav;
+DROP DATABASE IF EXISTS procav;
 CREATE DATABASE IF NOT EXISTS procav;
 USE procav;
 
@@ -7,11 +7,12 @@ USE procav;
 CREATE TABLE works (
   ID                INT PRIMARY KEY auto_increment,
   catalogue_number  VARCHAR(32) UNIQUE,
-  uniform_title     VARCHAR(255) NOT NULL UNIQUE,
+  uniform_title     VARCHAR(255) NOT NULL,
   sub_title         VARCHAR(255),
   part_of           INT,
   parent_relation   ENUM('movement', 'act', 'scene', 'number'),
-  opus_number       VARCHAR(32) UNIQUE,
+  opus_number       INT,
+  opus_suffix       VARCHAR(8),
   duration          FLOAT,
   notes             TEXT);
 
@@ -23,7 +24,7 @@ CREATE TABLE titles (
   edition_id        INT,
   person_id         INT,
   title             VARCHAR(255) NOT NULL,
-  english           VARCHAR(255),
+  transliteration   VARCHAR(255),
   script            VARCHAR(32),
   `language`        CHAR(2),
   notes             TEXT);
