@@ -1,0 +1,160 @@
+#!/usr/bin/perl
+#
+# PrOCAV
+#
+# This script imports the uniform titles, opus numbers, and
+# transliterated titles from the initial version of the spreadsheet.
+#
+# Author: Richard Lewis
+# Email: richard.lewis@gold.ac.uk
+
+use strict;
+use Getopt::Std;
+use DBI;
+use Spreadsheet::ParseExcel;
+
+package main;
+
+# Command line options should be
+#   -i   input spreadshet
+my %options = ();
+getopts("i:", \%options);
+
+# create a database handle and an INSERT statement for creating new
+# works
+my $dbh = DBI->connect("DBI:mysql:procav", "root", "tbatst",
+		       { RaiseError => 1, AutoCommit => 1 });
+
+my $insert_work = $dbh->prepare_cached("INSERT INTO works (uniform_title, opus_number, opus_suffix) VALUES (?,?,?)");
+
+sub parse_opus_number {
+    my $opus_str = shift;
+
+    (my $opus_number = $opus_str) =~ s/\D//g;
+    (my $opus_suffix = $opus_str) =~ s/\d//g;
+    if ($opus_suffix eq "") { $opus_suffix = undef; }
+    
+    return ($opus_number, $opus_suffix);
+}
+
+# Try and open the specified spreadsheet
+my $parser   = Spreadsheet::ParseExcel->new();
+my $workbook = $parser->parse($options{i}) or die "No input spreadsheet given\n";
+
+unless (defined $workbook) { die $parser->error(), ".\n"; }
+
+# Get the worksheet containing the works
+my $works = $workbook->worksheet("Works") or die "Could not find 'Works' sheet\n";
+
+my ($row_min, $row_max) = $works->row_range();
+my ($col_min, $col_max) = $works->col_range();
+
+# find the column numbers of "Opus No." and "Uniform title"
+my $opus_number_col; my $uniform_title_col;
+
+for my $col ($col_min .. $col_max) {
+    my $cell = $works->get_cell($row_min, $col);
+
+    $opus_number_col   = $col if ($cell->value() eq "Opus No.");
+    $uniform_title_col = $col if ($cell->value() eq "Uniform title");
+}
+
+# Read the works from the worksheet and add them to the database
+for my $row ($row_min + 1 .. $row_max) {
+
+    my %work = ();
+
+    for my $col ($col_min .. $col_max) {
+	my $cell = $works->get_cell($row, $col);
+	next unless $cell;
+
+	# Populate %work with uniform title and opus number
+	$work{uniform_title} = $cell->value() if ($col == $uniform_title_col);
+
+	($work{opus_number}, $work{opus_suffix}) = parse_opus_number($cell->value()) if ($col == $opus_number_col);
+    }
+
+    if (exists $work{uniform_title} and
+	exists $work{opus_number} and
+	exists $work{opus_suffix}) {
+
+	printf "Inserting: Opus %d%s, %s\n", $work{opus_number},
+	                                     $work{opus_suffix},
+	                                     $work{uniform_title};
+
+	$insert_work->execute($work{uniform_title},
+			      $work{opus_number},
+			      $work{opus_suffix}) or
+				  die print $insert_work->errstr, "\n";
+    }
+}
+
+$insert_work->finish();
+
+# Get the worksheet containing the titles
+my $titles = $workbook->worksheet("Titles") or die "Could not find 'Titles' sheet\n";
+
+my ($row_min, $row_max) = $titles->row_range();
+my ($col_min, $col_max) = $titles->col_range();
+
+# find the column numbers of "Opus No." and "Transliterated title"
+my $opus_number_col; my $transliterated_title_col;
+
+for my $col ($col_min .. $col_max) {
+    my $cell = $titles->get_cell($row_min, $col);
+
+    $opus_number_col          = $col if ($cell->value() eq "Opus No.");
+    $transliterated_title_col = $col if ($cell->value() eq "Transliterated title");
+}
+
+# Read the titles from the worksheet and add them to the database
+$dbh->{RaiseError} = 0;
+$dbh->{PrintError} = 1;
+
+my $insert_title = $dbh->prepare_cached("INSERT INTO titles (work_id, transliteration, script, language) VALUES (?, ?, 'latin', 'ru')");
+my $find_work = $dbh->prepare_cached("SELECT ID FROM works WHERE opus_number=? AND opus_suffix=?");
+my $find_work_no_op_suffix = $dbh->prepare_cached("SELECT ID FROM works WHERE opus_number=? AND opus_suffix IS NULL");
+
+for my $row ($row_min + 1 .. $row_max) {
+
+    my %title = ();
+
+    for my $col ($col_min .. $col_max) {
+	my $cell = $titles->get_cell($row, $col);
+	next unless $cell;
+
+	# Populate %title with transliterated title and opus number
+	$title{transliterated_title} = $cell->value() if ($col == $transliterated_title_col);
+
+	($title{opus_number}, $title{opus_suffix}) = parse_opus_number($cell->value()) if ($col == $opus_number_col);
+    }
+
+    if (exists $title{transliterated_title} and
+	exists $title{opus_number} and
+	exists $title{opus_suffix}) {
+
+	# Find the work_id for this title
+	my @work_details;
+
+	if (defined $title{opus_suffix}) {
+	    $find_work->execute($title{opus_number}, $title{opus_suffix});
+	    @work_details = $find_work->fetchrow_array;
+	} else {
+	    $find_work_no_op_suffix->execute($title{opus_number});
+	    @work_details = $find_work_no_op_suffix->fetchrow_array;
+	}
+
+	if (@work_details) {
+	    printf "Inserting: \"%s\" for opus %d%s\n", $title{transliterated_title}, $title{opus_number}, $title{opus_suffix};
+
+	    $insert_title->execute($work_details[0], $title{transliterated_title})
+		or die print $insert_work->errstr, "\n";
+	} else {
+	    warn("Could not find work_id for opus $title{opus_number}$title{opus_suffix}\n");
+	}
+    }
+}
+
+$find_work->finish();
+$find_work_no_op_suffix->finish();
+$dbh->disconnect();
