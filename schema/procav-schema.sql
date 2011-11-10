@@ -1,4 +1,5 @@
 -- Schema for PrOCAV database
+SET NAMES utf8;
 DROP DATABASE IF EXISTS procav;
 CREATE DATABASE IF NOT EXISTS procav;
 USE procav;
