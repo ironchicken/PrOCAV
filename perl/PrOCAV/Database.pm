@@ -9,24 +9,20 @@
 
 use strict;
 use DBI;
+use base 'Exporter';
 
 package Database;
+
+our @EXPORT = qw(get_record insert_record);
+our @EXPORT_OK = qw($schema);
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
 
 my %db_opts = (user     => "root",
-	    password => "tbatst",
-            database => "procav",
-	    attrs    => \%db_attrs);
-
-sub look_up_sql {
-
-}
-
-sub look_up_list {
-
-}
+	       password => "tbatst",
+	       database => "procav",
+	       attrs    => \%db_attrs);
 
 # FIXME Think about all the properties a field will need. For example,
 # when a new work is added to the spreadsheet, its uniform_title will
@@ -37,7 +33,7 @@ sub look_up_list {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my %schema = (
+our %schema = (
     works => {
 	_worksheet => "works",
 
@@ -51,27 +47,27 @@ my %schema = (
 	sub_title       => {access => "rw",
 			    data_type => "string"},
 	part_of         => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(opus_number, opus_suffix, uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title/),
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
 			    list_mutable => 0},
 	parent_relation => {access => "rw",
-			    data_type => look_up_list(qw/movement act scene number/),
+			    data_type => look_up_list(qw(movement act scene number)),
 			    list_mutable => 0},
 	opus_number     => {access => "rw",
 			    data_type => "integer"},
 	opus_suffix     => {access => "rw",
 			    data_type => "string"},
 	status          => {access => "rw",
-			    data_type => look_up_list(qw/juvenilia incomplete unpublished published/),
+			    data_type => look_up_list(qw(juvenilia incomplete unpublished published)),
 			    list_mutable => 0,
-			    list_insert => qq/INSERT INTO work_status (work_id, status) VALUES (?,?)/},
+			    list_insert => qq(INSERT INTO work_status (work_id, status) VALUES (?,?))},
 	genres          => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT DISTINCT genre FROM genres ORDER BY genre/),
+			    data_type => look_up_sql(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)),
 			    list_mutable => 1,
-			    list_insert => qq/INSERT INTO genres (work_id, genre) VALUES (?,?)/},
+			    list_insert => qq(INSERT INTO genres (work_id, genre) VALUES (?,?))},
 	# instruments     => {access => "rw",
-	# 		    data_type => look_up_sql(qq/SELECT DISTINCT instrument FROM instruments ORDER BY instrument/),
+	# 		    data_type => look_up_sql(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)),
 	# 		    list_mutable => 1,
-	# 		    list_insert => qq/INSERT INTO instruments (work_id, instrument) VALUES (?,?)/},
+	# 		    list_insert => qq(INSERT INTO instruments (work_id, instrument) VALUES (?,?))},
 	duration        => {access => "rw",
 	  		    data_type => "float"},
 	notes           => {access => "rw",
@@ -82,14 +78,14 @@ my %schema = (
 	ID              => {access => "ro",
 			    primary_key => 1},
 	work_id         => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(opus_number, opus_suffix, uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title/),
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
 			    not_null => 1},
 	manuscript_id   => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, title AS display FROM manuscripts ORDER BY title/)},
+			    data_type => look_up_sql(qq(SELECT ID AS value, title AS display FROM manuscripts ORDER BY title))},
 	edition_id      => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(title, " (", publication_extent, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title/)},
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(title, " (", publication_extent, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title))},
 	person_id       => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name/)},
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name))},
 	title           => {access => "rw",
 			    data_type => "string"},
 	transliteration => {access => "rw",
@@ -108,10 +104,10 @@ my %schema = (
 	_worksheet => "instruments",
 
 	work_id         => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(opus_number, opus_suffix, uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title/),
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
 			    not_null => 1},
 	instrument      => {access => "rw",
-	 		    data_type => look_up_sql(qq/SELECT DISTINCT instrument FROM instruments ORDER BY instrument/),
+	 		    data_type => look_up_sql(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)),
 	 		    list_mutable => 1,
 			    not_null => 1},
 	role            => {access => "rw",
@@ -121,19 +117,38 @@ my %schema = (
 	_worksheet => "derived_from",
 
 	precusor_work   => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(opus_number, opus_suffix, uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title/),
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
 			    list_mutable => 0,
 			    not_null => 1},
 	derived_work    => {access => "rw",
-			    data_type => look_up_sql(qq/SELECT ID AS value, CONCAT(opus_number, opus_suffix, uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title/),
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
 			    list_mutable => 0,
 			    not_null => 1},
 	
 	derivation_relation => {access => "rw",
-				data_type => look_up_list(qw/transcription arrangement off-shoot/),
+				data_type => look_up_list(qw(transcription arrangement off-shoot)),
 				not_null => 1}},
 
-    composition        => {},
+    composition        => {
+	_worksheet => "composition",
+
+	work_id         => {access => "rw",
+			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    not_null => 1},
+
+	manuscript_id   => {access => "rw",
+			    data_type => look_up_sql(qq(SELECT ID AS value, title AS display FROM manuscripts ORDER BY title)),
+			    not_null => 1},
+
+	period_start    => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	work_type       => {access => "rw",
+			    data_type => look_up_list(("sketch", "contextualised sketch", "draft short/piano score", "extended draft short score", "instrumental annotations", "autograph complete full score"))}},
+
     editions           => {},
     publications       => {},
     published_in       => {},
@@ -151,6 +166,31 @@ my %schema = (
     representation_of  => {},
     resources          => {},
     resource_about     => {});
+
+sub look_up_sql {
+
+}
+
+sub look_up_list {
+
+}
+
+sub get_record {
+    my ($table, $ID) = @_;
+
+    my $proc = $schema{$table}->{get};
+
+    if (defined $proc) {
+	return $proc->($ID);
+    } else {
+	warn("No get record procedure for $table.\n");
+    }
+}
+
+sub insert_record { }
+
+
+sub insert_work { }
 
 sub get_works_list {
     my $dbh = shift;
