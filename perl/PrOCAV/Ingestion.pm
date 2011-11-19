@@ -1,7 +1,7 @@
 #
 # PrOCAV
 #
-# This modules provides functions to ingest data from Excel
+# This module provides functions to ingest data from Excel
 # spreadsheets and to prepare template spreadsheets for data entry.
 #
 # Author: Richard Lewis

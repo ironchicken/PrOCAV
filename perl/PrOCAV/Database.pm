@@ -1,7 +1,7 @@
 #
 # PrOCAV
 #
-# This modules provides prepared statements and other useful functions
+# This module provides prepared statements and other useful functions
 # for working with the PrOCAV database.
 #
 # Author: Richard Lewis
