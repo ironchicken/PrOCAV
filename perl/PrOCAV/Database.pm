@@ -36,45 +36,52 @@ our %look_ups = (
     # list of hashes containing `value` and `display` fields. (They
     # are subroutines in order to be polymorphic with the other items
     # in the hash.)
-    parent_relation      => sub { ({value => "movement", display => "Movement"},
+    parent_relation      => sub { [{value => "movement", display => "Movement"},
 				   {value => "act",      display => "Act"},
 				   {value => "scene",    display => "Scene"},
-				   {value => "number",   display => "Number"}); },
+				   {value => "number",   display => "Number"}]; },
 
-    work_status          => sub { ({value => "juvenilia",   display => "Juvenilia"},
+    work_status          => sub { [{value => "juvenilia",   display => "Juvenilia"},
 				   {value => "incomplete",  display => "Incomplete"},
 				   {value => "unpublished", display => "Unpublished"},
-				   {value => "published",   display => "Published"}) },
+				   {value => "published",   display => "Published"}] },
 
-    derivation_relations => sub { ({value => "transcription", display => "Transcription"},
+    derivation_relations => sub { [{value => "transcription", display => "Transcription"},
 				   {value => "arrangement",   display => "Arrangement"},
-				   {value => "off-shoot",     display => "Off-shoot"}); },
+				   {value => "off-shoot",     display => "Off-shoot"}]; },
 
-    work_types           => sub { ({value => "sketch",                        display => "Sketch"},
+    work_types           => sub { [{value => "sketch",                        display => "Sketch"},
 				   {value => "contextualised sketch",         display => "Contextualised sketch"},
 				   {value => "draft short/piano score",       display => "Draft short/piano score"},
 				   {value => "extended draft short score",    display => "Extended draft short score"},
 				   {value => "instrumental annotations",      display => "Instrumental annotations"},
-				   {value => "autograph complete full score", display => "Autograph complete full score"}); },
+				   {value => "autograph complete full score", display => "Autograph complete full score"}]; },
 
     # Each of the rest of values in this hash is a subroutine
     # reference which should be called with a database handle as an
     # argument. It then returns a prepared statement which SELECTs
     # rows containing `value` and `display` fields. These results sets
     # can be used as look-ups.
-    parent_works         => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)); },
+    parent_works         => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)); },
 
-    all_works            => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works ORDER BY uniform_title)); },
+    all_works            => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works ORDER BY uniform_title)); },
 
-    genres               => sub { shift; $_->prepare(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)); },
+    genres               => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)); },
 
-    instruments          => sub { shift; $_->prepare(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)); },
+    instruments          => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)); },
 
-    manuscripts          => sub { shift; $_->prepare(qq(SELECT ID AS value, title AS display FROM manuscripts ORDER BY title)); },
+    manuscripts          => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
 
-    editions             => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(title, " (", publication_extent, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
+    editions             => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
 
-    persons              => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
+    persons              => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
 
     );
 
