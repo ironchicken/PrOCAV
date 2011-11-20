@@ -13,8 +13,11 @@ use Spreadsheet::WriteExcel;
 use Spreadsheet::WriteExcel::Utility;
 use Database qw(make_dbh schema look_ups);
 use File::Temp qw(tempfile);
+use base 'Exporter';
 
 package Ingestion;
+
+our @EXPORT = qw(create_workbook);
 
 my $workbook;
 my %look_up_columns = ();
