@@ -73,7 +73,7 @@ sub populate_look_ups {
 
 	# to get the next look_up, use fetchrow if $stmt is a prepared
 	# statement, or use an index if it's a list
-	my $row = 1;
+	my $row = 0;
 	while (my $look_up = (ref $stmt eq "DBI::st") ? $stmt->fetchrow_hashref() : $stmt->[$row - 1]) {
 	    $look_ups_sheet->write($row,
 				   $look_up_count * 2,
