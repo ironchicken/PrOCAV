@@ -11,7 +11,7 @@ use strict;
 use DBI;
 use Spreadsheet::WriteExcel;
 use Spreadsheet::WriteExcel::Utility;
-use Database qw(make_dbh schema look_ups);
+use PrOCAV::Database qw(make_dbh schema look_ups);
 use File::Temp qw(tempfile);
 use base 'Exporter';
 
@@ -29,7 +29,7 @@ my $locked;
 sub create_workbook {
     my $include_records = shift;
 
-    my ($fh, $filename) = tempfile();
+    my ($fh, $filename) = File::Temp::tempfile();
     $workbook = Spreadsheet::WriteExcel->new($filename);
 
     if (not defined $workbook) {
@@ -39,6 +39,8 @@ sub create_workbook {
     # create some formats
     $unlocked = $workbook->add_format(locked => 0);
     $locked = $workbook->add_format(locked => 1);
+
+    populate_look_ups();
 
     while (my ($table, $IDs) = each %$include_records) {
 	my $sheet = create_sheet($table);
@@ -57,12 +59,12 @@ sub populate_look_ups {
     my $look_ups_sheet = $workbook->add_worksheet("lookups");
     $look_ups_sheet->protect("password");
 
-    my $dbh = make_dbh();
+    my $dbh = Database::make_dbh();
 
     my $look_up_count = 0;
     while (my ($name, $proc) = each %Database::look_ups) {
 	# store the association of this look-up with this column
-	$look_up_columns{$name} = xl_rowcol_to_cell(0, $look_up_count * 2);
+	$look_up_columns{$name} = Spreadsheet::WriteExcel::Utility::xl_rowcol_to_cell(0, $look_up_count * 2);
 
 	# $stmt could be either a DBI prepared statement or a list of
 	# hashes. So ->execute it only if it's the former.
