@@ -13,16 +13,70 @@ use base 'Exporter';
 
 package Database;
 
-our @EXPORT = qw(get_record insert_record);
-our @EXPORT_OK = qw($schema);
+our @EXPORT = qw(make_dbh get_record insert_record);
+our @EXPORT_OK = qw(look_ups schema);
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
 
-my %db_opts = (user     => "root",
+my %db_opts = (database => "DBI:mysql:procav",
+	       user     => "root",
 	       password => "tbatst",
-	       database => "procav",
 	       attrs    => \%db_attrs);
+
+sub make_dbh {
+    DBI->connect($db_opts{database},
+		 $db_opts{user},
+		 $db_opts{password});
+}
+
+# Named look-ups. 
+our %look_ups = (
+    # The first values in this hash are subroutines which return a
+    # list of hashes containing `value` and `display` fields. (They
+    # are subroutines in order to be polymorphic with the other items
+    # in the hash.)
+    parent_relation      => sub { ({value => "movement", display => "Movement"},
+				   {value => "act",      display => "Act"},
+				   {value => "scene",    display => "Scene"},
+				   {value => "number",   display => "Number"}); },
+
+    work_status          => sub { ({value => "juvenilia",   display => "Juvenilia"},
+				   {value => "incomplete",  display => "Incomplete"},
+				   {value => "unpublished", display => "Unpublished"},
+				   {value => "published",   display => "Published"}) },
+
+    derivation_relations => sub { ({value => "transcription", display => "Transcription"},
+				   {value => "arrangement",   display => "Arrangement"},
+				   {value => "off-shoot",     display => "Off-shoot"}); },
+
+    work_types           => sub { ({value => "sketch",                        display => "Sketch"},
+				   {value => "contextualised sketch",         display => "Contextualised sketch"},
+				   {value => "draft short/piano score",       display => "Draft short/piano score"},
+				   {value => "extended draft short score",    display => "Extended draft short score"},
+				   {value => "instrumental annotations",      display => "Instrumental annotations"},
+				   {value => "autograph complete full score", display => "Autograph complete full score"}); },
+
+    # Each of the rest of values in this hash is a subroutine
+    # reference which should be called with a database handle as an
+    # argument. It then returns a prepared statement which SELECTs
+    # rows containing `value` and `display` fields. These results sets
+    # can be used as look-ups.
+    parent_works         => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)); },
+
+    all_works            => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works ORDER BY uniform_title)); },
+
+    genres               => sub { shift; $_->prepare(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)); },
+
+    instruments          => sub { shift; $_->prepare(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)); },
+
+    manuscripts          => sub { shift; $_->prepare(qq(SELECT ID AS value, title AS display FROM manuscripts ORDER BY title)); },
+
+    editions             => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(title, " (", publication_extent, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
+
+    persons              => sub { shift; $_->prepare(qq(SELECT ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
+
+    );
 
 # FIXME Think about all the properties a field will need. For example,
 # when a new work is added to the spreadsheet, its uniform_title will
@@ -47,27 +101,27 @@ our %schema = (
 	sub_title       => {access => "rw",
 			    data_type => "string"},
 	part_of         => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{parent_works},
 			    list_mutable => 0},
 	parent_relation => {access => "rw",
-			    data_type => look_up_list(qw(movement act scene number)),
+			    data_type => "look_up",
+			    look_up => $look_ups{parent_relation},
 			    list_mutable => 0},
 	opus_number     => {access => "rw",
 			    data_type => "integer"},
 	opus_suffix     => {access => "rw",
 			    data_type => "string"},
 	status          => {access => "rw",
-			    data_type => look_up_list(qw(juvenilia incomplete unpublished published)),
+			    data_type => "look_up",
+			    look_up => $look_ups{work_status},
 			    list_mutable => 0,
 			    list_insert => qq(INSERT INTO work_status (work_id, status) VALUES (?,?))},
 	genres          => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)),
+			    data_type => "look_up",
+			    look_up => $look_ups{genres},
 			    list_mutable => 1,
 			    list_insert => qq(INSERT INTO genres (work_id, genre) VALUES (?,?))},
-	# instruments     => {access => "rw",
-	# 		    data_type => look_up_sql(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)),
-	# 		    list_mutable => 1,
-	# 		    list_insert => qq(INSERT INTO instruments (work_id, instrument) VALUES (?,?))},
 	duration        => {access => "rw",
 	  		    data_type => "float"},
 	notes           => {access => "rw",
@@ -78,14 +132,18 @@ our %schema = (
 	ID              => {access => "ro",
 			    primary_key => 1},
 	work_id         => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{all_works},
 			    not_null => 1},
 	manuscript_id   => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, title AS display FROM manuscripts ORDER BY title))},
+			    data_type => "look_up",
+			    look_up => $look_ups{manuscripts}},
 	edition_id      => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(title, " (", publication_extent, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title))},
+			    data_type => "look_up",
+			    look_up => $look_ups{editions}},
 	person_id       => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name))},
+			    data_type => "look_up",
+			    look_up => $look_ups{persons}},
 	title           => {access => "rw",
 			    data_type => "string"},
 	transliteration => {access => "rw",
@@ -104,10 +162,12 @@ our %schema = (
 	_worksheet => "instruments",
 
 	work_id         => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{all_works},
 			    not_null => 1},
 	instrument      => {access => "rw",
-	 		    data_type => look_up_sql(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)),
+	 		    data_type => "look_up",
+			    look_up => $look_ups{instruments},
 	 		    list_mutable => 1,
 			    not_null => 1},
 	role            => {access => "rw",
@@ -117,27 +177,32 @@ our %schema = (
 	_worksheet => "derived_from",
 
 	precusor_work   => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{parent_works},
 			    list_mutable => 0,
 			    not_null => 1},
 	derived_work    => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{parent_works},
 			    list_mutable => 0,
 			    not_null => 1},
 	
 	derivation_relation => {access => "rw",
-				data_type => look_up_list(qw(transcription arrangement off-shoot)),
+				data_type => "look_up",
+				look_up => $look_ups{derivation_relations},
 				not_null => 1}},
 
     composition        => {
 	_worksheet => "composition",
 
 	work_id         => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{parent_works},
 			    not_null => 1},
 
 	manuscript_id   => {access => "rw",
-			    data_type => look_up_sql(qq(SELECT ID AS value, title AS display FROM manuscripts ORDER BY title)),
+			    data_type => "look_up",
+			    look_up => $look_ups{manuscripts},
 			    not_null => 1},
 
 	period_start    => {access => "rw",
@@ -147,7 +212,8 @@ our %schema = (
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	work_type       => {access => "rw",
-			    data_type => look_up_list(("sketch", "contextualised sketch", "draft short/piano score", "extended draft short score", "instrumental annotations", "autograph complete full score"))}},
+			    data_type => "look_up",
+			    look_up => $look_ups{work_types}}},
 
     editions           => {},
     publications       => {},
