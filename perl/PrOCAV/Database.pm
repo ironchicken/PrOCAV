@@ -63,10 +63,10 @@ our %look_ups = (
     # rows containing `value` and `display` fields. These results sets
     # can be used as look-ups.
     parent_works         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)); },
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" Op. ", opus_number),""), IFNULL(opus_suffix,"")) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)); },
 
     all_works            => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(opus_number, opus_suffix, " ", uniform_title) AS display FROM works ORDER BY uniform_title)); },
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" Op. ", opus_number),""), IFNULL(opus_suffix,"")) AS display FROM works ORDER BY uniform_title)); },
 
     genres               => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)); },
