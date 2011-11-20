@@ -62,7 +62,7 @@ sub populate_look_ups {
     my $look_up_count = 0;
     while (my ($name, $proc) = each %Database::look_ups) {
 	# store the association of this look-up with this column
-	$look_up_columns[$name] = xl_rowcol_to_cell(0, $look_up_count * 2);
+	$look_up_columns{$name} = xl_rowcol_to_cell(0, $look_up_count * 2);
 
 	# $stmt could be either a DBI prepared statement or a list of
 	# hashes. So ->execute it only if it's the former.
