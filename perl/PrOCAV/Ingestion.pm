@@ -109,17 +109,19 @@ sub push_record {
 
     my $record = get_record($table, $ID);
     if (defined $record) {
-	my $col = 'A';
+	my $col = 0;
 	while (my ($field, $value) = each %$record) {
 	    my $field_props = Database::schema{$table}->{$field};
 
 	    my $format = ($field_props->{access} eq "ro") ? $locked : $unlocked;
 
 	    if ($field_props->{data_type} eq "string") {
-		$sheet->write_string("$col$row", $value, $format);
+		$sheet->write_string($row, $col, $value, $format);
 	    } elsif ($field_props->{data_type} eq "number") {
-		$sheet->write_number("$col$row", $value, $format);
+		$sheet->write_number($row, $col, $value, $format);
 	    }
+
+	    $col++;
 	}
     }
 }
