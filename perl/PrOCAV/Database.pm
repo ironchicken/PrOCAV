@@ -14,7 +14,7 @@ use base 'Exporter';
 package Database;
 
 our @EXPORT = qw(make_dbh get_record insert_record);
-our @EXPORT_OK = qw(look_ups schema);
+our @EXPORT_OK = qw(look_ups schema table_order);
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
@@ -94,9 +94,11 @@ our %look_ups = (
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
+our @table_order = qw(works titles composition instruments genres manuscripts editions publications performances letters texts persons);
 our %schema = (
     works => {
 	_worksheet => "works",
+	_field_order => qw(),
 
 	ID              => {access => "ro",
 			    primary_key => 1},

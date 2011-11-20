@@ -11,7 +11,7 @@ use strict;
 use DBI;
 use Spreadsheet::WriteExcel;
 use Spreadsheet::WriteExcel::Utility;
-use PrOCAV::Database qw(make_dbh schema look_ups);
+use PrOCAV::Database qw(make_dbh schema table_order look_ups);
 use File::Temp qw(tempfile);
 use base 'Exporter';
 
@@ -40,17 +40,21 @@ sub create_workbook {
     $unlocked = $workbook->add_format(locked => 0);
     $locked = $workbook->add_format(locked => 1);
 
-    populate_look_ups();
-
-    while (my ($table, $IDs) = each %$include_records) {
+    # create worksheets for the tables
+    foreach my $table (@Database::table_order) {
 	my $sheet = create_sheet($table);
-	
-	my $row = 1;
-	foreach my $ID ($IDs) {
-	    push_record($sheet, $row, $table, $ID);
-	    $row++;
+
+	if (exists $include_records->{$table}) {
+	    my $row = 0;
+	    foreach my $ID ($include_records->{$table}) {
+		push_record($sheet, $row, $table, $ID);
+		$row++;
+	    }
 	}
     }
+
+    # add the look-ups
+    populate_look_ups();
 
     $workbook->close() or die("Could not close workbook file: $filename\n");
 }
