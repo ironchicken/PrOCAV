@@ -105,6 +105,13 @@ sub create_sheet {
 
     $sheet->protect("password");
 
+    # add the field names
+    my $col = 0;
+
+    foreach my $field_name (@{ Database::table_info($table)->{_field_order} }) {
+	$sheet->write_string(0, $col, $field_name, $column_name);
+	$col++;
+    }
 }
 
 sub push_record {

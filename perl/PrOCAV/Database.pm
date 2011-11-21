@@ -112,7 +112,7 @@ sub table_order {
 my %schema = (
     works => {
 	_worksheet => "works",
-	_field_order => qw(),
+	_field_order => [qw(ID catalogue_no uniform_title sub_title part_of parent_relation opus_number opus_suffix status genres duration notes)],
 
 	ID              => {access => "ro",
 			    primary_key => 1},
