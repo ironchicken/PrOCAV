@@ -11,13 +11,14 @@ use strict;
 use DBI;
 use Spreadsheet::WriteExcel;
 use Spreadsheet::WriteExcel::Utility;
-use PrOCAV::Database qw(make_dbh schema table_order look_ups);
+use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups table_order table_info);
 use File::Temp qw(tempfile);
-use base 'Exporter';
 
 package Ingestion;
 
-our @EXPORT = qw(create_workbook);
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(create_workbook);
 
 my $workbook;
 my %look_up_columns = ();
@@ -41,7 +42,7 @@ sub create_workbook {
     $locked = $workbook->add_format(locked => 1);
 
     # create worksheets for the tables
-    foreach my $table (@Database::table_order) {
+    foreach my $table (Database::table_order()) {
 	my $sheet = create_sheet($table);
 
 	if (exists $include_records->{$table}) {
@@ -66,7 +67,9 @@ sub populate_look_ups {
     my $dbh = Database::make_dbh();
 
     my $look_up_count = 0;
-    while (my ($name, $proc) = each %Database::look_ups) {
+    foreach my $name (Database::registered_look_ups()) {
+	my $proc = Database::find_look_up($name);
+
 	# store the association of this look-up with this column
 	$look_up_columns{$name} = Spreadsheet::WriteExcel::Utility::xl_rowcol_to_cell(0, $look_up_count * 2);
 
@@ -111,7 +114,7 @@ sub push_record {
     if (defined $record) {
 	my $col = 0;
 	while (my ($field, $value) = each %$record) {
-	    my $field_props = Database::schema{$table}->{$field};
+	    my $field_props = Database::table_info($table)->{$field};
 
 	    my $format = ($field_props->{access} eq "ro") ? $locked : $unlocked;
 

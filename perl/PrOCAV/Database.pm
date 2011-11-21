@@ -9,12 +9,12 @@
 
 use strict;
 use DBI;
-use base 'Exporter';
 
 package Database;
 
-our @EXPORT = qw(make_dbh get_record insert_record);
-our @EXPORT_OK = qw(look_ups schema table_order);
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(make_dbh get_record insert_record find_look_up registered_look_ups table_info table_order);
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
@@ -31,7 +31,7 @@ sub make_dbh {
 }
 
 # Named look-ups. 
-our %look_ups = (
+my %look_ups = (
     # The first values in this hash are subroutines which return a
     # list of hashes containing `value` and `display` fields. (They
     # are subroutines in order to be polymorphic with the other items
@@ -85,6 +85,15 @@ our %look_ups = (
 
     );
 
+sub registered_look_ups {
+    keys %look_ups;
+}
+
+sub find_look_up {
+    my $look_up_name = shift;
+    $look_ups{$look_up_name};
+}
+
 # FIXME Think about all the properties a field will need. For example,
 # when a new work is added to the spreadsheet, its uniform_title will
 # need to be available to any spreadsheet cell which provides a
@@ -94,8 +103,13 @@ our %look_ups = (
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-our @table_order = qw(works titles composition instruments genres manuscripts editions publications performances letters texts persons);
-our %schema = (
+my @table_order = qw(works titles composition instruments genres manuscripts editions publications performances letters texts persons);
+
+sub table_order {
+    @table_order;
+}
+
+my %schema = (
     works => {
 	_worksheet => "works",
 	_field_order => qw(),
@@ -242,12 +256,9 @@ our %schema = (
     resources          => {},
     resource_about     => {});
 
-sub look_up_sql {
-
-}
-
-sub look_up_list {
-
+sub table_info {
+    my $table_name = shift;
+    $schema{$table_name};
 }
 
 sub get_record {
