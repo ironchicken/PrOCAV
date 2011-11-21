@@ -151,6 +151,7 @@ my %schema = (
 			    data_type => "string"}},
     titles => {
 	_worksheet => "titles",
+	_field_order => [qw(ID work_id manuscript_id edition_id person_id title transliteration script language notes)],
 
 	ID              => {access => "ro",
 			    primary_key => 1},
@@ -183,6 +184,7 @@ my %schema = (
 
     instruments        => {
 	_worksheet => "instruments",
+	_field_order => [qw(work_id instrument role)],
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -198,6 +200,7 @@ my %schema = (
 
     derived_from       => {
 	_worksheet => "derived_from",
+	_field_order => [qw(precusor_work derived_work derivation_relation)],
 
 	precusor_work   => {access => "rw",
 			    data_type => "look_up",
