@@ -56,23 +56,25 @@ sub create_workbook {
     }
 
     # add the look-ups
-    populate_look_ups();
+    #populate_look_ups();
 
     $workbook->close() or die("Could not close workbook file: $filename\n");
 }
 
-sub populate_look_ups {
-    my $look_ups_sheet = $workbook->add_worksheet("lookups");
-    $look_ups_sheet->protect("password");
+sub add_look_ups {
+    my ($table, $sheet, $first_col) = @_;
+    
+    #my $look_ups_sheet = $workbook->add_worksheet("lookups");
+    #$look_ups_sheet->protect("password");
 
     my $dbh = Database::make_dbh();
+
+    $look_up_columns{$table} = {};
 
     my $look_up_count = 0;
     foreach my $name (Database::registered_look_ups()) {
 	my $proc = Database::find_look_up($name);
-
-	# store the association of this look-up with this column
-	$look_up_columns{$name} = Spreadsheet::WriteExcel::Utility::xl_rowcol_to_cell(0, $look_up_count * 2);
+	my $col = $first_col + ($look_up_count * 2);
 
 	# $stmt could be either a DBI prepared statement or a list of
 	# hashes. So ->execute it only if it's the former.
@@ -82,19 +84,29 @@ sub populate_look_ups {
 	# to get the next look_up, use fetchrow if $stmt is a prepared
 	# statement, or use an index if it's a list
 	my $row = 0;
-	while (my $look_up = (ref $stmt eq "DBI::st") ? $stmt->fetchrow_hashref() : $stmt->[$row - 1]) {
-	    $look_ups_sheet->write($row,
-				   $look_up_count * 2,
-				   $look_up->{value},
-				   $locked);
+	while (my $look_up = (ref $stmt eq "DBI::st") ? $stmt->fetchrow_hashref() : $stmt->[$row]) {
+	    $sheet->write($row,
+			  $col,
+			  $look_up->{value},
+			  $cell_formats{locked});
 
-	    $look_ups_sheet->write($row,
-				   ($look_up_count * 2) + 1,
-				   $look_up->{display},
-				   $locked);
+	    $sheet->write($row,
+			  $col + 1,
+			  $look_up->{display},
+			  $cell_formats{locked});
 
 	    $row++;
 	}
+
+	# set the columns to hidden and locked
+	$sheet->set_column($col, $col+1, undef, $cell_formats{locked}, 0);
+
+	# store the association of this look-up with this column for
+	# this table
+	$look_up_columns{$table}->{$name} =
+	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell(0, $col+1) . ":" .
+	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell($row, $col+1);
+
 	$look_up_count++;
     }
 }
@@ -106,8 +118,8 @@ sub create_sheet {
 
     $sheet->protect("password");
 
-    # add the field names
-    my $col = 0;
+    # add look-ups
+    add_look_ups($table, $sheet, $#{ Database::table_info($table)->{_field_order} } + 1);
 
     # configure the columns
     while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
