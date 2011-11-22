@@ -135,17 +135,19 @@ sub add_column {
 		       undef, #$field_info->{cell_width},
 		       ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
 
-    if ($field_info->{data_type} eq "integer") {
-    	$sheet->data_validation(1, $col, $MAX_RECORDS, $col, {validate => 'integer',
-    							      criteria => '>=',
-    							      value    => 0});
-    } elsif ($field_info->{data_type} eq "decimal") {
-    	$sheet->data_validation(1, $col, $MAX_RECORDS, $col, {validate => 'decimal',
-    							      criteria => '>=',
-    							      value    => 0});
-    } elsif ($field_info->{data_type} eq "look_up") {
-    	$sheet->data_validation(1, $col, $MAX_RECORDS, $col, {validate => 'list',
-    							      value    => "=" . $look_up_columns{$table}->{$field_info->{look_up}}});
+    foreach my $row (1..$MAX_RECORDS) {
+	if ($field_info->{data_type} eq "integer") {
+	    $sheet->data_validation($row, $col, {validate => 'integer',
+						 criteria => '>=',
+						 value    => 0});
+	} elsif ($field_info->{data_type} eq "decimal") {
+	    $sheet->data_validation($row, $col, {validate => 'decimal',
+						 criteria => '>=',
+						 value    => 0});
+	} elsif ($field_info->{data_type} eq "look_up") {
+	    $sheet->data_validation($row, $col, {validate => 'list',
+						 value    => "=" . $look_up_columns{$table}->{$field_info->{look_up}}});
+	}
     }
 
     # add field name
