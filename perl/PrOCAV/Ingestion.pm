@@ -97,7 +97,7 @@ sub add_look_ups {
 	}
 
 	# set the columns to hidden and locked
-	$sheet->set_column($col, $col, undef, $cell_formats{locked}, 0);
+	$sheet->set_column($col, $col, undef, $cell_formats{locked}, 1);
 
 	# store the association of this look-up with this column for
 	# this table
