@@ -22,6 +22,7 @@ our @EXPORT_OK = qw(create_workbook);
 
 my $workbook;
 my %look_up_columns = ();
+my $MAX_RECORDS = 100;
 
 # package-local cell formats
 my %cell_formats = ();
@@ -108,10 +109,38 @@ sub create_sheet {
     # add the field names
     my $col = 0;
 
-    foreach my $field_name (@{ Database::table_info($table)->{_field_order} }) {
-	$sheet->write_string(0, $col, $field_name, $column_name);
-	$col++;
+    # configure the columns
+    while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
+	add_column($table, $field_name, $sheet, $col);
     }
+}
+
+sub add_column {
+    my ($table, $field_name, $sheet, $col) = @_;
+    my $field_info = Database::table_info($table)->{$field_name};
+    if (not defined $field_info) { die "Could not find schema for $table.$field_name\n"; }
+
+    # set column properties
+    $sheet->set_column($col,
+		       undef, #$field_info->{cell_width},
+		       ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
+
+    if ($field_info->{data_type} eq "integer") {
+    	$sheet->data_validation(1, $col, $MAX_RECORDS, $col, {validate => 'integer',
+    							      criteria => '>=',
+    							      value    => 0});
+    } elsif ($field_info->{data_type} eq "decimal") {
+    	$sheet->data_validation(1, $col, $MAX_RECORDS, $col, {validate => 'decimal',
+    							      criteria => '>=',
+    							      value    => 0});
+    } elsif ($field_info->{data_type} eq "look_up") {
+    	$sheet->data_validation(1, $col, $MAX_RECORDS, $col, {validate => 'list',
+    							      value    => "=" . $look_up_columns{$table}->{$field_info->{look_up}}});
+    }
+
+    # add field name
+    $sheet->write_string(0, $col, $field_name, $cell_formats{column_name});
+    
 }
 
 sub push_record {
