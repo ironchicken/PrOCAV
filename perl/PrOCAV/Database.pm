@@ -27,7 +27,8 @@ my %db_opts = (database => "DBI:mysql:procav",
 sub make_dbh {
     DBI->connect($db_opts{database},
 		 $db_opts{user},
-		 $db_opts{password});
+		 $db_opts{password})
+	or die ("Could not connect to database.\n");
 }
 
 # Named look-ups. 
