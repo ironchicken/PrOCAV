@@ -40,8 +40,8 @@ sub create_workbook {
     }
 
     # create some formats
-    $cell_formats{unlocked}    = $workbook->add_format(locked => 0);
-    $cell_formats{locked}      = $workbook->add_format(locked => 1);
+    $cell_formats{unlocked}    = $workbook->add_format(); $cell_formats{unlocked}->set_locked(0);
+    $cell_formats{locked}      = $workbook->add_format(locked => 1, bg_color => 'silver');
     $cell_formats{column_name} = $workbook->add_format(locked => 1, bg_color => 'grey', pattern => 1);
 
     # create worksheets for the tables
@@ -136,6 +136,8 @@ sub add_column {
 		       ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
 
     foreach my $row (1..$MAX_RECORDS) {
+	$sheet->write($row, $col, undef, ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
+
 	if ($field_info->{data_type} eq "integer") {
 	    $sheet->data_validation($row, $col, {validate => 'integer',
 						 criteria => '>=',
