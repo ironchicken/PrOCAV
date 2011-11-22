@@ -9,8 +9,10 @@
 
 use strict;
 use DBI;
-use Spreadsheet::WriteExcel;
-use Spreadsheet::WriteExcel::Utility;
+#use Spreadsheet::WriteExcel;
+#use Spreadsheet::WriteExcel::Utility;
+use Excel::Writer::XLSX;
+use Excel::Writer::XLSX::Utility;
 use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups table_order table_info);
 use File::Temp qw(tempfile);
 
@@ -31,7 +33,7 @@ sub create_workbook {
     my $include_records = shift;
 
     my ($fh, $filename) = File::Temp::tempfile();
-    $workbook = Spreadsheet::WriteExcel->new($filename);
+    $workbook = Excel::Writer::XLSX->new($filename);
 
     if (not defined $workbook) {
 	die("Could not create workbook file: $filename\n");
