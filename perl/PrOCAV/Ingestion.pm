@@ -24,8 +24,7 @@ my $workbook;
 my %look_up_columns = ();
 
 # package-local cell formats
-my $unlocked;
-my $locked;
+my %cell_formats = ();
 
 sub create_workbook {
     my $include_records = shift;
@@ -38,8 +37,9 @@ sub create_workbook {
     }
 
     # create some formats
-    $unlocked = $workbook->add_format(locked => 0);
-    $locked = $workbook->add_format(locked => 1);
+    $cell_formats{unlocked}    = $workbook->add_format(locked => 0);
+    $cell_formats{locked}      = $workbook->add_format(locked => 1);
+    $cell_formats{column_name} = $workbook->add_format(locked => 1, bg_color => 'grey', pattern => 1);
 
     # create worksheets for the tables
     foreach my $table (Database::table_order()) {
@@ -123,7 +123,7 @@ sub push_record {
 	while (my ($field, $value) = each %$record) {
 	    my $field_props = Database::table_info($table)->{$field};
 
-	    my $format = ($field_props->{access} eq "ro") ? $locked : $unlocked;
+	    my $format = ($field_props->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked};
 
 	    if ($field_props->{data_type} eq "string") {
 		$sheet->write_string($row, $col, $value, $format);
