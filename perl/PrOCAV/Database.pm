@@ -291,7 +291,35 @@ my %schema = (
 	notes           => {access => "rw",
 			    data_type => "string"}},
 
-    publications       => {},
+    publications       => {
+	_worksheet => "publications",
+	_field_order => [qw(ID title publisher publication_place date_published serial_number notes)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    not_null => 1},
+
+	publisher       => {access => "rw",
+			    data_type => "string"},
+
+	publication_place => {access => "rw",
+			      data_type => "string"},
+
+	date_published  => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	serial_number   => {access => "rw",
+			    data_type => "string"},
+
+	notes           => {access => "rw",
+			    data_type => "string"}},
+
     published_in       => {},
     performances       => {},
     performed_in       => {},
