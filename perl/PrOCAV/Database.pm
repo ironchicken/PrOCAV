@@ -84,6 +84,9 @@ my %look_ups = (
     persons              => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
 
+    score_types          => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM editions ORDER BY score_type)); }
+
     );
 
 sub registered_look_ups {
