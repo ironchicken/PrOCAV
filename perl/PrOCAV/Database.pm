@@ -70,10 +70,10 @@ my %look_ups = (
 				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" Op. ", opus_number),""), IFNULL(opus_suffix,"")) AS display FROM works ORDER BY uniform_title)); },
 
     genres               => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT DISTINCT genre FROM genres ORDER BY genre)); },
+				  $dbh->prepare(qq(SELECT DISTINCT genre AS value, genre AS display FROM genres ORDER BY genre)); },
 
     instruments          => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT DISTINCT instrument FROM instruments ORDER BY instrument)); },
+				  $dbh->prepare(qq(SELECT DISTINCT instrument AS value, instrument AS display FROM instruments ORDER BY instrument)); },
 
     manuscripts          => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
