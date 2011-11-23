@@ -348,7 +348,34 @@ my %schema = (
 	publication_range => {access => "rw",
 			      data_type => "string"}},
 
-    performances       => {},
+    performances       => {
+	_worksheet => "performances",
+	_field_order => [qw(ID work_id date_performed venue_id performance_type notes)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1},
+
+	date_performed  => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	venue_id        => {access => "rw",
+			    data_type => "integer"},
+
+	performance_type => {access => "rw",
+			     data_type => "look_up",
+			     look_up => "performance_types"},
+
+	notes           => {access => "rw",
+			    data_type => "string"}},
+
     performed_in       => {},
     letters            => {},
     letter_mentions    => {},
