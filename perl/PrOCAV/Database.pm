@@ -58,6 +58,11 @@ my %look_ups = (
 				   {value => "instrumental annotations",      display => "Instrumental annotations"},
 				   {value => "autograph complete full score", display => "Autograph complete full score"}]; },
 
+    performance_types    => sub { [{value => "concert", display => "Concert"},
+				   {value => "broadcast", display => "Broadcast"},
+				   {value => "recording", display => "Recording"},
+				   {value => "private", display => "Private"}]; },
+
     # Each of the rest of values in this hash is a subroutine
     # reference which should be called with a database handle as an
     # argument. It then returns a prepared statement which SELECTs
