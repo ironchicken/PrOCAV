@@ -258,7 +258,39 @@ my %schema = (
 			    data_type => "look_up",
 			    look_up => "work_types"}},
 
-    editions           => {},
+    editions           => {
+	_worksheet => "editions",
+	_field_order => [qw(ID work_id date_made editor score_type work_extent notes)],
+
+	
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1},
+
+	date_made       => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	editor          => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "persons"},
+
+	score_type      => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "score_types",
+	 		    list_mutable => 1},
+	work_extent     => {access => "rw",
+			    data_type => "string"},
+
+	notes           => {access => "rw",
+			    data_type => "string"}},
+
     publications       => {},
     published_in       => {},
     performances       => {},
