@@ -81,6 +81,9 @@ my %look_ups = (
     editions             => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
 
+    publications         => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT publications.ID AS value, title AS display FROM publications ORDER BY title)); },
+
     persons              => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
 
