@@ -110,7 +110,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments genres manuscripts editions publications performances letters texts persons);
+my @table_order = qw(works titles composition instruments genres manuscripts editions publications published_in performances letters texts persons);
 
 sub table_order {
     @table_order;
@@ -323,7 +323,26 @@ my %schema = (
 	notes           => {access => "rw",
 			    data_type => "string"}},
 
-    published_in       => {},
+    published_in       => {
+	_worksheet => "published_in",
+	_field_order => [qw(edition_id publication_id edition_extent publication_range)],
+
+	edition_id      => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "editions",
+			    not_null => 1},
+
+	publication_id  => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "publications",
+			    not_null => 1},
+
+	edition_extent  => {access => "rw",
+			    data_type => "string"},
+
+	publication_range => {access => "rw",
+			      data_type => "string"}},
+
     performances       => {},
     performed_in       => {},
     letters            => {},
