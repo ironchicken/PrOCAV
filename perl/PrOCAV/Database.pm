@@ -473,7 +473,55 @@ my %schema = (
 	notes           => {access => "rw",
 			    data_type => "string"}},
 
-    manuscripts        => {},
+    manuscripts        => {
+	_worksheet => "manuscripts",
+	_field_order => [qw(ID title purpose physical_size medium extent missing date_made annotation_of location notes)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    width => 128},
+
+	purpose         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "work_types",
+			    not_null => 1},
+
+	physical_size   => {access => "rw",
+			    data_type => "string",
+			    width => 32},
+
+	medium          => {access => "rw",
+			    data_type => "string",
+			    width => 32},
+
+	extent          => {access => "rw",
+			    data_type => "integer"},
+
+	missing         => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0},
+
+	date_made       => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	annotation_of   => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "editions"},
+
+	location        => {access => "rw",
+			    data_type => "string",
+			    width => 128},
+
+	notes           => {access => "rw",
+			    data_type => "string"}},
+
     texts              => {},
     persons            => {},
     dedicated_to       => {},
