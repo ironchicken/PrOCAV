@@ -112,7 +112,7 @@ CREATE TABLE letters (
   ID                INT PRIMARY KEY auto_increment,
   letters_db_ID     VARCHAR(32),
   date_composed     INT,
-  date_send         INT,
+  date_sent         INT,
   addressee         INT,
   signatory         INT,
   original_text     TEXT,
