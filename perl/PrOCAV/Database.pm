@@ -63,6 +63,17 @@ my %look_ups = (
 				   {value => "recording", display => "Recording"},
 				   {value => "private", display => "Private"}]; },
 
+    mentionable_tables   => sub { [{value => "works", display => "Works"},
+				   {value => "titles", display => "Titles"},
+				   {value => "composition", display => "Composition"},
+				   {value => "editions", display => "Editions"},
+				   {value => "publications", display => "Publications"},
+				   {value => "performances", display => "Performances"},
+				   {value => "letters", display => "Letters"},
+				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "texts", display => "Texts"},
+				   {value => "dedicated_to", display => "Dedicated_to"}]; },
+
     # Each of the rest of values in this hash is a subroutine
     # reference which should be called with a database handle as an
     # argument. It then returns a prepared statement which SELECTs
