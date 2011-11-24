@@ -396,7 +396,42 @@ my %schema = (
 	role            => {access => "rw",
 			    data_type => "string"}},
 
-    letters            => {},
+    letters            => {
+	_worksheet => "letters",
+	_field_order => [qw(ID letters_db_ID date_composed date_sent addressee signatory original_text english_text)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	letters_db_ID   => {access => "rw",
+			    data_type => "string"},
+
+	date_composed   => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	date_sent       => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	addressee       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "persons"},
+
+	signatory       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "persons"},
+
+	original_text   => {access => "rw",
+			    data_type => "string"},
+
+	english_text    => {access => "rw",
+			    data_type => "string"}},
+
     letter_mentions    => {},
     manuscripts        => {},
     texts              => {},
