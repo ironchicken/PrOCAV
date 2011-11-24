@@ -129,7 +129,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments genres manuscripts editions publications published_in performances performed_in letters texts persons);
+my @table_order = qw(works titles composition instruments genres manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons);
 
 sub table_order {
     @table_order;
@@ -443,7 +443,36 @@ my %schema = (
 	english_text    => {access => "rw",
 			    data_type => "string"}},
 
-    letter_mentions    => {},
+    letter_mentions    => {
+	_worksheet => "letter_mentions",
+	_field_order => [qw(ID letter_id letter_range mentioned_table mentioned_id mentioned_extent notes)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	letter_id       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "letters",
+			    not_null => 1},
+
+	letter_range    => {access => "rw",
+			    data_type => "string"},
+
+	mentioned_table => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "mentionable_tables",
+			    not_null => 1},
+
+	mentioned_id    => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1},
+
+	mentioned_extent => {access => "rw",
+			     data_type => "string"},
+
+	notes           => {access => "rw",
+			    data_type => "string"}},
+
     manuscripts        => {},
     texts              => {},
     persons            => {},
