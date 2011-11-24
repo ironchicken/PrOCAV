@@ -522,7 +522,32 @@ my %schema = (
 	notes           => {access => "rw",
 			    data_type => "string"}},
 
-    texts              => {},
+    texts              => {
+	_worksheet => "texts",
+	_field_order => [qw(ID title author language original_content english_content)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    not_null => 1},
+
+	author          => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "persons"},
+
+	language        => {access => "rw",
+			    data_type => "string",
+			    width => 2},
+
+	original_content => {access => "rw",
+			     data_type => "string"},
+
+	english_content => {access => "rw",
+			    data_type => "string"}},
+
     persons            => {},
     dedicated_to       => {},
     dates              => {},
