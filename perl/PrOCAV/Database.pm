@@ -551,7 +551,29 @@ my %schema = (
 	english_content => {access => "rw",
 			    data_type => "string"}},
 
-    persons            => {},
+    persons            => {
+	_worksheet => "persons",
+	_field_order => [qw(ID given_name family_name sex nationality)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	given_name      => {access => "rw",
+			    data_type => "string",
+			    width => 255},
+
+	family_name     => {access => "rw",
+			    data_type => "string",
+			    width => 255},
+
+	sex             => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "sex"},
+
+	nationality     => {access => "rw",
+			    data_type => "string",
+			    width => 2}},
+
     dedicated_to       => {},
     dates              => {},
     media_items        => {},
