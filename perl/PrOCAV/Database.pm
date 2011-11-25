@@ -77,6 +77,10 @@ my %look_ups = (
     sex                  => sub { [{value => "male", display => "Male"},
 				   {value => "female", display => "Female"}]; },
 
+    date_source_tables   => sub { [{value => "editions", display => "Editions"},
+				   {value => "letters", display => "Letters"},
+				   {value => "manuscripts", display => "Manuscripts"}]; },
+
     # Each of the rest of values in this hash is a subroutine
     # reference which should be called with a database handle as an
     # argument. It then returns a prepared statement which SELECTs
