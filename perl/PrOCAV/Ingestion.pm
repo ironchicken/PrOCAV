@@ -146,6 +146,9 @@ sub add_column {
 	    $sheet->data_validation($row, $col, {validate => 'decimal',
 						 criteria => '>=',
 						 value    => 0});
+	} elsif ($field_info->{data_type} eq "boolean") {
+	    $sheet->data_validation($row, $col, {validate => 'list',
+						 value    => [qw(yes no)]});
 	}
     }
 
