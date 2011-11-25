@@ -136,7 +136,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
+my @table_order = qw(works titles composition instruments genres work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
 
 sub table_order {
     @table_order;
@@ -145,7 +145,7 @@ sub table_order {
 my %schema = (
     works => {
 	_worksheet => "works",
-	_field_order => [qw(ID catalogue_no uniform_title sub_title part_of parent_relation opus_number opus_suffix genres duration notes)],
+	_field_order => [qw(ID catalogue_no uniform_title sub_title part_of parent_relation opus_number opus_suffix duration notes)],
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -176,12 +176,6 @@ my %schema = (
 	opus_suffix     => {access => "rw",
 			    data_type => "string",
 			    cell_width => 2},
-	genres          => {access => "rw",
-			    data_type => "look_up",
-			    look_up => "genres",
-			    list_mutable => 1,
-			    list_insert => qq(INSERT INTO genres (work_id, genre) VALUES (?,?)),
-			    cell_width => 5},
 	duration        => {access => "rw",
 	  		    data_type => "float",
 			    cell_width => 2},
@@ -233,7 +227,22 @@ my %schema = (
 			    list_insert => qq(INSERT INTO work_status (work_id, status) VALUES (?,?)),
 			    cell_width => 3}},
 
-    genres             => {},
+    genres             => {
+	_worksheet => "genres",
+	_field_order => [qw(ID work_id genre)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1},
+
+	genre           => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "genres",
+			    cell_width => 5}},
 
     instruments        => {
 	_worksheet => "instruments",
