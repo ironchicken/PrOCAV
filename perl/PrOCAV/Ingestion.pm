@@ -150,6 +150,13 @@ sub add_column {
 	    $sheet->data_validation($row, $col, {validate => 'list',
 						 value    => [qw(yes no)]});
 	}
+
+	# set the column width
+	if (exists $field_info->{width}) {
+	    $sheet->data_validation($row, $col, {validate => 'length',
+						 criteria => '<=',
+						 value    => $field_info->{width}});
+	}
     }
 
     # make look-up fields' cells use data validation
