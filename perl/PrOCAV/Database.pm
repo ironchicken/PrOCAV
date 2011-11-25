@@ -136,7 +136,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments genres dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
+my @table_order = qw(works titles composition instruments work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
 
 sub table_order {
     @table_order;
@@ -145,7 +145,7 @@ sub table_order {
 my %schema = (
     works => {
 	_worksheet => "works",
-	_field_order => [qw(ID catalogue_no uniform_title sub_title part_of parent_relation opus_number opus_suffix status genres duration notes)],
+	_field_order => [qw(ID catalogue_no uniform_title sub_title part_of parent_relation opus_number opus_suffix genres duration notes)],
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -176,12 +176,6 @@ my %schema = (
 	opus_suffix     => {access => "rw",
 			    data_type => "string",
 			    cell_width => 2},
-	status          => {access => "rw",
-			    data_type => "look_up",
-			    look_up => "work_status",
-			    list_mutable => 0,
-			    list_insert => qq(INSERT INTO work_status (work_id, status) VALUES (?,?)),
-			    cell_width => 3},
 	genres          => {access => "rw",
 			    data_type => "look_up",
 			    look_up => "genres",
@@ -224,7 +218,21 @@ my %schema = (
 	notes           => {access => "rw",
 			    data_type => "string"}},
 
-    work_status        => {},
+    work_status        => {
+	_worksheet => "work_status",
+	_field_order => [qw(work_id status)],
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1},
+	status          => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "work_status",
+			    list_mutable => 0,
+			    list_insert => qq(INSERT INTO work_status (work_id, status) VALUES (?,?)),
+			    cell_width => 3}},
+
     genres             => {},
 
     instruments        => {
