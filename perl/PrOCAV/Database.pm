@@ -136,7 +136,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments genres dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons);
+my @table_order = qw(works titles composition instruments genres dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
 
 sub table_order {
     @table_order;
@@ -612,6 +612,72 @@ my %schema = (
 			    value_parser => sub { },
 			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)}},
+
+    dates              => {
+	_worksheet => "dates",
+	_field_order => [qw(ID year month day year_approx month_approx day_approx end_year end_month end_day end_year_approx end_month_approx end_day_approx date_text source_table source_id)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	year            => {access => "rw",
+			    data_type => "integer"},
+
+	month           => {access => "rw",
+			    data_type => "integer"},
+
+	day             => {access => "rw",
+			    data_type => "integer"},
+
+	year_approx     => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0},
+
+	month_approx    => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0},
+
+	day_approx      => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0},
+
+	end_year        => {access => "rw",
+			    data_type => "integer"},
+
+	end_month       => {access => "rw",
+			    data_type => "integer"},
+
+	end_day         => {access => "rw",
+			    data_type => "integer"},
+
+	end_year_approx => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0},
+
+	end_month_approx => {access => "rw",
+			     data_type => "boolean",
+			     not_null => 1,
+			     default => 0},
+
+	end_day_approx  => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0},
+
+	date_text       => {access => "rw",
+			    data_type => "string",
+			    width => 255},
+
+	source_table    => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "date_source_tables"},
+
+	source_id       => {access => "rw",
+			    data_type => "integer"}},
 
     media_items        => {},
     remote_media_items => {},
