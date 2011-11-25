@@ -99,11 +99,11 @@ sub add_look_ups {
 	# set the columns to hidden and locked
 	$sheet->set_column($col, $col, undef, $cell_formats{locked}, 1);
 
-	# store the association of this look-up with this column for
-	# this table
+	# store the association of this look-up with this (absolute)
+	# column for this table
 	$look_up_columns{$table}->{$name} =
-	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell(0, $col) . ":" .
-	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell($row, $col);
+	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell(0, $col, 1, 1) . ":" .
+	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell($row, $col, 1, 1);
 
 	$look_up_count++;
     }
@@ -146,10 +146,14 @@ sub add_column {
 	    $sheet->data_validation($row, $col, {validate => 'decimal',
 						 criteria => '>=',
 						 value    => 0});
-	} elsif ($field_info->{data_type} eq "look_up") {
-	    $sheet->data_validation($row, $col, {validate => 'list',
-						 value    => "=" . $look_up_columns{$table}->{$field_info->{look_up}}});
 	}
+    }
+
+    # make look-up fields' cells use data validation
+    if ($field_info->{data_type} eq "look_up") {
+	$sheet->data_validation(1, $col, $MAX_RECORDS, $col,
+				{validate => 'list',
+				 value    => $look_up_columns{$table}->{$field_info->{look_up}}});
     }
 
     # add field name
