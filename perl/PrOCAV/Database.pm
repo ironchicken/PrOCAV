@@ -132,7 +132,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments genres manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons);
+my @table_order = qw(works titles composition instruments genres dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons);
 
 sub table_order {
     @table_order;
@@ -574,8 +574,41 @@ my %schema = (
 			    data_type => "string",
 			    width => 2}},
 
-    dedicated_to       => {},
-    dates              => {},
+    dedicated_to       => {
+	_worksheet => "dedicated_to",
+	_field_order => [qw(ID work_id person_id manuscript_id edition_id dedication_text date_made)],
+
+	ID              => {access => "ro",
+			    primary_key => 1},
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1},
+
+	person_id       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "persons",
+			    not_null => 1},
+
+	manuscript_id   => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "manuscripts"},
+
+	edition_id      => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "editions"},
+
+	dedication_text => {access => "rw",
+			    data_type => "string",
+			    width => 255},
+
+	date_made       => {access => "rw",
+			    data_type => "string",
+			    value_parser => sub { },
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    update => qq(UPDATE dates SET  WHERE ID=?)}},
+
     media_items        => {},
     remote_media_items => {},
     representation_of  => {},
