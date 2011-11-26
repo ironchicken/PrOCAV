@@ -23,7 +23,6 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(create_workbook);
 
 my $workbook;
-my %look_up_columns = ();
 my $MAX_RECORDS = 100;
 
 # package-local cell formats
@@ -44,6 +43,9 @@ sub create_workbook {
     $cell_formats{locked}      = $workbook->add_format(locked => 1, bg_color => 'silver');
     $cell_formats{column_name} = $workbook->add_format(locked => 1, bg_color => 'grey', pattern => 1);
 
+    # add the look-ups
+    create_look_ups();
+
     # create worksheets for the tables
     foreach my $table (Database::table_order()) {
 	my $sheet = create_sheet($table);
@@ -58,26 +60,28 @@ sub create_workbook {
 	}
     }
 
-    # add the look-ups
-    #populate_look_ups();
+    # hide the lookups sheet and activate works
 
+    # FIXME In localc, the works sheet cells are read-only until
+    # another sheet has been visited.
+    my ($lookups, $works) = $workbook->sheets(0, 1);
+    $works->activate();
+    $works->set_first_sheet();
+    $lookups->hide();
+    
     $workbook->close() or die("Could not close workbook file: $filename\n");
 }
 
-sub add_look_ups {
-    my ($table, $sheet, $first_col) = @_;
-    
-    #my $look_ups_sheet = $workbook->add_worksheet("lookups");
-    #$look_ups_sheet->protect("password");
+sub create_look_ups {
+    my $look_ups_sheet = $workbook->add_worksheet("lookups");
+    $look_ups_sheet->protect("password");
 
     my $dbh = Database::make_dbh();
-
-    $look_up_columns{$table} = {};
 
     my $look_up_count = 0;
     foreach my $name (Database::registered_look_ups()) {
 	my $proc = Database::find_look_up($name);
-	my $col = $first_col + $look_up_count;
+	my $col = $look_up_count;
 
 	# $stmt could be either a DBI prepared statement or a list of
 	# hashes. So ->execute it only if it's the former.
@@ -88,7 +92,7 @@ sub add_look_ups {
 	# statement, or use an index if it's a list
 	my $row = 0;
 	while (my $look_up = (ref $stmt eq "DBI::st") ? $stmt->fetchrow_hashref() : $stmt->[$row]) {
-	    $sheet->write($row,
+	    $look_ups_sheet->write($row,
 			  $col,
 			  sprintf("%s [%s]", $look_up->{display}, $look_up->{value}),
 			  $cell_formats{locked});
@@ -97,27 +101,23 @@ sub add_look_ups {
 	}
 
 	# set the columns to hidden and locked
-	$sheet->set_column($col, $col, undef, $cell_formats{locked}, 1);
+	$look_ups_sheet->set_column($col, $col, undef, $cell_formats{locked}, 0);
 
-	# store the association of this look-up with this (absolute)
-	# column for this table
-	$look_up_columns{$table}->{$name} =
+	# create a named range for this look-up
+	$workbook->define_name($name, "=lookups!" .
 	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell(0, $col, 1, 1) . ":" .
-	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell($row, $col, 1, 1);
+	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell($row, $col, 1, 1));
 
 	$look_up_count++;
     }
 }
-
+    
 sub create_sheet {
     my $table = shift;
 
     my $sheet = $workbook->add_worksheet($table);
 
     $sheet->protect("password");
-
-    # add look-ups
-    add_look_ups($table, $sheet, $#{ Database::table_info($table)->{_field_order} } + 1);
 
     # configure the columns
     while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
@@ -166,13 +166,9 @@ sub add_column {
 
     # make look-up fields' cells use data validation
     if ($field_info->{data_type} eq "look_up") {
-	if (not exists $look_up_columns{$table}->{$field_info->{look_up}}) {
-	    die("$table.$field_name requires unknown look_up: " . $field_info->{look_up} . "\n" );
-	}
-
 	$sheet->data_validation(1, $col, $MAX_RECORDS, $col,
 				{validate => 'list',
-				 value    => $look_up_columns{$table}->{$field_info->{look_up}}});
+				 source   => $field_info->{look_up}});
     }
 
     # add field name
