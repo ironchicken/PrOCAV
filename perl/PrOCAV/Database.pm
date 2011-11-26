@@ -124,7 +124,10 @@ my %look_ups = (
 				  $dbh->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM editions ORDER BY score_type)); },
 
     performances         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); }
+				  $dbh->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
+
+    letters              => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters JOIN persons AS s ON letters.signatory = s.ID JOIN persons AS a ON letters.addressee = a.ID JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); }
 
     );
 
@@ -146,7 +149,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works titles composition instruments genres work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
+my @table_order = qw(works musical_information titles composition instruments genres work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
 
 sub table_order {
     @table_order;
@@ -192,6 +195,38 @@ my %schema = (
 	notes           => {access => "rw",
 			    data_type => "string",
 			    cell_width => 10}},
+
+    musical_information => {
+	_worksheet => "musical_information",
+	_field_order => [qw(work_id performance_direction tonic tonic_chromatic mode time_sig_beats time_sig_division)],
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1},
+
+	performance_direction => {access => "rw",
+				  data_type => "string",
+				  width => 128},
+
+	tonic           => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "pitch_classes"},
+
+	tonic_chromatic => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "chromatics"},
+
+	mode            => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "modes"},
+
+	time_sig_beats  => {access => "rw",
+			    data_type => "integer"},
+
+	time_sig_division => {access => "rw",
+			      data_type => "integer"}},
+
     titles => {
 	_worksheet => "titles",
 	_field_order => [qw(ID work_id manuscript_id edition_id person_id title transliteration script language notes)],
