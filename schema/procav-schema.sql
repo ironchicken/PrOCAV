@@ -17,6 +17,16 @@ CREATE TABLE works (
   duration          FLOAT,
   notes             TEXT);
 
+-- works can have some additional information attached to them
+CREATE TABLE musical_information (
+  work_id           INT NOT NULL UNIQUE,
+  performance_direction VARCHAR(128),
+  tonic             ENUM('C','D','E','F','G','A','B'),
+  tonic_chromatic   ENUM('n','b','#'),
+  mode              ENUM('major','minor'),
+  time_sig_beats    INT,
+  time_sig_division INT);
+
 -- works may have additional titles, including in other languages
 CREATE TABLE titles (
   ID                INT PRIMARY KEY auto_increment,
