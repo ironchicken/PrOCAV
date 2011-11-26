@@ -81,6 +81,16 @@ my %look_ups = (
 				   {value => "letters", display => "Letters"},
 				   {value => "manuscripts", display => "Manuscripts"}]; },
 
+    pitch_classes        => sub { [{value => "C", display => "C"}, {value => "D", display => "D"},
+				   {value => "E", display => "E"}, {value => "F", display => "F"},
+				   {value => "G", display => "G"}, {value => "A", display => "A"},
+				   {value => "B", display => "B"}]; },
+
+    chromatics           => sub { [{value => "n", display => "Natural"}, {value => "b", display => "Flat"},
+				   {value => "#", display => "Sharp"}]; },
+
+    modes                => sub { [{value => "major", display => "Major"}, {value => "minor", display => "Minor"}]; },
+
     # Each of the rest of values in this hash is a subroutine
     # reference which should be called with a database handle as an
     # argument. It then returns a prepared statement which SELECTs
