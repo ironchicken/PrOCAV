@@ -166,6 +166,10 @@ sub add_column {
 
     # make look-up fields' cells use data validation
     if ($field_info->{data_type} eq "look_up") {
+	if (not exists $look_up_columns{$table}->{$field_info->{look_up}}) {
+	    die("$table.$field_name requires unknown look_up: " . $field_info->{look_up} . "\n" );
+	}
+
 	$sheet->data_validation(1, $col, $MAX_RECORDS, $col,
 				{validate => 'list',
 				 value    => $look_up_columns{$table}->{$field_info->{look_up}}});
