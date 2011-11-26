@@ -130,14 +130,19 @@ sub add_column {
     my $field_info = Database::table_info($table)->{$field_name};
     if (not defined $field_info) { die "Could not find schema for $table.$field_name\n"; }
 
+    # first check that the combination of options supplied is valid
+
     # set column properties
     $sheet->set_column($col,
 		       undef, #$field_info->{cell_width},
 		       ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
 
+    # set field properties for this column for MAX_RECORDS rows
     foreach my $row (1..$MAX_RECORDS) {
+	# if the access property is "ro" set the cell as locked
 	$sheet->write($row, $col, undef, ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
 
+	# set validation criteria for the data type
 	if ($field_info->{data_type} eq "integer") {
 	    $sheet->data_validation($row, $col, {validate => 'integer',
 						 criteria => '>=',
