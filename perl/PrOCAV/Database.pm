@@ -166,6 +166,7 @@ my %schema = (
     works => {
 	_worksheet => "works",
 	_field_order => [qw(ID catalogue_number uniform_title sub_title part_of parent_relation opus_number opus_suffix duration notes)],
+	_get => qq(SELECT works.ID, catalogue_number, uniform_title, sub_title, part_of, parent_relation, opus_number, opus_suffix, duration, notes FROM works WHERE works.ID=?),
 
 	ID              => {access => "ro",
 			    primary_key => 1,
