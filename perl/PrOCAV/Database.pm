@@ -877,6 +877,18 @@ sub table_info {
     $schema{$table_name};
 }
 
+sub get_record_stmt {
+    my ($dbh, $table) = @_;
+
+    my $sql = $schema{$table}->{_get};
+
+    if (defined $sql) {
+	return $dbh->prepare($sql);
+    } else {
+	die("No get record SQL for $table.\n");
+    }
+}
+    
 sub get_record {
     my ($table, $ID) = @_;
 
