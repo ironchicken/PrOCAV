@@ -13,7 +13,7 @@ use DBI;
 #use Spreadsheet::WriteExcel::Utility;
 use Excel::Writer::XLSX;
 use Excel::Writer::XLSX::Utility;
-use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups table_order table_info);
+use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups table_order table_info get_record_stmt);
 use File::Temp qw(tempfile);
 
 package Ingestion;
@@ -55,10 +55,9 @@ sub create_workbook {
 
 	# add any requested records
 	if (exists $include_records->{$table}) {
-	    my $row = 0;
-	    foreach my $ID ($include_records->{$table}) {
-		push_record($sheet, $row, $table, $ID);
-		$row++;
+	    my $get_stmt = Database::get_record_stmt($dbh, $table);
+	    while (my ($row, $ID) = each @{ $include_records->{$table} }) {
+		push_record($sheet, $row+1, $get_stmt, $table, $ID);
 	    }
 	}
     }
@@ -187,23 +186,14 @@ sub add_column {
 }
 
 sub push_record {
-    my ($sheet, $row, $table, $ID) = @_;
+    my ($sheet, $row, $stmt, $table, $ID) = @_;
 
-    my $record = get_record($table, $ID);
+    $stmt->execute($ID);
+    my $record = $stmt->fetchrow_hashref();
+
     if (defined $record) {
-	my $col = 0;
-	while (my ($field, $value) = each %$record) {
-	    my $field_props = Database::table_info($table)->{$field};
-
-	    my $format = ($field_props->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked};
-
-	    if ($field_props->{data_type} eq "string") {
-		$sheet->write_string($row, $col, $value, $format);
-	    } elsif ($field_props->{data_type} eq "number") {
-		$sheet->write_number($row, $col, $value, $format);
-	    }
-
-	    $col++;
+	while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
+	    $sheet->write($row, $col, $record->{$field_name});
 	}
     }
 }
