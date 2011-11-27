@@ -91,6 +91,13 @@ my %look_ups = (
 
     modes                => sub { [{value => "major", display => "Major"}, {value => "minor", display => "Minor"}]; },
 
+    # FIXME Think about the logic of this; not after X is inclusive of
+    # X, whereas before X is exclusive of X
+    date_accuracy        => sub { [{value => "exactly", display => "Exactly"},
+				   {value => "around", display => "Around"},
+				   {value => "before", display => "Before"},
+				   {value => "after", display => "After"}]; },
+
     # Each of the rest of values in this hash is a subroutine
     # reference which should be called with a database handle as an
     # argument. It then returns a prepared statement which SELECTs
@@ -373,7 +380,7 @@ my %schema = (
 	period_start    => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	work_type       => {access => "rw",
@@ -398,7 +405,7 @@ my %schema = (
 	date_made       => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	editor          => {access => "rw",
@@ -444,7 +451,7 @@ my %schema = (
 	date_published  => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	serial_number   => {access => "rw",
@@ -496,7 +503,7 @@ my %schema = (
 	date_performed  => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	venue_id        => {access => "rw",
@@ -547,13 +554,13 @@ my %schema = (
 	date_composed   => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	date_sent       => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	addressee       => {access => "rw",
@@ -653,7 +660,7 @@ my %schema = (
 	date_made       => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	annotation_of   => {access => "rw",
@@ -768,12 +775,12 @@ my %schema = (
 	date_made       => {access => "rw",
 			    data_type => "string",
 			    value_parser => sub { },
-			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_approx, month_approx, day_approx, end_year, end_month, end_day, end_year_approx, end_month_approx, end_day_approx) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
+			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)}},
 
     dates              => {
 	_worksheet => "dates",
-	_field_order => [qw(ID year month day year_approx month_approx day_approx end_year end_month end_day end_year_approx end_month_approx end_day_approx date_text source_table source_id)],
+	_field_order => [qw(ID year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id)],
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -783,61 +790,67 @@ my %schema = (
 			    data_type => "integer",
 			    cell_width => 8},
 
+	year_accuracy   => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "date_accuracy",
+			    not_null => 1,
+			    default => 'exactly',
+			    cell_width => 8},
+
 	month           => {access => "rw",
 			    data_type => "integer",
+			    cell_width => 8},
+
+	month_accuracy  => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "date_accuracy",
+			    not_null => 1,
+			    default => 'exactly',
 			    cell_width => 8},
 
 	day             => {access => "rw",
 			    data_type => "integer",
 			    cell_width => 8},
 
-	year_approx     => {access => "rw",
-			    data_type => "boolean",
+	day_accuracy    => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "date_accuracy",
 			    not_null => 1,
-			    default => 0,
-			    cell_width => 8},
-
-	month_approx    => {access => "rw",
-			    data_type => "boolean",
-			    not_null => 1,
-			    default => 0,
-			    cell_width => 8},
-
-	day_approx      => {access => "rw",
-			    data_type => "boolean",
-			    not_null => 1,
-			    default => 0,
+			    default => 'exactly',
 			    cell_width => 8},
 
 	end_year        => {access => "rw",
 			    data_type => "integer",
 			    cell_width => 8},
 
+	end_year_accuracy => {access => "rw",
+			      data_type => "look_up",
+			      look_up => "date_accuracy",
+			      not_null => 1,
+			      default => 'exactly',
+			      cell_width => 8},
+
 	end_month       => {access => "rw",
 			    data_type => "integer",
 			    cell_width => 8},
+
+	end_month_accuracy => {access => "rw",
+			       data_type => "look_up",
+			       look_up => "date_accuracy",
+			       not_null => 1,
+			       default => 'exactly',
+			       cell_width => 8},
 
 	end_day         => {access => "rw",
 			    data_type => "integer",
 			    cell_width => 8},
 
-	end_year_approx => {access => "rw",
-			    data_type => "boolean",
-			    not_null => 1,
-			    default => 0,
-			    cell_width => 8},
-
-	end_month_approx => {access => "rw",
-			     data_type => "boolean",
-			     not_null => 1,
-			     default => 0,
-			     cell_width => 8},
-
-	end_day_approx  => {access => "rw",
-			    data_type => "boolean",
-			    not_null => 1,
-			    default => 0,
-			    cell_width => 8},
+	end_day_accuracy  => {access => "rw",
+			      data_type => "look_up",
+			      look_up => "date_accuracy",
+			      not_null => 1,
+			      default => 'exactly',
+			      cell_width => 8},
 
 	date_text       => {access => "rw",
 			    data_type => "string",
