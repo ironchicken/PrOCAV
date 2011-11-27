@@ -131,6 +131,8 @@ sub create_sheet {
     foreach my $row (1..$MAX_RECORDS) {
 	$sheet->set_row($row, 20);
     }
+
+    return $sheet;
 }
 
 sub add_column {
