@@ -44,8 +44,10 @@ sub create_workbook {
     $cell_formats{locked}      = $workbook->add_format(locked => 1, bg_color => 'silver');
     $cell_formats{column_name} = $workbook->add_format(locked => 1, bg_color => 'grey', bold => 1, center_across => 1, shrink => 1);
 
+    my $dbh = Database::make_dbh();
+
     # add the look-ups
-    create_look_ups();
+    create_look_ups($dbh);
 
     # create worksheets for the tables
     foreach my $table (Database::table_order()) {
@@ -74,10 +76,10 @@ sub create_workbook {
 }
 
 sub create_look_ups {
+    my $dbh = shift or Database::make_dbh();
+
     my $look_ups_sheet = $workbook->add_worksheet("lookups");
     $look_ups_sheet->protect("password");
-
-    my $dbh = Database::make_dbh();
 
     my $look_up_count = 0;
     foreach my $name (Database::registered_look_ups()) {
