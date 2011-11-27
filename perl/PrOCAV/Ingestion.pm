@@ -40,8 +40,9 @@ sub create_workbook {
 
     # create some formats
     $cell_formats{unlocked}    = $workbook->add_format(); $cell_formats{unlocked}->set_locked(0);
+    $cell_formats{field_value} = $workbook->add_format(text_wrap => 1, ); $cell_formats{field_value}->set_locked(0);
     $cell_formats{locked}      = $workbook->add_format(locked => 1, bg_color => 'silver');
-    $cell_formats{column_name} = $workbook->add_format(locked => 1, bg_color => 'grey', pattern => 1);
+    $cell_formats{column_name} = $workbook->add_format(locked => 1, bg_color => 'grey', bold => 1, center_across => 1, shrink => 1);
 
     # add the look-ups
     create_look_ups();
@@ -123,6 +124,11 @@ sub create_sheet {
     while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
 	add_column($table, $field_name, $sheet, $col);
     }
+
+    # set row heights
+    foreach my $row (1..$MAX_RECORDS) {
+	$sheet->set_row($row, 20);
+    }
 }
 
 sub add_column {
@@ -133,8 +139,8 @@ sub add_column {
     # first check that the combination of options supplied is valid
 
     # set column properties
-    $sheet->set_column($col,
-		       undef, #$field_info->{cell_width},
+    $sheet->set_column($col, $col,
+		       $field_info->{cell_width},
 		       ($field_info->{access} eq "ro") ? $cell_formats{locked} : $cell_formats{unlocked});
 
     # set field properties for this column for MAX_RECORDS rows
