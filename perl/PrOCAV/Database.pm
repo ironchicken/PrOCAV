@@ -789,6 +789,8 @@ my %schema = (
 
 	year            => {access => "rw",
 			    data_type => "integer",
+			    minimum => 1000,
+			    maximum => 9999,
 			    cell_width => 8},
 
 	year_accuracy   => {access => "rw",
@@ -800,6 +802,8 @@ my %schema = (
 
 	month           => {access => "rw",
 			    data_type => "integer",
+			    minimum => 1,
+			    maximum => 12,
 			    cell_width => 8},
 
 	month_accuracy  => {access => "rw",
@@ -811,6 +815,8 @@ my %schema = (
 
 	day             => {access => "rw",
 			    data_type => "integer",
+			    minimum => 1,
+			    maximum => 31,
 			    cell_width => 8},
 
 	day_accuracy    => {access => "rw",
@@ -822,6 +828,8 @@ my %schema = (
 
 	end_year        => {access => "rw",
 			    data_type => "integer",
+			    minimum => 1000,
+			    maximum => 9999,
 			    cell_width => 8},
 
 	end_year_accuracy => {access => "rw",
@@ -833,6 +841,8 @@ my %schema = (
 
 	end_month       => {access => "rw",
 			    data_type => "integer",
+			    minimum => 1,
+			    maximum => 12,
 			    cell_width => 8},
 
 	end_month_accuracy => {access => "rw",
@@ -844,6 +854,8 @@ my %schema = (
 
 	end_day         => {access => "rw",
 			    data_type => "integer",
+			    minimum => 1,
+			    maximum => 31,
 			    cell_width => 8},
 
 	end_day_accuracy  => {access => "rw",
