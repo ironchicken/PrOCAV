@@ -165,41 +165,58 @@ sub table_order {
 my %schema = (
     works => {
 	_worksheet => "works",
-	_field_order => [qw(ID catalogue_number uniform_title sub_title part_of parent_relation opus_number opus_suffix duration notes)],
-	_get => qq(SELECT works.ID, catalogue_number, uniform_title, sub_title, part_of, parent_relation, opus_number, opus_suffix, duration, notes FROM works WHERE works.ID=?),
-
+	_field_order => [qw(ID catalogue_number uniform_title sub_title part_of parent_relation part_number part_position opus_number opus_suffix duration notes)],
+	_get => qq(SELECT works.ID, catalogue_number, uniform_title, sub_title, part_of, parent_relation, part_number, part_position, opus_number, opus_suffix, duration, notes FROM works WHERE works.ID=?),
 	ID              => {access => "ro",
 			    primary_key => 1,
 			    cell_width => 8},
+
 	catalogue_number => {access => "rw",
 			     data_type => "string",
 			     cell_width => 8},
+
 	uniform_title   => {access => "rw",
 			    data_type => "string",
 			    not_null => 1,
 			    cell_width => 20},
+
 	sub_title       => {access => "rw",
 			    data_type => "string",
 			    cell_width => 20},
+
 	part_of         => {access => "rw",
 			    data_type => "look_up",
 			    look_up => "parent_works",
 			    list_mutable => 0,
 			    cell_width => 40},
+
 	parent_relation => {access => "rw",
 			    data_type => "look_up",
 			    look_up => "parent_relation",
 			    list_mutable => 0,
 			    cell_width => 12},
+
+	part_number     => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    documentation => "For sub-works, the number of this part"},
+
+	part_position   => {access => "rw",
+			    data_type => "integer",
+			    documentation => "For sub-works, the parts will be ordered by this numerical value"},
+
 	opus_number     => {access => "rw",
 			    data_type => "integer",
 			    cell_width => 8},
+
 	opus_suffix     => {access => "rw",
 			    data_type => "string",
 			    cell_width => 8},
+
 	duration        => {access => "rw",
 	  		    data_type => "decimal",
 			    cell_width => 8},
+
 	notes           => {access => "rw",
 			    data_type => "string",
 			    cell_width => 80}},

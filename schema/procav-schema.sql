@@ -12,6 +12,8 @@ CREATE TABLE works (
   sub_title         VARCHAR(255),
   part_of           INT,
   parent_relation   ENUM('movement', 'act', 'scene', 'number'),
+  part_number       VARCHAR(32),
+  part_position     INT,
   opus_number       INT,
   opus_suffix       VARCHAR(8),
   duration          FLOAT,
