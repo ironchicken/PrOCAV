@@ -153,9 +153,23 @@ sub add_column {
 
 	# set validation criteria for the data type
 	if ($field_info->{data_type} eq "integer") {
-	    $sheet->data_validation($row, $col, {validate => 'integer',
-						 criteria => '>=',
-						 value    => 0});
+	    my $validation = {validate => 'integer'};
+	    if (exists $field_info->{minimum} and exists $field_info->{maximum}) {
+		$validation->{criteria} = 'between';
+		$validation->{minimum} = $field_info->{minimum};
+		$validation->{maximum} = $field_info->{maximum};
+	    } elsif (exists $field_info->{minimum}) {
+		$validation->{criteria} = '>=';
+		$validation->{value} = $field_info->{value};
+	    } elsif (exists $field_info->{maximum}) {
+		$validation->{criteria} = '<=';
+		$validation->{value} = $field_info->{value};
+	    } else {
+		$validation->{criteria} = '>=';
+		$validation->{value} = 0;
+	    }
+
+	    $sheet->data_validation($row, $col, $validation);
 	} elsif ($field_info->{data_type} eq "decimal") {
 	    $sheet->data_validation($row, $col, {validate => 'decimal',
 						 criteria => '>=',
