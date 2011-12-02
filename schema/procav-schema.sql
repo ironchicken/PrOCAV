@@ -14,8 +14,6 @@ CREATE TABLE works (
   parent_relation   ENUM('movement', 'act', 'scene', 'number'),
   part_number       VARCHAR(32),
   part_position     INT,
-  opus_number       INT,
-  opus_suffix       VARCHAR(8),
   duration          FLOAT,
   notes             TEXT);
 
@@ -41,6 +39,25 @@ CREATE TABLE titles (
   script            VARCHAR(32),
   `language`        CHAR(2),
   notes             TEXT);
+
+-- multiple catalogues of the works may be defined
+CREATE TABLE catalogues (
+  ID                INT PRIMARY KEY auto_increment,
+  label             VARCHAR(32) NOT NULL UNIQUE,
+  title             VARCHAR(255),
+  notes             TEXT);
+
+-- The "Opus" catalogue is provided as a default
+INSERT INTO catalogues (label, title) VALUES ("Op. ", "Opus numbers");
+
+-- Associates a work with a catalogue number in a given catalogue
+CREATE TABLE catalogue_number (
+  work_id           INT NOT NULL,
+  catalogue_id      INT NOT NULL,
+  `number`          VARCHAR(32) NOT NULL,
+  number_position   INT NOT NULL,
+  suffix            VARCHAR(32),
+  suffix_position   INT);
 
 -- works may have any number of statuses
 CREATE TABLE work_status (
