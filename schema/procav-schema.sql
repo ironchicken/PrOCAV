@@ -54,10 +54,15 @@ CREATE TABLE genres (
   work_id           INT NOT NULL,
   genre             VARCHAR(32) NOT NULL);
 
--- works may require any number of instruments
+-- information about known musical instruments
 CREATE TABLE instruments (
+  instrument        VARCHAR(255) UNIQUE NOT NULL,
+  description       TEXT);
+
+-- works may require any number of instruments
+CREATE TABLE scored_for (
   work_id           INT NOT NULL,
-  instrument        VARCHAR(64) NOT NULL,
+  instrument        VARCHAR(255) NOT NULL,
   `role`            VARCHAR(32));
 
 -- works may be derived from other works
