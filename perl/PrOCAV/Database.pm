@@ -104,10 +104,10 @@ my %look_ups = (
     # rows containing `value` and `display` fields. These results sets
     # can be used as look-ups.
     parent_works         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" Op. ", opus_number),""), IFNULL(opus_suffix,"")) AS display FROM works WHERE part_of IS NULL ORDER BY uniform_title)); },
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_number ON catalogue_number.work_id=works.ID JOIN catalogues ON catalogue_number.catalogue_id=catalogues.ID WHERE part_of IS NULL ORDER BY uniform_title)); },
 
     all_works            => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" Op. ", opus_number),""), IFNULL(opus_suffix,"")) AS display FROM works ORDER BY uniform_title)); },
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_number ON catalogue_number.work_id=works.ID JOIN catalogues ON catalogue_number.catalogue_id=catalogues.ID ORDER BY uniform_title)); },
 
     genres               => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT DISTINCT genre AS value, genre AS display FROM genres ORDER BY genre)); },
@@ -134,7 +134,10 @@ my %look_ups = (
 				  $dbh->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
 
     letters              => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters JOIN persons AS s ON letters.signatory = s.ID JOIN persons AS a ON letters.addressee = a.ID JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); }
+				  $dbh->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters JOIN persons AS s ON letters.signatory = s.ID JOIN persons AS a ON letters.addressee = a.ID JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
+
+    catalogues           => sub { my $dbh = shift;
+				  $dbh->prepare(qq(SELECT ID AS value, label AS display FROM catalogues ORDER BY label)); }
 
     );
 
@@ -156,7 +159,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works musical_information titles composition instruments genres work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons dates);
+my @table_order = qw(works musical_information catalogue_numbers titles composition instruments genres work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates);
 
 sub table_order {
     @table_order;
@@ -165,8 +168,8 @@ sub table_order {
 my %schema = (
     works => {
 	_worksheet => "works",
-	_field_order => [qw(ID catalogue_number uniform_title sub_title part_of parent_relation part_number part_position opus_number opus_suffix duration notes)],
-	_get => qq(SELECT works.ID, catalogue_number, uniform_title, sub_title, part_of, parent_relation, part_number, part_position, opus_number, opus_suffix, duration, notes FROM works WHERE works.ID=?),
+	_field_order => [qw(ID catalogue_number uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
+
 	ID              => {access => "ro",
 			    primary_key => 1,
 			    cell_width => 8},
@@ -204,14 +207,6 @@ my %schema = (
 	part_position   => {access => "rw",
 			    data_type => "integer",
 			    documentation => "For sub-works, the parts will be ordered by this numerical value"},
-
-	opus_number     => {access => "rw",
-			    data_type => "integer",
-			    cell_width => 8},
-
-	opus_suffix     => {access => "rw",
-			    data_type => "string",
-			    cell_width => 8},
 
 	duration        => {access => "rw",
 	  		    data_type => "decimal",
@@ -300,6 +295,41 @@ my %schema = (
 			    data_type => "string",
 			    cell_width => 80}},
 
+    catalogue_numbers  => {
+	_worksheet => "catalogue_numbers",
+	_field_order => [qw(work_id catalogue_id number number_position suffix suffix_position)],
+
+	work_id         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "all_works",
+			    not_null => 1,
+			    cell_width => 40},
+
+	catalogue_id    => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "catalogues",
+			    not_null => 1,
+			    cell_width => 20},
+
+	number          => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	number_position => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	suffix          => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 8},
+
+	suffix_position => {access => "rw",
+			    data_type => "integer",
+			    cell_width => 8}},
+	
     work_status        => {
 	_worksheet => "work_status",
 	_field_order => [qw(work_id status)],
@@ -795,6 +825,28 @@ my %schema = (
 			    value_parser => sub { },
 			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    update => qq(UPDATE dates SET  WHERE ID=?)}},
+
+    catalogues         => {
+	_worksheet => "catalogues",
+	_field_order => [qw(ID label title notes)],
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	label           => {access => "rw",
+			    data_type => "string",
+			    unique => 1,
+			    width => 32,
+			    cell_width => 20},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 30},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     dates              => {
 	_worksheet => "dates",
