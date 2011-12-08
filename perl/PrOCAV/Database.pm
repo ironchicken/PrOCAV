@@ -218,7 +218,7 @@ my %schema = (
 
     musical_information => {
 	_worksheet => "musical_information",
-	_field_order => [qw(work_id performance_direction tonic tonic_chromatic mode time_sig_beats time_sig_division)],
+	_field_order => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division)],
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -230,6 +230,12 @@ my %schema = (
 				  data_type => "string",
 				  width => 128,
 				  cell_width => 15},
+
+	key_signature   => {access => "rw",
+			    data_type => "integer",
+			    minimum => -7,
+			    maximum => 7,
+			    cell_width => 8},
 
 	tonic           => {access => "rw",
 			    data_type => "look_up",

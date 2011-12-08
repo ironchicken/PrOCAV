@@ -21,6 +21,7 @@ CREATE TABLE works (
 CREATE TABLE musical_information (
   work_id           INT NOT NULL UNIQUE,
   performance_direction VARCHAR(128),
+  key_signature     INT,
   tonic             ENUM('C','D','E','F','G','A','B'),
   tonic_chromatic   ENUM('n','b','#'),
   mode              ENUM('major','minor'),
