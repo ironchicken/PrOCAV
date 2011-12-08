@@ -113,7 +113,7 @@ my %look_ups = (
 				  $dbh->prepare(qq(SELECT DISTINCT genre AS value, genre AS display FROM genres ORDER BY genre)); },
 
     instruments          => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT DISTINCT instrument AS value, instrument AS display FROM instruments ORDER BY instrument)); },
+				  $dbh->prepare(qq(SELECT instrument AS value, instrument AS display FROM instruments ORDER BY instrument)); },
 
     manuscripts          => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
@@ -159,7 +159,7 @@ sub find_look_up {
 # uniform_titles column of the "works" worksheet, plus a pre-defined
 # list of uniform_titles taken from the database.
 
-my @table_order = qw(works musical_information catalogue_numbers titles composition instruments genres work_status dedicated_to manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates);
+my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates);
 
 sub table_order {
     @table_order;
@@ -365,8 +365,8 @@ my %schema = (
 			    look_up => "genres",
 			    cell_width => 8}},
 
-    instruments        => {
-	_worksheet => "instruments",
+    scored_for         => {
+	_worksheet => "scored_for",
 	_field_order => [qw(work_id instrument role)],
 
 	work_id         => {access => "rw",
@@ -378,7 +378,6 @@ my %schema = (
 	instrument      => {access => "rw",
 	 		    data_type => "look_up",
 			    look_up => "instruments",
-	 		    list_mutable => 1,
 			    not_null => 1,
 			    cell_width => 10},
 
@@ -435,6 +434,21 @@ my %schema = (
 			    data_type => "look_up",
 			    look_up => "work_types",
 			    cell_width => 10}},
+
+    instruments        => {
+	_worksheet => "instruments",
+	_field_order => [qw(instrument description)],
+
+	instrument      => {access => "rw",
+			    data_type => "string",
+			    not_null => 1,
+			    unique => 1,
+			    width => 255,
+			    cell_width => 15},
+
+	description     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     editions           => {
 	_worksheet => "editions",
