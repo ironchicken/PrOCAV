@@ -1042,7 +1042,7 @@ $schema{catalogue_number}->{_exists} = $dbh->prepare_cached(
 
 ### WORK_STATUS TABLE
 $schema{work_status_status}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT work_id FROM work_status_status WHERE work_id=? LIMIT 1/
+    qq/SELECT work_id FROM work_status WHERE work_id=? AND status=? LIMIT 1/
     );
 
 ### GENRES TABLE
