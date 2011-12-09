@@ -167,6 +167,7 @@ my %schema = (
     works => {
 	_worksheet => "works",
 	_field_order => [qw(ID catalogue_number uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
+	_unique_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
