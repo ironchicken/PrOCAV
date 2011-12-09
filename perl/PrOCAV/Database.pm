@@ -1153,8 +1153,7 @@ use Data::Dumper;
 sub record_exists {
     my ($table, $record) = @_;
 
-    # FIXME _unique_field may be a list of field names
-    $schema{$table}->{_exists}->execute($record->{$schema{$table}->{_unique_field}});
+    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_field} }});
     return defined $schema{$table}->{_exists}->fetchrow_arrayref;
 }
 
