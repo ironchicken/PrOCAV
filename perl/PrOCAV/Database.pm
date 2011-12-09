@@ -1130,15 +1130,19 @@ sub get_record {
 use Data::Dumper;
 
 sub record_exists {
-    print "exists? " . Dumper(@_[2]) . "\n";
+    my ($table, $record) = @_;
+
+    # FIXME _unique_field may be a list of field names
+    $schema{$table}->{_exists}->execute($record->{$schema{$table}->{_unique_field}});
+    return defined $schema{$table}->{_exists}->fetchrow_arrayref;
 }
 
 sub insert_record {
-    print "INSERT INTO " . @_[1] . " " . Dumper(@_[2]) . "\n";
+    print "INSERT INTO " . @_[0] . " " . Dumper(@_[1]) . "\n";
 }
 
 sub update_record {
-    print "UPDATE " . @_[1] . " " . Dumper(@_[2]) . "\n";
+    print "UPDATE " . @_[0] . " " . Dumper(@_[1]) . "\n";
 }
 
 sub insert_work { }
