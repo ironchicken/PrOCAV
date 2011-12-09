@@ -7,7 +7,6 @@ USE procav;
 -- musical works by Prokofiev
 CREATE TABLE works (
   ID                INT PRIMARY KEY auto_increment,
-  catalogue_number  VARCHAR(32) UNIQUE,
   uniform_title     VARCHAR(255) NOT NULL,
   sub_title         VARCHAR(255),
   part_of           INT,
