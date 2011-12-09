@@ -13,7 +13,9 @@ use DBI;
 #use Spreadsheet::WriteExcel::Utility;
 use Excel::Writer::XLSX;
 use Excel::Writer::XLSX::Utility;
-use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups table_order table_info get_record_stmt);
+use Spreadsheet::XLSX;
+use Text::Iconv;
+use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info get_record_stmt);
 use File::Temp qw(tempfile);
 
 package Ingestion;
@@ -210,6 +212,65 @@ sub push_record {
 	    $sheet->write($row, $col, $record->{$field_name});
 	}
     }
+}
+
+sub ingest_workbook {
+    my $dbh; my $workbook_filename;
+    if (@_ == 2) {
+	($dbh, $workbook_filename) = @_;
+    } elsif (@_ == 1) {
+	$workbook_filename = shift;
+	$dbh = Database::make_dbh();
+    }
+
+    my $converter = Text::Iconv->new("utf-8", "windows-1251");
+    my $workbook = Spreadsheet::XLSX->new($workbook_filename, $converter);
+
+    if (not defined $workbook) { die("Could not parse $workbook_filename\n"); }
+
+    foreach my $table (Database::table_order()) {
+	ingest_worksheet($dbh, $workbook, $table, $workbook->worksheet($table)) or die("Could not parse sheet $table\n");
+    }
+}
+
+# parse_look_up_value takes a text string as found in a look-up cell
+# value and returns the field value from that string
+sub parse_look_up_value { @_[0] =~ /.*\[([^\]]+)\]$/; $1; }
+
+sub ingest_worksheet {
+    my ($dbh, $workbook, $table, $sheet) = @_;
+
+    my ($row_min, $row_max) = $sheet->row_range();
+    my ($col_min, $col_max) = $sheet->col_range();
+
+    # check that all the columns are present and are in the right
+    # order
+    while (my ($col, $head) = each @{ Database::table_info($table)->{_field_order} }) {
+	next unless ($sheet->get_cell($row_min, $col)->value() ne $head);
+	die("In sheet for $table, column #$col should be '$head', got " . $sheet->get_cell($row_min, $col)->value());
+    }
+
+    foreach my $row ($row_min + 1 .. $row_max) {
+	# make a hash of the current row, mapping column (field) names
+	# to the values in the row
+	my %record;
+	while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
+	    my $cell = $sheet->get_cell($row, $col);
+	    if (defined $cell) {
+		if (Database::is_look_up($table, $field_name)) { $record{$field_name} = parse_look_up_value($cell->value()); }
+		else { $record{$field_name} = $cell->value(); }
+	    } else { $record{$field_name} = undef; }
+	}
+
+	# update or insert the record
+	if (Database::record_exists($dbh, $table, \%record)) {
+	    Database::update_record(($dbh, $table, \%record));
+	} else {
+	    Database::insert_record(($dbh, $table, \%record));
+	}
+    }
+
+    return 1;
 }
 
 1;

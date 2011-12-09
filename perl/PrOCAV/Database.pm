@@ -973,6 +973,10 @@ my %schema = (
     representation_of  => {},
     resources          => {},
     resource_about     => {});
+sub is_look_up {
+    my ($table, $field_name) = @_;
+    $schema{$table}->{$field_name}->{data_type} eq "look_up";
+}
 
 sub table_info {
     my $table_name = shift;
