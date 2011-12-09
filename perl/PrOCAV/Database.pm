@@ -31,7 +31,10 @@ sub make_dbh {
 	or die ("Could not connect to database.\n");
 }
 
-# Named look-ups. 
+#################################################################################################################
+#### NAMED LOOK-UPS
+#################################################################################################################
+
 my %look_ups = (
     # The first values in this hash are subroutines which return a
     # list of hashes containing `value` and `display` fields. (They
@@ -150,14 +153,9 @@ sub find_look_up {
     $look_ups{$look_up_name};
 }
 
-# FIXME Think about all the properties a field will need. For example,
-# when a new work is added to the spreadsheet, its uniform_title will
-# need to be available to any spreadsheet cell which provides a
-# uniform_title lookup. The implication is that fields need "accessor
-# methods" which should be functions to be executed by the
-# spreadsheet. A solution could be that the look-up cells use the
-# uniform_titles column of the "works" worksheet, plus a pre-defined
-# list of uniform_titles taken from the database.
+#################################################################################################################
+#### DATABASE SCHEMA
+#################################################################################################################
 
 my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates);
 
@@ -973,6 +971,7 @@ my %schema = (
     representation_of  => {},
     resources          => {},
     resource_about     => {});
+
 sub is_look_up {
     my ($table, $field_name) = @_;
     $schema{$table}->{$field_name}->{data_type} eq "look_up";
@@ -1047,3 +1046,8 @@ sub get_work {
 }
 
 1;
+
+#################################################################################################################
+#### DATA ACCESS/MANIPULATION FUNCTIONS
+#################################################################################################################
+
