@@ -1003,8 +1003,19 @@ sub get_record {
     }
 }
 
-sub insert_record { }
+use Data::Dumper;
 
+sub record_exists {
+    print "exists? " . Dumper(@_[2]) . "\n";
+}
+
+sub insert_record {
+    print "INSERT INTO " . @_[1] . " " . Dumper(@_[2]) . "\n";
+}
+
+sub update_record {
+    print "UPDATE " . @_[1] . " " . Dumper(@_[2]) . "\n";
+}
 
 sub insert_work { }
 
