@@ -57,7 +57,7 @@ sub create_workbook {
 
 	# add any requested records
 	if (exists $include_records->{$table}) {
-	    my $get_stmt = Database::get_record_stmt($dbh, $table);
+	    my $get_stmt = Database::get_record_stmt($table);
 	    while (my ($row, $ID) = each @{ $include_records->{$table} }) {
 		push_record($sheet, $row+1, $get_stmt, $table, $ID);
 	    }

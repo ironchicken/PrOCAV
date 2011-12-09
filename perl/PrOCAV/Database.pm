@@ -1129,16 +1129,11 @@ $schema{dedicated_to}->{_exists} = $dbh->prepare_cached(
 $schema{dates}->{_exists} = $dbh->prepare_cached(
     qq/SELECT dates.ID FROM dates WHERE ID=? LIMIT 1/
     );
-sub get_record_stmt {
-    my ($dbh, $table) = @_;
 
     my $sql = $schema{$table}->{_get};
 
-    if (defined $sql) {
-	return $dbh->prepare($sql);
-    } else {
-	die("No get record SQL for $table.\n");
-    }
+sub get_record_stmt {
+    $schema{$_[0]}->{_get};
 }
     
 sub get_record {
