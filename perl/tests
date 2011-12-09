@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use strict;
+use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
+
+sub test_create_workbook {
+    Ingestion::create_workbook({works => [1,2,3,4,5]});
+}
+
+sub test_ingest_workbook {
+    Ingestion::ingest_workbook("../../test16.xlsx");
+}
+    
+sub main {
+    #test_create_workbook;
+    test_ingest_workbook;
+}
+
+main;
