@@ -167,7 +167,7 @@ my %schema = (
     works => {
 	_worksheet => "works",
 	_field_order => [qw(ID uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -215,7 +215,7 @@ my %schema = (
     musical_information => {
 	_worksheet => "musical_information",
 	_field_order => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division)],
-	_unique_field => [qw(work_id)],
+	_unique_fields => [qw(work_id)],
 	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
@@ -261,7 +261,7 @@ my %schema = (
     titles => {
 	_worksheet => "titles",
 	_field_order => [qw(ID work_id manuscript_id edition_id person_id title transliteration script language notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -304,7 +304,7 @@ my %schema = (
     catalogue_numbers  => {
 	_worksheet => "catalogue_numbers",
 	_field_order => [qw(work_id catalogue_id number number_position suffix suffix_position)],
-	_unique_field => [qw(work_id)],
+	_unique_fields => [qw(work_id)],
 	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
@@ -341,7 +341,7 @@ my %schema = (
     work_status        => {
 	_worksheet => "work_status",
 	_field_order => [qw(work_id status)],
-	_unique_field => [qw(work_id status)],
+	_unique_fields => [qw(work_id status)],
 	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
@@ -359,7 +359,7 @@ my %schema = (
     genres             => {
 	_worksheet => "genres",
 	_field_order => [qw(ID work_id genre)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -380,7 +380,7 @@ my %schema = (
     scored_for         => {
 	_worksheet => "scored_for",
 	_field_order => [qw(work_id instrument role)],
-	_unique_field => [qw(work_id instrument role)],
+	_unique_fields => [qw(work_id instrument role)],
 	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
@@ -402,7 +402,7 @@ my %schema = (
     derived_from       => {
 	_worksheet => "derived_from",
 	_field_order => [qw(precusor_work derived_work derivation_relation)],
-	_unique_field => [qw(precusor_work derived_work derivation_relation)],
+	_unique_fields => [qw(precusor_work derived_work derivation_relation)],
 	_single_select_field => "precusor_work",
 
 	precusor_work   => {access => "rw",
@@ -427,7 +427,7 @@ my %schema = (
     composition        => {
 	_worksheet => "composition",
 	_field_order => [qw(ID work_id manuscript_id period_start work_type)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -460,7 +460,7 @@ my %schema = (
     instruments        => {
 	_worksheet => "instruments",
 	_field_order => [qw(instrument description)],
-	_unique_field => [qw(instrument)],
+	_unique_fields => [qw(instrument)],
 	_single_select_field => "instrument",
 
 	instrument      => {access => "rw",
@@ -477,7 +477,7 @@ my %schema = (
     editions           => {
 	_worksheet => "editions",
 	_field_order => [qw(ID work_id date_made editor score_type work_extent notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -518,7 +518,7 @@ my %schema = (
     publications       => {
 	_worksheet => "publications",
 	_field_order => [qw(ID title publisher publication_place date_published serial_number notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -555,7 +555,7 @@ my %schema = (
     published_in       => {
 	_worksheet => "published_in",
 	_field_order => [qw(edition_id publication_id edition_extent publication_range)],
-	_unique_field => [qw(edition_id publication_id)],
+	_unique_fields => [qw(edition_id publication_id)],
 	_single_select_field => "edition_id",
 
 	edition_id      => {access => "rw",
@@ -581,7 +581,7 @@ my %schema = (
     performances       => {
 	_worksheet => "performances",
 	_field_order => [qw(ID work_id date_performed venue_id performance_type notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -616,7 +616,7 @@ my %schema = (
     performed_in       => {
 	_worksheet => "performed_in",
 	_field_order => [qw(person_id performance_id role)],
-	_unique_field => [qw(person_id performance_id role)],
+	_unique_fields => [qw(person_id performance_id role)],
 	_single_select_field => "person_id",
 
 	person_id       => {access => "rw",
@@ -638,7 +638,7 @@ my %schema = (
     letters            => {
 	_worksheet => "letters",
 	_field_order => [qw(ID letters_db_ID date_composed date_sent addressee signatory original_text english_text)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -682,7 +682,7 @@ my %schema = (
     letter_mentions    => {
 	_worksheet => "letter_mentions",
 	_field_order => [qw(ID letter_id letter_range mentioned_table mentioned_id mentioned_extent notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -721,7 +721,7 @@ my %schema = (
     manuscripts        => {
 	_worksheet => "manuscripts",
 	_field_order => [qw(ID title purpose physical_size medium extent missing date_made annotation_of location notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -782,7 +782,7 @@ my %schema = (
     texts              => {
 	_worksheet => "texts",
 	_field_order => [qw(ID title author language original_content english_content)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -816,7 +816,7 @@ my %schema = (
     persons            => {
 	_worksheet => "persons",
 	_field_order => [qw(ID given_name family_name sex nationality)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -846,7 +846,7 @@ my %schema = (
     dedicated_to       => {
 	_worksheet => "dedicated_to",
 	_field_order => [qw(ID work_id person_id manuscript_id edition_id dedication_text date_made)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -889,7 +889,7 @@ my %schema = (
     catalogues         => {
 	_worksheet => "catalogues",
 	_field_order => [qw(ID label title notes)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -913,7 +913,7 @@ my %schema = (
     dates              => {
 	_worksheet => "dates",
 	_field_order => [qw(ID year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id)],
-	_unique_field => [qw(ID)],
+	_unique_fields => [qw(ID)],
 	_single_select_field => "ID",
 
 	ID              => {access => "ro",
@@ -1040,7 +1040,7 @@ foreach my $table (@table_order) {
 	sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
 		$schema{$table}->{_single_select_field},
 		$table,
-		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_field} })));
+		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
     
     # prepare _match_all statement
     $schema{$table}->{_match_all} = $dbh->prepare_cached(
@@ -1082,7 +1082,7 @@ use Data::Dumper;
 sub record_exists {
     my ($table, $record) = @_;
 
-    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_field} }});
+    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_fields} }});
     return defined $schema{$table}->{_exists}->fetchrow_arrayref;
 }
 
@@ -1090,7 +1090,7 @@ sub record_different {
     my ($table, $record) = @_;
 
     # if the record exists ...
-    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_field} }});
+    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_fields} }});
     if (defined $schema{$table}->{_exists}->fetchrow_arrayref) {
 	# ... but does not match the given $record in *every* field,
 	# then return TRUE
