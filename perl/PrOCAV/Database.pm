@@ -1094,6 +1094,13 @@ foreach my $table (@table_order) {
 		$schema{$table}->{_single_select_field},
 		$table,
 		join(" AND ", map { "($_=? OR ($_ IS NULL AND ?=1))"; } @{ $schema{$table}->{_field_order} })));
+
+    # prepare _insert statement
+    $schema{$table}->{_insert} = $dbh->prepare_cached(
+	sprintf(qq/INSERT INTO %s (%s) VALUES (%s)/,
+		$table,
+		join(",", @{ $schema{$table}->{_insert_fields} }),
+		join(",", (("?") x scalar @{ $schema{$table}->{_insert_fields} }))));
 }
 
 
@@ -1154,7 +1161,11 @@ sub record_different {
 }
 
 sub insert_record {
-    print "INSERT INTO " . @_[0] . " " . Dumper(@_[1]) . "\n";
+    my ($table, $record) = @_;
+
+    $schema{$table}->{_insert}->execute(@{ $record }{@{ $schema{$table}->{_insert_fields} }})
+	or die $schema{$table}->{_insert}->errstr;
+    1;
 }
 
 sub update_record {
