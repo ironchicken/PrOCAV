@@ -168,6 +168,7 @@ my %schema = (
 	_worksheet => "works",
 	_field_order => [qw(ID uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -215,6 +216,7 @@ my %schema = (
 	_worksheet => "musical_information",
 	_field_order => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division)],
 	_unique_field => [qw(work_id)],
+	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -260,6 +262,7 @@ my %schema = (
 	_worksheet => "titles",
 	_field_order => [qw(ID work_id manuscript_id edition_id person_id title transliteration script language notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -302,6 +305,7 @@ my %schema = (
 	_worksheet => "catalogue_numbers",
 	_field_order => [qw(work_id catalogue_id number number_position suffix suffix_position)],
 	_unique_field => [qw(work_id)],
+	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -338,6 +342,7 @@ my %schema = (
 	_worksheet => "work_status",
 	_field_order => [qw(work_id status)],
 	_unique_field => [qw(work_id status)],
+	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -355,6 +360,7 @@ my %schema = (
 	_worksheet => "genres",
 	_field_order => [qw(ID work_id genre)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -375,6 +381,7 @@ my %schema = (
 	_worksheet => "scored_for",
 	_field_order => [qw(work_id instrument role)],
 	_unique_field => [qw(work_id instrument role)],
+	_single_select_field => "work_id",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -396,6 +403,7 @@ my %schema = (
 	_worksheet => "derived_from",
 	_field_order => [qw(precusor_work derived_work derivation_relation)],
 	_unique_field => [qw(precusor_work derived_work derivation_relation)],
+	_single_select_field => "precusor_work",
 
 	precusor_work   => {access => "rw",
 			    data_type => "look_up",
@@ -420,6 +428,7 @@ my %schema = (
 	_worksheet => "composition",
 	_field_order => [qw(ID work_id manuscript_id period_start work_type)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -452,6 +461,7 @@ my %schema = (
 	_worksheet => "instruments",
 	_field_order => [qw(instrument description)],
 	_unique_field => [qw(instrument)],
+	_single_select_field => "instrument",
 
 	instrument      => {access => "rw",
 			    data_type => "string",
@@ -468,6 +478,7 @@ my %schema = (
 	_worksheet => "editions",
 	_field_order => [qw(ID work_id date_made editor score_type work_extent notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -508,6 +519,7 @@ my %schema = (
 	_worksheet => "publications",
 	_field_order => [qw(ID title publisher publication_place date_published serial_number notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -544,6 +556,7 @@ my %schema = (
 	_worksheet => "published_in",
 	_field_order => [qw(edition_id publication_id edition_extent publication_range)],
 	_unique_field => [qw(edition_id publication_id)],
+	_single_select_field => "edition_id",
 
 	edition_id      => {access => "rw",
 			    data_type => "look_up",
@@ -569,6 +582,7 @@ my %schema = (
 	_worksheet => "performances",
 	_field_order => [qw(ID work_id date_performed venue_id performance_type notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -603,6 +617,7 @@ my %schema = (
 	_worksheet => "performed_in",
 	_field_order => [qw(person_id performance_id role)],
 	_unique_field => [qw(person_id performance_id role)],
+	_single_select_field => "person_id",
 
 	person_id       => {access => "rw",
 			    data_type => "look_up",
@@ -624,6 +639,7 @@ my %schema = (
 	_worksheet => "letters",
 	_field_order => [qw(ID letters_db_ID date_composed date_sent addressee signatory original_text english_text)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -667,6 +683,7 @@ my %schema = (
 	_worksheet => "letter_mentions",
 	_field_order => [qw(ID letter_id letter_range mentioned_table mentioned_id mentioned_extent notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -705,6 +722,7 @@ my %schema = (
 	_worksheet => "manuscripts",
 	_field_order => [qw(ID title purpose physical_size medium extent missing date_made annotation_of location notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -765,6 +783,7 @@ my %schema = (
 	_worksheet => "texts",
 	_field_order => [qw(ID title author language original_content english_content)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -798,6 +817,7 @@ my %schema = (
 	_worksheet => "persons",
 	_field_order => [qw(ID given_name family_name sex nationality)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -827,6 +847,7 @@ my %schema = (
 	_worksheet => "dedicated_to",
 	_field_order => [qw(ID work_id person_id manuscript_id edition_id dedication_text date_made)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -869,6 +890,7 @@ my %schema = (
 	_worksheet => "catalogues",
 	_field_order => [qw(ID label title notes)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -892,6 +914,7 @@ my %schema = (
 	_worksheet => "dates",
 	_field_order => [qw(ID year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id)],
 	_unique_field => [qw(ID)],
+	_single_select_field => "ID",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
