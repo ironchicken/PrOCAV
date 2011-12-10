@@ -1034,120 +1034,27 @@ sub table_info {
 
 my $dbh = make_dbh();
 
-### WORKS TABLE
-$schema{works}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT works.ID FROM works WHERE ID=? LIMIT 1/
-    );
+foreach my $table (@table_order) {
+    # prepare _exists statement
+    $schema{$table}->{_exists} = $dbh->prepare_cached(
+	sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
+		$schema{$table}->{_single_select_field},
+		$table,
+		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_field} })));
+    
+    # prepare _match_all statement
+    $schema{$table}->{_match_all} = $dbh->prepare_cached(
+	sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
+		$schema{$table}->{_single_select_field},
+		$table,
+		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_field_order} })));
+}
 
-### MUSICAL_INFORMATION TABLE
-$schema{musical_information}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT work_id FROM musical_information WHERE work_id=? LIMIT 1/
-    );
 
-### TITLES TABLE
-$schema{titles}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT titles.ID FROM titles WHERE ID=? LIMIT 1/
-    );
 
-### CATALOGUES TABLE
-$schema{catalogues}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT catalogues.ID FROM catalogues WHERE ID=? LIMIT 1/
-    );
 
-### CATALOGUE_NUMBER TABLE
-$schema{catalogue_number}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT work_id FROM catalogue_number WHERE work_id=? LIMIT 1/
-    );
 
-### WORK_STATUS TABLE
-$schema{work_status_status}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT work_id FROM work_status WHERE work_id=? AND status=? LIMIT 1/
-    );
 
-### GENRES TABLE
-$schema{genres}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT genres.ID FROM genres WHERE ID=? LIMIT 1/
-    );
-
-### INSTRUMENTS TABLE
-$schema{instruments}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT instrument FROM instruments WHERE instrument=? LIMIT 1/
-    );
-
-### SCORED_FOR TABLE
-$schema{scored_for}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT work_id FROM scored_for WHERE work_id=? AND instrument=? AND role=? LIMIT 1/
-    );
-
-### DERIVED_FROM TABLE
-$schema{derived_from}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT precursor_work FROM derived_from WHERE precursor_work=? AND derived_work=? AND derivation_relation=? LIMIT 1/
-    );
-
-### COMPOSITION TABLE
-$schema{composition}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT composition.ID FROM composition WHERE ID=? LIMIT 1/
-    );
-
-### EDITIONS TABLE
-$schema{editions}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT editions.ID FROM editions WHERE ID=? LIMIT 1/
-    );
-
-### PUBLICATIONS TABLE
-$schema{publications}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT publications.ID FROM publications WHERE ID=? LIMIT 1/
-    );
-
-### PUBLISHED_IN TABLE
-$schema{published_in}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT edition_id FROM published_in WHERE edition_id=? AND publication_id=? LIMIT 1/
-    );
-
-### PERFORMANCES TABLE
-$schema{performances}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT performances.ID FROM performances WHERE ID=? LIMIT 1/
-    );
-
-### PERFORMED_IN TABLE
-$schema{performed_in}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT person_id FROM performed_in WHERE person_id=? AND performance_id=? AND role=? LIMIT 1/
-    );
-
-### LETTERS TABLE
-$schema{letters}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT letters.ID FROM letters WHERE ID=? LIMIT 1/
-    );
-
-### LETTER_MENTIONS TABLE
-$schema{letter_mentions}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT letter_mentions.ID FROM letter_mentions WHERE ID=? LIMIT 1/
-    );
-
-### MANUSCRIPTS TABLE
-$schema{manuscripts}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT manuscripts.ID FROM manuscripts WHERE ID=? LIMIT 1/
-    );
-
-### TEXTS TABLE
-$schema{texts}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT texts.ID FROM texts WHERE ID=? LIMIT 1/
-    );
-
-### PERSONS TABLE
-$schema{persons}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT persons.ID FROM persons WHERE ID=? LIMIT 1/
-    );
-
-### DEDICATED_TO TABLE
-$schema{dedicated_to}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT dedicated_to.ID FROM dedicated_to WHERE ID=? LIMIT 1/
-    );
-
-### DATES TABLE
-$schema{dates}->{_exists} = $dbh->prepare_cached(
-    qq/SELECT dates.ID FROM dates WHERE ID=? LIMIT 1/
-    );
 
     my $sql = $schema{$table}->{_get};
 
