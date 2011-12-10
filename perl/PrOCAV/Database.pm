@@ -1047,7 +1047,7 @@ foreach my $table (@table_order) {
 	sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
 		$schema{$table}->{_single_select_field},
 		$table,
-		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_field_order} })));
+		join(" AND ", map { "($_=? OR ($_ IS NULL AND ?=1))"; } @{ $schema{$table}->{_field_order} })));
 }
 
 
@@ -1081,6 +1081,27 @@ sub record_exists {
 
     $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_field} }});
     return defined $schema{$table}->{_exists}->fetchrow_arrayref;
+}
+
+sub record_different {
+    my ($table, $record) = @_;
+
+    # if the record exists ...
+    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_field} }});
+    if (defined $schema{$table}->{_exists}->fetchrow_arrayref) {
+	# ... but does not match the given $record in *every* field,
+	# then return TRUE
+	my @args = ();
+	foreach my $value (@{ $record }{@{ $schema{$table}->{_field_order} }}) {
+	    push @args, ($value, (defined $value) ? 0 : 1);
+	}
+	$schema{$table}->{_match_all}->execute(@args);
+
+	return not defined $schema{$table}->{_match_all}->fetchrow_arrayref;
+    } else {
+	# if the record does not exist, return FALSE
+	return 0;
+    }
 }
 
 sub insert_record {

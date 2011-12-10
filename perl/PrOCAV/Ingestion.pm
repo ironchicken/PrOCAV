@@ -263,9 +263,9 @@ sub ingest_worksheet {
 	}
 
 	# update or insert the record
-	if (Database::record_exists($table, \%record)) {
+	if (Database::record_different($table, \%record)) {
 	    Database::update_record(($table, \%record));
-	} else {
+	} elsif (not Database::record_exists($table, \%record)) {
 	    Database::insert_record(($table, \%record));
 	}
     }
