@@ -24,6 +24,7 @@ my $TEMPLATES_DIR = "../../web/editor";
 
 our %login = (
     uri_pattern => qr/^\/login/,
+    required_parameters => [qw(login_name password)],
     handle => sub {
 	my ($r, $req) = @_;
 
