@@ -14,7 +14,7 @@ package Database;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(make_dbh get_record insert_record find_look_up registered_look_ups table_info table_order);
+our @EXPORT_OK = qw(make_dbh get_record insert_record find_look_up registered_look_ups table_info table_order session create_session);
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
@@ -1110,10 +1110,37 @@ foreach my $table (@table_order) {
 		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
 }
 
+# Statements used for the HTTP interface
+use Data::UUID;
 
+my $get_session = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
 
+sub session {
+    my ($session_type, $login_name, $session_id) = @_;
 
+    $get_session->execute($session_type, $login_name, $session_id);
 
+    return defined $get_session->fetchrow_arrayref;
+}
+
+my $check_editor_credentials = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
+my $create_session = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
+
+sub create_session {
+    my ($session_type, $login_name, $password) = @_;
+
+    $check_editor_credentials->execute($login_name, $password);
+    if (not defined $check_editor_credentials->fetchrow_arrayref) {
+	return 0;
+    }
+
+    my $ug = new Data::UUID;
+    my $session_id = $ug->create_str();
+
+    $create_session->execute($session_id, $session_type, $login_name) or die("Could not create session: " . $create_session->errstr);
+
+    return $session_id;
+}
 
 #################################################################################################################
 #### DATA ACCESS/MANIPULATION FUNCTIONS

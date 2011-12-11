@@ -278,3 +278,18 @@ CREATE TABLE resource_about (
                          'dedicated_to', 'remote_media_items'),
   related_id        INT NOT NULL,
   relation          VARCHAR(128));
+
+-- credentials for the editors
+CREATE TABLE editors (
+  login_name        VARCHAR(36) UNIQUE NOT NULL,
+  password          VARCHAR(32) NOT NULL,
+  real_name         VARCHAR(64),
+  active            TINYINT NOT NULL DEFAULT 1,
+  created           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
+
+-- these are HTTP sessions for the Web interface
+CREATE TABLE sessions (
+  session_id        CHAR(36) UNIQUE NOT NULL,
+  session_type      ENUM('editor', 'consumer', 'public') NOT NULL,
+  login_name        VARCHAR(32) NOT NULL,
+  created           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);
