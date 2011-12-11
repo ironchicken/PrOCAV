@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>PrOCAV Editor</title>
+    <link rel="stylesheet" type="text/css" href="editor-style.css" />
+    <script type="text/javascript" src="editor-functions.js" />
+  </head>
+  <body>
+    <h1>PrOCAV Editor</h1>
+    <div class="tables">
+      <TMPL_LOOP NAME="TABLES">
+	<div class="record-selector">
+	  <span class="table-name"><TMPL_VAR TABLE_NAME></span>
+	  <table id="<TMPL_VAR TABLE_NAME>">
+	    <tr>
+	      <th>Select</th>
+	      <TMPL_LOOP NAME="COLUMNS">
+		<th><TMPL_VAR COLUMN></th>
+	      </TMPL_LOOP>
+	    </tr>
+	    <TMPL_LOOP NAME="RECORDS">
+	      <tr>
+		<td><input type="checkbox"
+			   name="<TMPL_VAR TABLE_NAME>_<TMPL_VAR ID>_select"
+		           id="<TMPL_VAR TABLE_NAME>_<TMPL_VAR ID>_select" /></td>
+		<TMPL_LOOP NAME="FIELDS">
+		  <td><TMPL_VAR VALUE></td>
+		</TMPL_LOOP>
+	      </tr>
+	    </TMPL_LOOP>
+	  </table>
+	</div>
+      </TMPL_LOOP>
+    </div>
+    <div class="options">
+      <span class="action">Start editing selected records</span>
+      <span class="action">Start adding new records</span>
+    </div>
+  </body>
+</html>
