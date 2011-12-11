@@ -11,12 +11,13 @@ use strict;
 use Apache2::Request;
 #use Apache2::RequestRec ();
 #use Apache2::RequestIO ();
-use Apache2::Const -compile => qw(:common :log);
+use Apache2::Const -compile => qw(:common :log :http);
 use Apache2::Cookie;
 use Apache2::Log;
 use APR::Const -compile => qw(:error SUCCESS);
 #use Apache2::Ajax;
 use JSON;
+use Array::Utils qw(array_diff);
 use PrOCAV::Database qw(session);
 use PrOCAV::EditorUI qw(%login %new_session %generate_template %submit_tables);
 
@@ -49,6 +50,16 @@ sub authorised {
     }
 }
 
+sub params_present {
+    my ($req, $hander) = @_;
+
+    if (not exists $hander->{required_parameters}) { return 1; }
+
+    my @param_names = $req->param;
+
+    return not Array::Utils::array_diff(@{ $hander->{required_parameters} }, @param_names);
+}
+
 sub handler {
     my $r = shift;
     my $req = Apache2::Request->new($r);
@@ -60,19 +71,25 @@ sub handler {
 
     my $s = $r->server;
 
+    # iterate over all the URI handlers
     foreach my $h (@DISPATCH_TABLE) {
 
 	$s->log_error(sprintf("Test %s against %s", $r->uri, $h->{uri_pattern}));
 
+	# check if the request path matches this handler's URI pattern
 	if ($r->uri =~ $h->{uri_pattern}) {
 	    $s->log_error(sprintf("%s matches %s", $r->uri, $h->{uri_pattern}));
 
+	    # check the integrity of the request
+	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $req, $h);
 	    return Apache2::Const::FORBIDDEN if (not authorised $r, $h);
 
+	    # call the handler's handle subroutine
 	    return &{$h->{handle}}($r, $req);
 	}
     }
 
+    # fall through to returning NOT FOUND if no URI handler matched
     return Apache2::Const::NOT_FOUND;
 }
 
