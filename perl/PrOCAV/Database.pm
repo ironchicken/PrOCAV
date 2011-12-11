@@ -1101,6 +1101,13 @@ foreach my $table (@table_order) {
 		$table,
 		join(",", @{ $schema{$table}->{_insert_fields} }),
 		join(",", (("?") x scalar @{ $schema{$table}->{_insert_fields} }))));
+
+    # prepare _update statement
+    $schema{$table}->{_update} = $dbh->prepare_cached(
+	sprintf(qq/UPDATE %s SET %s WHERE %s/,
+		$table,
+		join(",", map { sprintf("$_=?"); } @{ $schema{$table}->{_insert_fields} }),
+		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
 }
 
 
@@ -1129,8 +1136,6 @@ sub get_record {
 	warn("No get record procedure for $table.\n");
     }
 }
-
-use Data::Dumper;
 
 sub record_exists {
     my ($table, $record) = @_;
@@ -1169,7 +1174,12 @@ sub insert_record {
 }
 
 sub update_record {
-    print "UPDATE " . @_[0] . " " . Dumper(@_[1]) . "\n";
+    my ($table, $record) = @_;
+
+    $schema{$table}->{_update}->execute((@{ $record }{@{ $schema{$table}->{_insert_fields} }},
+					 @{ $record }{@{ $schema{$table}->{_unique_fields} }}))
+	or die $schema{$table}->{_update}->errstr;
+    1;
 }
 
 sub insert_work { }
