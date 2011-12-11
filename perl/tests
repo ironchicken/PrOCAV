@@ -2,6 +2,9 @@
 
 use strict;
 use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
+use HTML::Template;
+use Apache2::FakeRequest;
+use PrOCAV::API qw(handler);
 
 sub test_create_workbook {
     Ingestion::create_workbook({works => [1,2,3,4,5]});
@@ -10,10 +13,31 @@ sub test_create_workbook {
 sub test_ingest_workbook {
     Ingestion::ingest_workbook("../../test16.xlsx");
 }
-    
+
+sub test_editor_front_page {
+    my $template = HTML::Template->new(filename => "../web/editor/start_session.tmpl", global_vars => 1);
+
+    my $params = {tables => [{table_name => 'works',
+			      columns => [{column => 'ID'}, {column => 'uniform_title'}],
+			      records => [{ID => '1', fields => [{value => '1'}, {value => 'Helllo'}]}]},
+			     {table_name => 'dates',
+			      columns => [{column => 'ID'}, {column => 'year'}],
+			      records => [{ID => '16', fields => [{value => '16'}, {value => '1927'}]}]}]};
+
+    $template->param($params);
+    print $template->output();
+}
+
+sub test_handler {
+    my $r = Apache2::FakeRequest->new(hostname => 'localhost');
+    PrOCAV::API::handler($r);
+}
+
 sub main {
     #test_create_workbook;
-    test_ingest_workbook;
+    #test_ingest_workbook;
+    #test_editor_front_page;
+    test_handler;
 }
 
 main;
