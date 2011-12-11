@@ -23,7 +23,7 @@ my $EDITOR_PATH = "/";
 my $TEMPLATES_DIR = "../../web/editor";
 
 our %login = (
-    uri_pattern => qr/^\/login/,
+    uri_pattern => qr/^\/login\/?$/,
     required_parameters => [qw(login_name password)],
     handle => sub {
 	my ($r, $req) = @_;
@@ -39,10 +39,10 @@ our %login = (
 						      path    => $EDITOR_PATH,
 						      secure  => 1);
 	    $session_cookie->bake;
-	    $r->header_out("Location", "/new_session");
+	    $r->headers_out->set(Location => "/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
-	    $r->header_out("Location", "/login?failed=authentication_error");
+	    $r->headers_out->set(Location => "/login?failed=authentication_error");
 	    return Apache2::Const::REDIRECT;
 	}
     });
