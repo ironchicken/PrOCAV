@@ -65,7 +65,7 @@ our %login = (
 	    $r->headers_out->set(Location => "/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
-	    $r->headers_out->set(Location => "/login?failed=authentication_error");
+	    $r->headers_out->set(Location => "/?failed=authentication_error");
 	    return Apache2::Const::REDIRECT;
 	}
     });
