@@ -10,17 +10,39 @@ use strict;
 use HTML::Template;
 use Apache2::Cookie;
 use Apache2::Const -compile => qw(:common);
-use PrOCAV::Database qw(create_session);
+use PrOCAV::Database qw(session create_session);
 
 package PrOCAV::EditorUI;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%login %new_session %generate_template %submit_tables);
+our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
 my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/editor/";
+
+our %home = (
+    uri_pattern => qr/^\/?$/,
+    required_parameters => [],
+    optional_parameters => [qw(failed)],
+    handle => sub {
+	my ($r, $req) = @_;
+
+	my %in_cookies = Apache2::Cookie->fetch($r);
+	my $session_id = $in_cookies{"provac_editor_sid"} && $in_cookies{"provac_editor_sid"}->value;
+	my $login_name = $in_cookies{"login_name"} && $in_cookies{"login_name"}->value;
+
+	if (Database::session("editor", $login_name, $session_id)) {
+	    $r->headers_out->set(Location => "/new_session");
+	    return Apache2::Const::REDIRECT;
+	} else {
+	    my $template = HTML::Template->new(filename => $TEMPLATES_DIR . "login.tmpl", global_vars => 1);
+	    $r->content_type("text/html");
+	    print $template->output();
+	    return Apache2::Const::OK;
+	}
+    });
 
 our %login = (
     uri_pattern => qr/^\/login\/?$/,
