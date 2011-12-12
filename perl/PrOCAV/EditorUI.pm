@@ -20,7 +20,7 @@ our @EXPORT_OK = qw(%login %new_session %generate_template %submit_tables);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
-my $TEMPLATES_DIR = "../../web/editor";
+my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/editor/";
 
 our %login = (
     uri_pattern => qr/^\/login\/?$/,
