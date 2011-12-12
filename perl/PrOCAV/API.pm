@@ -18,7 +18,7 @@ use APR::Const -compile => qw(:error SUCCESS);
 #use Apache2::Ajax;
 use JSON;
 use Array::Utils qw(:all);
-use PrOCAV::Database qw(session);
+use PrOCAV::Database qw(session make_dbh);
 use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables);
 
 package PrOCAV::API;
@@ -78,6 +78,8 @@ sub handler {
 
     my $s = $r->server;
 
+    my $dbh = Database::make_dbh;
+
     # iterate over all the URI handlers
     foreach my $h (@DISPATCH_TABLE) {
 
@@ -92,7 +94,13 @@ sub handler {
 	    return Apache2::Const::FORBIDDEN if (not authorised $r, $h);
 
 	    # call the handler's handle subroutine
-	    return &{$h->{handle}}($r, $req);
+	    my $response = &{$h->{handle}}($r, $req, $dbh);
+
+	    # ensure that any database transactions are complete
+	    $dbh->commit;
+
+	    # return whatever the handler's handle subroutine returned
+	    return $response;
 	}
     }
 

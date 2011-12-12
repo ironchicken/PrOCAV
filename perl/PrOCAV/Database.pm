@@ -25,10 +25,12 @@ my %db_opts = (database => "DBI:mysql:procav",
 	       attrs    => \%db_attrs);
 
 sub make_dbh {
-    DBI->connect($db_opts{database},
-		 $db_opts{user},
-		 $db_opts{password})
+    my $dbh = DBI->connect_cached($db_opts{database},
+			$db_opts{user},
+			$db_opts{password})
 	or die ("Could not connect to database.\n");
+    prepare_statements($dbh);
+    return $dbh;
 }
 
 #################################################################################################################
@@ -1078,42 +1080,52 @@ sub table_info {
 #### PREPARED SQL STATEMENTS
 #################################################################################################################
 
-my $dbh = make_dbh();
 
-foreach my $table (@table_order) {
-    # prepare _exists statement
-    $schema{$table}->{_exists} = $dbh->prepare_cached(
-	sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
-		$schema{$table}->{_single_select_field},
-		$table,
-		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
-    
-    # prepare _match_all statement
-    $schema{$table}->{_match_all} = $dbh->prepare_cached(
-	sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
-		$schema{$table}->{_single_select_field},
-		$table,
-		join(" AND ", map { "($_=? OR ($_ IS NULL AND ?=1))"; } @{ $schema{$table}->{_field_order} })));
-
-    # prepare _insert statement
-    $schema{$table}->{_insert} = $dbh->prepare_cached(
-	sprintf(qq/INSERT INTO %s (%s) VALUES (%s)/,
-		$table,
-		join(",", @{ $schema{$table}->{_insert_fields} }),
-		join(",", (("?") x scalar @{ $schema{$table}->{_insert_fields} }))));
-
-    # prepare _update statement
-    $schema{$table}->{_update} = $dbh->prepare_cached(
-	sprintf(qq/UPDATE %s SET %s WHERE %s/,
-		$table,
-		join(",", map { sprintf("$_=?"); } @{ $schema{$table}->{_insert_fields} }),
-		join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
-}
-
-# Statements used for the HTTP interface
 use Data::UUID;
 
-my $get_session = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
+my $get_session;
+my $check_editor_credentials;
+my $create_session;
+
+sub prepare_statements {
+    my $dbh = shift;
+
+    foreach my $table (@table_order) {
+	# prepare _exists statement
+	$schema{$table}->{_exists} = $dbh->prepare_cached(
+	    sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
+		    $schema{$table}->{_single_select_field},
+		    $table,
+		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+    
+	# prepare _match_all statement
+	$schema{$table}->{_match_all} = $dbh->prepare_cached(
+	    sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
+		    $schema{$table}->{_single_select_field},
+		    $table,
+		    join(" AND ", map { "($_=? OR ($_ IS NULL AND ?=1))"; } @{ $schema{$table}->{_field_order} })));
+
+	# prepare _insert statement
+	$schema{$table}->{_insert} = $dbh->prepare_cached(
+	    sprintf(qq/INSERT INTO %s (%s) VALUES (%s)/,
+		    $table,
+		    join(",", @{ $schema{$table}->{_insert_fields} }),
+		    join(",", (("?") x scalar @{ $schema{$table}->{_insert_fields} }))));
+
+	# prepare _update statement
+	$schema{$table}->{_update} = $dbh->prepare_cached(
+	    sprintf(qq/UPDATE %s SET %s WHERE %s/,
+		    $table,
+		    join(",", map { sprintf("$_=?"); } @{ $schema{$table}->{_insert_fields} }),
+		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+    }
+
+    # Statements used for the HTTP interface
+
+    $get_session = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
+    $check_editor_credentials = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
+    $create_session = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
+}
 
 sub session {
     my ($session_type, $login_name, $session_id) = @_;
@@ -1122,9 +1134,6 @@ sub session {
 
     return defined $get_session->fetchrow_arrayref;
 }
-
-my $check_editor_credentials = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
-my $create_session = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
 
 sub create_session {
     my ($session_type, $login_name, $password) = @_;
