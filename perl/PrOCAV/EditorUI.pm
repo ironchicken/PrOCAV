@@ -39,6 +39,9 @@ our %home = (
 	} else {
 	    my $template = HTML::Template->new(filename => $TEMPLATES_DIR . "login.tmpl", global_vars => 1);
 	    $r->content_type("text/html");
+	    if ($req->param("failed")) {
+		$template->param(message => $req->param("failed"));
+	    }
 	    print $template->output();
 	    return Apache2::Const::OK;
 	}
