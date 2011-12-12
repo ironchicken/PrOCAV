@@ -17,7 +17,7 @@ use Apache2::Log;
 use APR::Const -compile => qw(:error SUCCESS);
 #use Apache2::Ajax;
 use JSON;
-use Array::Utils qw(array_diff);
+use Array::Utils qw(:all);
 use PrOCAV::Database qw(session);
 use PrOCAV::EditorUI qw(%login %new_session %generate_template %submit_tables);
 
@@ -51,13 +51,19 @@ sub authorised {
 }
 
 sub params_present {
-    my ($req, $hander) = @_;
+    my ($s, $req, $hander) = @_;
 
-    if (not exists $hander->{required_parameters}) { return 1; }
+    my @supplied = $req->param;
+    my @required = @{ $hander->{required_parameters} } or ();
+    my @optional = @{ $hander->{optional_parameters} } or ();
+    my @permissible = (@required, @optional);
 
-    my @param_names = $req->param;
+    my @missing = Array::Utils::array_minus(@required, @supplied);
+    my @extra = Array::Utils::array_minus(@supplied, @permissible);
 
-    return not Array::Utils::array_diff(@{ $hander->{required_parameters} }, @param_names);
+    $s->log_error("args: supplied: @supplied; permissible: @permissible; missing: @missing; extra: @extra");
+
+    return (!@missing && !@extra);
 }
 
 sub handler {
@@ -81,7 +87,7 @@ sub handler {
 	    $s->log_error(sprintf("%s matches %s", $r->uri, $h->{uri_pattern}));
 
 	    # check the integrity of the request
-	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $req, $h);
+	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $s, $req, $h);
 	    return Apache2::Const::FORBIDDEN if (not authorised $r, $h);
 
 	    # call the handler's handle subroutine
