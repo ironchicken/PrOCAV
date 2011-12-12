@@ -19,7 +19,7 @@ use APR::Const -compile => qw(:error SUCCESS);
 use JSON;
 use Array::Utils qw(:all);
 use PrOCAV::Database qw(session);
-use PrOCAV::EditorUI qw(%login %new_session %generate_template %submit_tables);
+use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables);
 
 package PrOCAV::API;
 
@@ -71,6 +71,7 @@ sub handler {
     my $req = Apache2::Request->new($r);
 
     my @DISPATCH_TABLE = (
+	\%PrOCAV::EditorUI::home,
 	\%PrOCAV::EditorUI::login,
 	\%PrOCAV::EditorUI::new_session
 	);
