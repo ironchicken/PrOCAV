@@ -59,16 +59,17 @@ sub authorised {
 }
 
 sub params_present {
-    my ($s, $req, $hander) = @_;
+    my ($r, $req, $hander) = @_;
 
     my @supplied = $req->param;
-    my @required = @{ $hander->{required_parameters} } or ();
-    my @optional = @{ $hander->{optional_parameters} } or ();
+    my @required = (exists $hander->{required_parameters}) ? @{ $hander->{required_parameters} } : ();
+    my @optional = (exists $hander->{optional_parameters}) ? @{ $hander->{optional_parameters} } : ();
     my @permissible = (@required, @optional);
 
     my @missing = Array::Utils::array_minus(@required, @supplied);
     my @extra = Array::Utils::array_minus(@supplied, @permissible);
 
+    my $s = $r->server;
     $s->log_error("args: supplied: @supplied; permissible: @permissible; missing: @missing; extra: @extra");
 
     return (!@missing && !@extra);
