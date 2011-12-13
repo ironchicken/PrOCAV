@@ -1083,9 +1083,9 @@ sub table_info {
 
 use Data::UUID;
 
-my $get_session;
-my $check_editor_credentials;
-my $create_session;
+my $get_session_stmt;
+my $check_editor_credentials_stmt;
+my $create_session_stmt;
 
 sub prepare_statements {
     my $dbh = shift;
@@ -1122,33 +1122,36 @@ sub prepare_statements {
 
     # Statements used for the HTTP interface
 
-    $get_session = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
-    $check_editor_credentials = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
-    $create_session = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
+    $get_session_stmt = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
+    $check_editor_credentials_stmt = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
+    $create_session_stmt = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
 }
 
 sub session {
     my ($session_type, $login_name, $session_id) = @_;
 
-    $get_session->execute($session_type, $login_name, $session_id);
+    $get_session_stmt->execute($session_type, $login_name, $session_id);
 
-    return defined $get_session->fetchrow_arrayref;
+    return defined $get_session_stmt->fetchrow_arrayref;
 }
 
 sub create_session {
     my ($session_type, $login_name, $password) = @_;
 
-    $check_editor_credentials->execute($login_name, $password);
-    if (not defined $check_editor_credentials->fetchrow_arrayref) {
-	return 0;
-    }
+    if ($session_type eq "editor") {
+	$check_editor_credentials_stmt->execute($login_name, $password);
+	if (not defined $check_editor_credentials_stmt->fetchrow_arrayref) {
+	    return 0;
+	}
 
-    my $ug = new Data::UUID;
-    my $session_id = $ug->create_str();
+	my $ug = new Data::UUID;
+	my $session_id = $ug->create_str();
 
-    $create_session->execute($session_id, $session_type, $login_name) or die("Could not create session: " . $create_session->errstr);
+	$create_session_stmt->execute($session_id, $session_type, $login_name)
+	    or die("Could not create session: " . $create_session_stmt->errstr);
 
-    return $session_id;
+	return $session_id;
+    } else { die("Session type $session_type not implemented.\n"); }
 }
 
 #################################################################################################################
