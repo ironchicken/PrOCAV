@@ -8,7 +8,9 @@
 
 use strict;
 use HTML::Template;
-use Apache2::Cookie;
+use Apache2::RequestRec ();
+use APR::Table;
+use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
 use PrOCAV::Database qw(session create_session);
 
@@ -29,11 +31,9 @@ our %home = (
     handle => sub {
 	my ($r, $req) = @_;
 
-	my %in_cookies = Apache2::Cookie->fetch($r);
-	my $session_id = $in_cookies{"provac_editor_sid"} && $in_cookies{"provac_editor_sid"}->value;
-	my $login_name = $in_cookies{"login_name"} && $in_cookies{"login_name"}->value;
+	my $in_cookies = $req->jar;
 
-	if (Database::session("editor", $login_name, $session_id)) {
+	if (Database::session("editor", $in_cookies->{"login_name"}, $in_cookies->{"procav_editor_sid"})) {
 	    $r->headers_out->set(Location => "/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
@@ -54,20 +54,37 @@ our %login = (
     handle => sub {
 	my ($r, $req) = @_;
 
-	my $session_id = Database::create_session($req->param("login_name"), $req->param("password"));
+	my $s = $r->server;
+
+	my $session_id = Database::create_session("editor", $req->param("login_name"), $req->param("password"));
 
 	if ($session_id) {
-	    my $session_cookie = Apache2::Cookie->new($r,
-						      name    => "provac_editor_sid",
-						      value   => $session_id,
-						      expires => "+1D",
-						      domain  => $PROCAV_DOMAIN,
-						      path    => $EDITOR_PATH,
-						      secure  => 1);
-	    $session_cookie->bake;
+	    $s->log_error(sprintf("Created new session for %s with ID %s", $req->param("login_name"), $session_id));
+
+	    my $session_cookie = APR::Request::Cookie->new($req->pool,
+							   name    => "provac_editor_sid",
+							   value   => $session_id,
+							   expires => "+1D",
+							   domain  => $PROCAV_DOMAIN,
+							   path    => $EDITOR_PATH,
+							   secure  => 1);
+
+	    my $login_cookie = APR::Request::Cookie->new($req->pool,
+							 name    => "login_name",
+							 value   => $req->param("login_name"),
+							 expires => "+1D",
+							 domain  => $PROCAV_DOMAIN,
+							 path    => $EDITOR_PATH,
+							 secure  => 1);
+
+	    $r->err_headers_out->add("Set-Cookie", $session_cookie->as_string);
+	    $r->err_headers_out->add("Set-Cookie", $login_cookie->as_string);
+
 	    $r->headers_out->set(Location => "/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
+	    $s->log_error(sprintf("Failed to creat new session for %s", $req->param("login_name")));
+
 	    $r->headers_out->set(Location => "/?failed=authentication_error");
 	    return Apache2::Const::REDIRECT;
 	}

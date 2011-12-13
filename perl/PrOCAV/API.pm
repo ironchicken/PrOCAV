@@ -8,11 +8,10 @@
 # Email: richard.lewis@gold.ac.uk
 
 use strict;
-use Apache2::Request;
-#use Apache2::RequestRec ();
-#use Apache2::RequestIO ();
+use APR::Request::Apache2;
+use Apache2::RequestRec ();
 use Apache2::Const -compile => qw(:common :log :http);
-use Apache2::Cookie;
+use APR::Request::Cookie;
 use Apache2::Log;
 use APR::Const -compile => qw(:error SUCCESS);
 #use Apache2::Ajax;
@@ -24,24 +23,33 @@ use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tab
 package PrOCAV::API;
 
 sub authorised {
-    my ($r, $handler) = @_;
+    my ($r, $req, $handler) = @_;
 
     if (not exists $handler->{authorisation}) { return 1; }
 
-    my %in_cookies = Apache2::Cookie->fetch($r);
+    my $s = $r->server;
+
+    my $in_cookies = $req->jar;
+
+    $s->log_error(sprintf("Received cookies: %s", keys %$in_cookies));
 
     my $sid_name;
     $sid_name = "provac_editor_sid"   if ($handler->{authorisation} eq "editor");
     $sid_name = "provac_consumer_sid" if ($handler->{authorisation} eq "consumer");
 
+    $s->log_error(sprintf("Require cookie %s", $sid_name));
+
     if (not defined $sid_name) {
 	die("No matching authorisation scheme: " . $handler->{authorisation} . "\n");
     }
 
-    my $session_id = $in_cookies{$sid_name} && $in_cookies{$sid_name}->value;
+    my $session_id = $in_cookies->{$sid_name};
+
+    $s->log_error(sprintf("Found value for %s: \"%s\"", $sid_name, $session_id));
 
     if ($handler->{authorisation} eq "editor") {
-	my $login_name = $in_cookies{"login_name"} && $in_cookies{"login_name"}->value;
+	my $login_name = $in_cookies->{"login_name"};
+	$s->log_error(sprintf("Found value for login_name: \"%s\"", $login_name));
 	return Database::session("editor", $login_name, $session_id);
     }
 
@@ -68,7 +76,7 @@ sub params_present {
 
 sub handler {
     my $r = shift;
-    my $req = Apache2::Request->new($r);
+    my $req = APR::Request::Apache2->handle($r);
 
     my @DISPATCH_TABLE = (
 	\%PrOCAV::EditorUI::home,
@@ -90,8 +98,8 @@ sub handler {
 	    $s->log_error(sprintf("%s matches %s", $r->uri, $h->{uri_pattern}));
 
 	    # check the integrity of the request
-	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $s, $req, $h);
-	    return Apache2::Const::FORBIDDEN if (not authorised $r, $h);
+	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $r, $req, $h);
+	    return Apache2::Const::FORBIDDEN if (not authorised $r, $req, $h);
 
 	    # call the handler's handle subroutine
 	    my $response = &{$h->{handle}}($r, $req, $dbh);
