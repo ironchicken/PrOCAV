@@ -65,17 +65,15 @@ our %login = (
 							   name    => "provac_editor_sid",
 							   value   => $session_id,
 							   expires => "+1D",
-							   domain  => $PROCAV_DOMAIN,
-							   path    => $EDITOR_PATH,
-							   secure  => 1);
+							   #domain  => $PROCAV_DOMAIN,
+							   path    => $EDITOR_PATH);
 
 	    my $login_cookie = APR::Request::Cookie->new($req->pool,
 							 name    => "login_name",
 							 value   => $req->param("login_name"),
 							 expires => "+1D",
-							 domain  => $PROCAV_DOMAIN,
-							 path    => $EDITOR_PATH,
-							 secure  => 1);
+							 #domain  => $PROCAV_DOMAIN,
+							 path    => $EDITOR_PATH);
 
 	    $r->err_headers_out->add("Set-Cookie", $session_cookie->as_string);
 	    $r->err_headers_out->add("Set-Cookie", $login_cookie->as_string);
