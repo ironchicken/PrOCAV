@@ -26,7 +26,7 @@ my $dbh = DBI->connect("DBI:mysql:procav", "root", "tbatst",
 		       { RaiseError => 1, AutoCommit => 1 });
 
 my $insert_work = $dbh->prepare_cached("INSERT INTO works (uniform_title) VALUES (?)");
-my $insert_opus_number = $dbh->prepare_cached("INSERT INTO catalogue_number (work_id, catalogue_id, number, number_position, suffix) VALUES (?,1,?,?,?)");
+my $insert_opus_number = $dbh->prepare_cached("INSERT INTO catalogue_numbers (work_id, catalogue_id, number, number_position, suffix) VALUES (?,1,?,?,?)");
 
 sub parse_opus_number {
     my $opus_str = shift;
@@ -117,8 +117,8 @@ $dbh->{RaiseError} = 0;
 $dbh->{PrintError} = 1;
 
 my $insert_title = $dbh->prepare_cached("INSERT INTO titles (work_id, transliteration, script, language) VALUES (?, ?, 'latin', 'ru')");
-my $find_work = $dbh->prepare_cached("SELECT work_id FROM catalogue_number WHERE number=? AND suffix=?");
-my $find_work_no_op_suffix = $dbh->prepare_cached("SELECT work_id FROM catalogue_number WHERE number=? AND suffix IS NULL");
+my $find_work = $dbh->prepare_cached("SELECT work_id FROM catalogue_numbers WHERE number=? AND suffix=?");
+my $find_work_no_op_suffix = $dbh->prepare_cached("SELECT work_id FROM catalogue_numbers WHERE number=? AND suffix IS NULL");
 
 for my $row ($row_min + 1 .. $row_max) {
 

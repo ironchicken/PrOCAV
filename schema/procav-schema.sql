@@ -51,7 +51,7 @@ CREATE TABLE catalogues (
 INSERT INTO catalogues (label, title) VALUES ("Op. ", "Opus numbers");
 
 -- Associates a work with a catalogue number in a given catalogue
-CREATE TABLE catalogue_number (
+CREATE TABLE catalogue_numbers (
   work_id           INT NOT NULL,
   catalogue_id      INT NOT NULL,
   `number`          VARCHAR(32) NOT NULL,

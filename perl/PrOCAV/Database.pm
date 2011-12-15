@@ -109,10 +109,10 @@ my %look_ups = (
     # rows containing `value` and `display` fields. These results sets
     # can be used as look-ups.
     parent_works         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_number ON catalogue_number.work_id=works.ID JOIN catalogues ON catalogue_number.catalogue_id=catalogues.ID WHERE part_of IS NULL ORDER BY uniform_title)); },
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID JOIN catalogues ON catalogue_numbers.catalogue_id=catalogues.ID WHERE part_of IS NULL ORDER BY uniform_title)); },
 
     all_works            => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_number ON catalogue_number.work_id=works.ID JOIN catalogues ON catalogue_number.catalogue_id=catalogues.ID ORDER BY uniform_title)); },
+				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID JOIN catalogues ON catalogue_numbers.catalogue_id=catalogues.ID ORDER BY uniform_title)); },
 
     genres               => sub { my $dbh = shift;
 				  $dbh->prepare(qq(SELECT DISTINCT genre AS value, genre AS display FROM genres ORDER BY genre)); },
