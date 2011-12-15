@@ -218,6 +218,10 @@ my %schema = (
 
 	notes           => {access => "rw",
 			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
 			    cell_width => 80}},
 
     musical_information => {
@@ -268,7 +272,11 @@ my %schema = (
 
 	time_sig_division => {access => "rw",
 			      data_type => "integer",
-			      cell_width => 8}},
+			      cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     titles => {
 	_worksheet => "titles",
@@ -315,6 +323,10 @@ my %schema = (
 			    cell_width => 5},
 	notes           => {access => "rw",
 			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
 			    cell_width => 80}},
 
     catalogue_numbers  => {
@@ -356,7 +368,11 @@ my %schema = (
 
 	suffix_position => {access => "rw",
 			    data_type => "integer",
-			    cell_width => 8}},
+			    cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 	
     work_status        => {
 	_worksheet => "work_status",
@@ -429,7 +445,11 @@ my %schema = (
 
 	role            => {access => "rw",
 			    data_type => "string",
-			    cell_width => 8}},
+			    cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     derived_from       => {
 	_worksheet => "derived_from",
@@ -458,7 +478,15 @@ my %schema = (
 	derivation_relation => {access => "rw",
 				data_type => "look_up",
 				look_up => "derivation_relations",
-				not_null => 1}},
+				not_null => 1},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     composition        => {
 	_worksheet => "composition",
@@ -561,6 +589,10 @@ my %schema = (
 
 	notes           => {access => "rw",
 			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
 			    cell_width => 80}},
 
     publications       => {
@@ -602,6 +634,10 @@ my %schema = (
 
 	notes           => {access => "rw",
 			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
 			    cell_width => 80}},
 
     published_in       => {
@@ -632,7 +668,11 @@ my %schema = (
 
 	publication_range => {access => "rw",
 			      data_type => "string",
-			      cell_width => 8}},
+			      cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     performances       => {
 	_worksheet => "performances",
@@ -670,8 +710,12 @@ my %schema = (
 			     cell_width => 15},
 
 	notes           => {access => "rw",
-			    data_type => "string"},
+			    data_type => "string",
 			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     performed_in       => {
 	_worksheet => "performed_in",
@@ -697,7 +741,15 @@ my %schema = (
 
 	role            => {access => "rw",
 			    data_type => "string",
-			    cell_width => 12}},
+			    cell_width => 12},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     letters            => {
 	_worksheet => "letters",
@@ -745,7 +797,11 @@ my %schema = (
 
 	english_text    => {access => "rw",
 			    data_type => "string",
-			    cell_width => 60}},
+			    cell_width => 60},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     letter_mentions    => {
 	_worksheet => "letter_mentions",
@@ -787,6 +843,10 @@ my %schema = (
 			     cell_width => 12},
 
 	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
 			    data_type => "string",
 			    cell_width => 80}},
 
@@ -853,6 +913,10 @@ my %schema = (
 
 	notes           => {access => "rw",
 			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
 			    cell_width => 80}},
 
     texts              => {
@@ -891,7 +955,11 @@ my %schema = (
 
 	english_content => {access => "rw",
 			    data_type => "string",
-			    cell_width => 60}},
+			    cell_width => 60},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     persons            => {
 	_worksheet => "persons",
@@ -925,7 +993,11 @@ my %schema = (
 	nationality     => {access => "rw",
 			    data_type => "string",
 			    width => 2,
-			    cell_width => 8}},
+			    cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     dedicated_to       => {
 	_worksheet => "dedicated_to",
@@ -972,7 +1044,11 @@ my %schema = (
 			    data_type => "string",
 			    value_parser => sub { },
 			    insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
-			    update => qq(UPDATE dates SET  WHERE ID=?)}},
+			    update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     catalogues         => {
 	_worksheet => "catalogues",
@@ -1106,7 +1182,11 @@ my %schema = (
 
 	source_id       => {access => "rw",
 			    data_type => "integer",
-			    cell_width => 8}},
+			    cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
 
     media_items        => {},
     remote_media_items => {},

@@ -14,7 +14,8 @@ CREATE TABLE works (
   part_number       VARCHAR(32),
   part_position     INT,
   duration          FLOAT,
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- works can have some additional information attached to them
 CREATE TABLE musical_information (
@@ -25,7 +26,8 @@ CREATE TABLE musical_information (
   tonic_chromatic   ENUM('n','b','#'),
   mode              ENUM('major','minor'),
   time_sig_beats    INT,
-  time_sig_division INT);
+  time_sig_division INT,
+  staff_notes       TEXT);
 
 -- works may have additional titles, including in other languages
 CREATE TABLE titles (
@@ -38,7 +40,8 @@ CREATE TABLE titles (
   transliteration   VARCHAR(255),
   script            VARCHAR(32),
   `language`        CHAR(2),
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- multiple catalogues of the works may be defined
 CREATE TABLE catalogues (
@@ -57,7 +60,8 @@ CREATE TABLE catalogue_numbers (
   `number`          VARCHAR(32) NOT NULL,
   number_position   INT NOT NULL,
   suffix            VARCHAR(32),
-  suffix_position   INT);
+  suffix_position   INT,
+  staff_notes       TEXT);
 
 -- works may have any number of statuses
 CREATE TABLE work_status (
@@ -80,13 +84,16 @@ CREATE TABLE instruments (
 CREATE TABLE scored_for (
   work_id           INT NOT NULL,
   instrument        VARCHAR(255) NOT NULL,
-  `role`            VARCHAR(32));
+  `role`            VARCHAR(32),
+  staff_notes       TEXT);
 
 -- works may be derived from other works
 CREATE TABLE derived_from (
   precusror_work    INT NOT NULL,
   derived_work      INT NOT NULL,
-  derivation_relation ENUM('transcription', 'arrangement', 'off-shoot') NOT NULL);
+  derivation_relation ENUM('transcription', 'arrangement', 'off-shoot') NOT NULL,
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- a period of compositional activity
 CREATE TABLE composition (
@@ -107,7 +114,8 @@ CREATE TABLE editions (
   editor	    INT,
   score_type        VARCHAR(128),
   work_extent       VARCHAR(64),
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- a publication in which editions are published
 CREATE TABLE publications (
@@ -117,14 +125,16 @@ CREATE TABLE publications (
   publication_place VARCHAR(128),
   date_published    INT,
   serial_number     VARCHAR(64),
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- asserts that an edition is published in a publication
 CREATE TABLE published_in (
   edition_id        INT NOT NULL,
   publication_id    INT NOT NULL,
   edition_extent    VARCHAR(64),
-  publication_range VARCHAR(64));
+  publication_range VARCHAR(64),
+  staff_notes       TEXT);
 
 -- a performace of a work
 CREATE TABLE performances (
@@ -133,13 +143,16 @@ CREATE TABLE performances (
   date_performed    INT,
   venue_id          INT,
   performance_type  ENUM('concert', 'broadcast', 'recording', 'private'),
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- asserts that a person performed in a performance
 CREATE TABLE performed_in (
   person_id         INT NOT NULL,
   performance_id    INT NOT NULL,
-  `role`            VARCHAR(128));
+  `role`            VARCHAR(128),
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- letters, normally from Prokofiev
 CREATE TABLE letters (
@@ -150,7 +163,8 @@ CREATE TABLE letters (
   addressee         INT,
   signatory         INT,
   original_text     TEXT,
-  english_text      TEXT);
+  english_text      TEXT,
+  staff_notes       TEXT);
 
 -- asserts that a letter mentions something in the database
 CREATE TABLE letter_mentions (
@@ -162,7 +176,8 @@ CREATE TABLE letter_mentions (
                          'dedicated_to') NOT NULL,
   mentioned_id      INT NOT NULL,
   mentioned_extent  VARCHAR(64),
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- a music manuscript relating to a work
 CREATE TABLE manuscripts (
@@ -178,7 +193,8 @@ CREATE TABLE manuscripts (
   date_made         INT,
   annotation_of     INT,
   location          VARCHAR(128),
-  notes             TEXT);
+  notes             TEXT,
+  staff_notes       TEXT);
 
 -- literary works set in a work
 CREATE TABLE texts (
@@ -187,7 +203,8 @@ CREATE TABLE texts (
   author            INT,
   `language`        CHAR(2),
   original_content  TEXT,
-  engish_content    TEXT);
+  engish_content    TEXT,
+  staff_notes       TEXT);
 
 -- persons mentioned in the database
 CREATE TABLE persons (
@@ -195,7 +212,8 @@ CREATE TABLE persons (
   given_name        VARCHAR(255),
   family_name       VARCHAR(255),
   sex               ENUM('male', 'female'),
-  nationality       CHAR(2));
+  nationality       CHAR(2),
+  staff_notes       TEXT);
 
 -- asserts that a work is dedicated to a person
 CREATE TABLE dedicated_to (
@@ -205,7 +223,8 @@ CREATE TABLE dedicated_to (
   manuscript_id     INT,
   edition_id        INT,
   dedication_text   VARCHAR(255),
-  date_made         INT);
+  date_made         INT,
+  staff_notes       TEXT);
 
 -- MySQL DATE or DATETIME types are not used in this database; instead
 -- every date-like field is a foreign key to a record in this table
@@ -225,7 +244,8 @@ CREATE TABLE dates (
   end_day_accuracy  ENUM('exactly', 'around', 'before', 'after') NOT NULL DEFAULT 'exactly',
   date_text         VARCHAR(255),
   source_table      ENUM('editions', 'letters', 'manuscripts'),
-  source_id         INT);
+  source_id         INT,
+  staff_notes       TEXT);
 
 -- digitised media available in the archive
 CREATE TABLE media_items (
@@ -237,7 +257,8 @@ CREATE TABLE media_items (
   date_made         DATETIME,
   date_acquired     DATETIME NOT NULL,
   copyright         VARCHAR(255),
-  `public`          TINYINT NOT NULL DEFAULT 1);
+  `public`          TINYINT NOT NULL DEFAULT 1,
+  staff_notes       TEXT);
 
 -- digitised media from outside the archive
 CREATE TABLE remote_media_items (
@@ -249,7 +270,8 @@ CREATE TABLE remote_media_items (
   date_made         DATETIME,
   date_linked       DATETIME NOT NULL,
   copyright         VARCHAR(255),
-  `public`          TINYINT NOT NULL DEFAULT 1);
+  `public`          TINYINT NOT NULL DEFAULT 1,
+  staff_notes       TEXT);
 
 CREATE TABLE representation_of (
   `source`          ENUM('local', 'remote') NOT NULL,
@@ -267,7 +289,8 @@ CREATE TABLE resources (
   title             VARCHAR(255),
   mime_type         VARCHAR(32) NOT NULL,
   date_made         DATETIME,
-  date_linked       DATETIME NOT NULL);
+  date_linked       DATETIME NOT NULL,
+  staff_notes       TEXT);
 
 -- points an external resource to something in the database
 CREATE TABLE resource_about (
