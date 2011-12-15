@@ -62,7 +62,7 @@ our %login = (
 	    $s->log_error(sprintf("Created new session for %s with ID %s", $req->param("login_name"), $session_id));
 
 	    my $session_cookie = APR::Request::Cookie->new($req->pool,
-							   name    => "provac_editor_sid",
+							   name    => "procav_editor_sid",
 							   value   => $session_id,
 							   expires => "+1D",
 							   #domain  => $PROCAV_DOMAIN,

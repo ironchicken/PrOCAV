@@ -31,11 +31,11 @@ sub authorised {
 
     my $in_cookies = $req->jar;
 
-    $s->log_error(sprintf("Received cookies: %s", keys %$in_cookies));
+    $s->log_error(sprintf("Received cookies: %s", join ", ", keys %$in_cookies));
 
     my $sid_name;
-    $sid_name = "provac_editor_sid"   if ($handler->{authorisation} eq "editor");
-    $sid_name = "provac_consumer_sid" if ($handler->{authorisation} eq "consumer");
+    $sid_name = "procav_editor_sid"   if ($handler->{authorisation} eq "editor");
+    $sid_name = "procav_consumer_sid" if ($handler->{authorisation} eq "consumer");
 
     $s->log_error(sprintf("Require cookie %s", $sid_name));
 
