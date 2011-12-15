@@ -1118,6 +1118,12 @@ sub prepare_statements {
 		    $table,
 		    join(",", map { sprintf("$_=?"); } @{ $schema{$table}->{_insert_fields} }),
 		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+
+	# prepare _get statement
+	$schema{$table}->{_get} = $dbh->prepare_cached(
+	    sprintf(qq/SELECT * FROM %s WHERE %s LIMIT 1/,
+		    $table,
+		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
     }
 
     # Statements used for the HTTP interface
