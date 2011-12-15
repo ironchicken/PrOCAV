@@ -9,12 +9,14 @@
 
 use strict;
 use DBI;
+use AutoLoader;
 
 package Database;
 
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(make_dbh record insert_record find_look_up registered_look_ups table_info table_order session create_session);
+our $AUTOLOAD;
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
@@ -173,6 +175,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
+	_order_fields        => [qw(uniform_title)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -223,6 +227,8 @@ my %schema = (
 	_unique_fields       => [qw(work_id)],
 	_single_select_field => "work_id",
 	_insert_fields       => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -271,6 +277,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(work_id manuscript_id edition_id person_id title transliteration script language notes)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -316,6 +324,8 @@ my %schema = (
 	_unique_fields       => [qw(work_id)],
 	_single_select_field => "work_id",
 	_insert_fields       => [qw(work_id catalogue_id number number_position suffix suffix_position)],
+	_order_fields        => [qw(catalogue_id number_position suffix_position)],
+	_default_order       => "ASC",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -355,6 +365,8 @@ my %schema = (
 	_unique_fields       => [qw(work_id status)],
 	_single_select_field => "work_id",
 	_insert_fields       => [qw(work_id status)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -375,6 +387,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(work_id genre)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -398,6 +412,8 @@ my %schema = (
 	_unique_fields       => [qw(work_id instrument role)],
 	_single_select_field => "work_id",
 	_insert_fields       => [qw(work_id instrument role)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	work_id         => {access => "rw",
 			    data_type => "look_up",
@@ -422,6 +438,8 @@ my %schema = (
 	_unique_fields       => [qw(precusor_work derived_work derivation_relation)],
 	_single_select_field => "precusor_work",
 	_insert_fields       => [qw(precusor_work derived_work derivation_relation)],
+	_order_fields        => [qw(precursor_work)],
+	_default_order       => "ASC",
 
 	precusor_work   => {access => "rw",
 			    data_type => "look_up",
@@ -449,6 +467,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(work_id manuscript_id period_start work_type)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -484,6 +504,8 @@ my %schema = (
 	_unique_fields       => [qw(instrument)],
 	_single_select_field => "instrument",
 	_insert_fields       => [qw(instrument description)],
+	_order_fields        => [qw(instrument)],
+	_default_order       => "ASC",
 
 	instrument      => {access => "rw",
 			    data_type => "string",
@@ -503,6 +525,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(work_id date_made editor score_type work_extent notes)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -546,6 +570,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(title publisher publication_place date_published serial_number notes)],
+	_order_fields        => [qw(title)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -585,6 +611,8 @@ my %schema = (
 	_unique_fields       => [qw(edition_id publication_id)],
 	_single_select_field => "edition_id",
 	_insert_fields       => [qw(edition_id publication_id edition_extent publication_range)],
+	_order_fields        => [qw(publication_id)],
+	_default_order       => "ASC",
 
 	edition_id      => {access => "rw",
 			    data_type => "look_up",
@@ -613,6 +641,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(work_id date_performed venue_id performance_type notes)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -650,6 +680,8 @@ my %schema = (
 	_unique_fields       => [qw(person_id performance_id role)],
 	_single_select_field => "person_id",
 	_insert_fields       => [qw(person_id performance_id role)],
+	_order_fields        => [qw(performance_id)],
+	_default_order       => "ASC",
 
 	person_id       => {access => "rw",
 			    data_type => "look_up",
@@ -674,6 +706,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(letters_db_ID date_composed date_sent addressee signatory original_text english_text)],
+	_order_fields        => [qw(ID)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -720,6 +754,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(letter_id letter_range mentioned_table mentioned_id mentioned_extent notes)],
+	_order_fields        => [qw(letter_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -761,6 +797,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(title purpose physical_size medium extent missing date_made annotation_of location notes)],
+	_order_fields        => [qw(title)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -824,6 +862,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(title author language original_content english_content)],
+	_order_fields        => [qw(title)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -860,6 +900,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(given_name family_name sex nationality)],
+	_order_fields        => [qw(family_name given_name)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -892,6 +934,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(work_id person_id manuscript_id edition_id dedication_text date_made)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -937,6 +981,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(label title notes)],
+	_order_fields        => [qw(label)],
+	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -963,6 +1009,8 @@ my %schema = (
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id)],
+	_order_fields        => [qw(year month day)],
+	_default_order       => "DESC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
@@ -1124,6 +1172,12 @@ sub prepare_statements {
 	    sprintf(qq/SELECT * FROM %s WHERE %s LIMIT 1/,
 		    $table,
 		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+
+	# prepare _list statement
+	$schema{$table}->{_list} = $dbh->prepare_cached(
+	    sprintf(qq/SELECT * FROM %s ORDER BY %s/,
+		    $table,
+		    join(",", map { "$_ " . $schema{$table}->{_default_order}; } @{ $schema{$table}->{_order_fields} })));
     }
 
     # Statements used for the HTTP interface
@@ -1227,28 +1281,56 @@ sub update_record {
     1;
 }
 
-sub insert_work { }
+## The PrOCAV::Database modules also exposes subroutines which allow
+## access to each table as: TABLE_NAME to retrieve an individual
+## record; list_TABLE_NAME to retrieve multiple records;
+## insert_TABLE_NAME to insert into TABLE_NAME; struct_TABLE_NAME to
+## retrieve a hash of table names and record IDs describing the record
+## and its dependencies; complete_TABLE_NAME to retrieve a hash
+## containing the record and its dependencies
 
-sub works_list {
-    my $dbh = shift;
+sub AUTOLOAD {
+    my $sub_name = $AUTOLOAD;
+    $sub_name =~ s/.*:://;
 
-    my $works_list_stmt = $dbh->prepare(qq(SELECT * FROM works WHERE part_of IS NULL));
-}
+    my $operation; my $table_name;
 
-sub get_work {
-    my $dbh = shift;
+    if ($sub_name =~ m/(get|list|struct|complete|insert)_(.*)/) {
+	($operation, $table_name) = ($1, $2);
+    } else {
+	$table_name = $sub_name;
+    }
 
-    if (@_) {
-	my $work_id = shift;
- 
-	my $get_work_stmt = $dbh->prepare(qq(SELECT * FROM works WHERE ID=?));
+    my $table = $schema{$table_name} || $schema{$table_name . "s"} || die("No such table: $table_name\n");
 
-	$get_work_stmt->execute($work_id);
-	my @work = $get_work_stmt->fetchrow_array;
+    printf("Doing %s on %s (%s); args: %s\n", $operation || "_get", $table_name, $table, join ", ", @_);
 
-	if (@work) {
-	    
+    if ((($operation eq "get") || (not defined $operation)) && (@_)) {
+	$table->{_get}->execute(@_);
+	return $table->{_get}->fetchrow_hashref;
+
+    } elsif ($operation eq "list") {
+	$table->{_list}->execute();
+	my @rows = ();
+	while (my $row = $table->{_list}->fetchrow_hashref) {
+	    push @rows, $row;
 	}
+	return @rows;
+
+    } elsif ($operation eq "struct") {
+	$table->{_struct}->execute(@_);
+	return $table->{_struct}->fetchrow_hashref;
+	
+    } elsif ($operation eq "complete") {
+	$table->{_complete}->execute(@_);
+	return $table->{_complete}->fetchrow_hashref;
+
+    } elsif ($operation eq "insert") {
+	$table->{_insert}->execute(@_);
+	return 1;
+
+    } else {
+	die("No such operation: $operation; args: " . join(", ", @_) . "\n");
     }
 }
 
