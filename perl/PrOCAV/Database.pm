@@ -98,6 +98,38 @@ my %look_ups = (
 
     modes                => sub { [{value => "major", display => "Major"}, {value => "minor", display => "Minor"}]; },
 
+    media_sources        => sub { [{value => "local", display => "Local media"}, {value => "remote", display => "Remote media"}]; },
+
+    media_for            => sub { [{value => "works", display => "Works"},
+				   {value => "editions", display => "Editions"},
+				   {value => "publications", display => "Publications"},
+				   {value => "performances", display => "Performances"},
+				   {value => "letters", display => "Letters"},
+				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "texts", display => "Texts"},
+				   {value => "media_items", display => "media_items"},
+				   {value => "remote_media_items", display => "remote_media_items"}]; },
+
+    media_relations      => sub { [{value => "digitisation", display => "Digitisation"},
+				   {value => "transcription", display => "Transcription"},
+				   {value => "features", display => "Features"}]; },
+
+    resources_for        => sub { [{value => "works", display => "Works"},
+				   {value => "titles", display => "Titles"},
+				   {value => "genres", display => "Genres"},
+				   {value => "instruments", display => "Instruments"},
+				   {value => "composition", display => "Composition"},
+				   {value => "editions", display => "Editions"},
+				   {value => "publications", display => "Publications"},
+				   {value => "performances", display => "Performances"},
+				   {value => "letters", display => "Letters"},
+				   {value => "letter_mentions", display => "Letter mentions"},
+				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "persons", display => "Persons"},
+				   {value => "texts", display => "Texts"},
+				   {value => "dedicated_to", display => "Dedicated_to"},
+				   {value => "remote_media_items", display => "remote_media_items"}]; },
+
     # FIXME Think about the logic of this; not after X is inclusive of
     # X, whereas before X is exclusive of X
     date_accuracy        => sub { [{value => "exactly", display => "Exactly"},
@@ -110,41 +142,33 @@ my %look_ups = (
     # argument. It then returns a prepared statement which SELECTs
     # rows containing `value` and `display` fields. These results sets
     # can be used as look-ups.
-    parent_works         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID JOIN catalogues ON catalogue_numbers.catalogue_id=catalogues.ID WHERE part_of IS NULL ORDER BY uniform_title)); },
+    parent_works         => sub { @_[0]->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID JOIN catalogues ON catalogue_numbers.catalogue_id=catalogues.ID WHERE part_of IS NULL ORDER BY uniform_title)); },
 
-    all_works            => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID JOIN catalogues ON catalogue_numbers.catalogue_id=catalogues.ID ORDER BY uniform_title)); },
+    all_works            => sub { @_[0]->prepare(qq(SELECT works.ID AS value, CONCAT(uniform_title, IFNULL(CONCAT(" ", catalogues.label, number, IFNULL(suffix,"")),"")) AS display FROM works JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID JOIN catalogues ON catalogue_numbers.catalogue_id=catalogues.ID ORDER BY uniform_title)); },
 
-    genres               => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT DISTINCT genre AS value, genre AS display FROM genres ORDER BY genre)); },
+    genres               => sub { @_[0]->prepare(qq(SELECT DISTINCT genre AS value, genre AS display FROM genres ORDER BY genre)); },
 
-    instruments          => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT instrument AS value, instrument AS display FROM instruments ORDER BY instrument)); },
+    instruments          => sub { @_[0]->prepare(qq(SELECT instrument AS value, instrument AS display FROM instruments ORDER BY instrument)); },
 
-    manuscripts          => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
+    manuscripts          => sub { @_[0]->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
 
-    editions             => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
+    editions             => sub { @_[0]->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
 
-    publications         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT publications.ID AS value, title AS display FROM publications ORDER BY title)); },
+    publications         => sub { @_[0]->prepare(qq(SELECT publications.ID AS value, title AS display FROM publications ORDER BY title)); },
 
-    persons              => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
+    persons              => sub { @_[0]->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
 
-    score_types          => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM editions ORDER BY score_type)); },
+    score_types          => sub { @_[0]->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM editions ORDER BY score_type)); },
 
-    performances         => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
+    performances         => sub { @_[0]->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
 
-    letters              => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters JOIN persons AS s ON letters.signatory = s.ID JOIN persons AS a ON letters.addressee = a.ID JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
+    letters              => sub { @_[0]->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters JOIN persons AS s ON letters.signatory = s.ID JOIN persons AS a ON letters.addressee = a.ID JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
 
-    catalogues           => sub { my $dbh = shift;
-				  $dbh->prepare(qq(SELECT ID AS value, label AS display FROM catalogues ORDER BY label)); }
+    catalogues           => sub { @_[0]->prepare(qq(SELECT ID AS value, label AS display FROM catalogues ORDER BY label)); },
+
+    media_items          => sub { @_[0]->prepare(qq(SELECT ID AS value, path AS display FROM media_items ORDER BY path)); },
+
+    media_item_groups    => sub { @_[0]->prepare(qq(SELECT ID AS value, short_description AS display FROM media_groups ORDER BY short_description)); }
 
     );
 
@@ -161,7 +185,7 @@ sub find_look_up {
 #### DATABASE SCHEMA
 #################################################################################################################
 
-my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates);
+my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 sub table_order {
     @table_order;
@@ -1188,11 +1212,291 @@ my %schema = (
 			    data_type => "string",
 			    cell_width => 80}},
 
-    media_items        => {},
-    remote_media_items => {},
-    representation_of  => {},
-    resources          => {},
-    resource_about     => {});
+    media_items        => {
+	_worksheet => "media_items",
+
+	_field_order         => [qw(ID mime_type path extent resolution date_made date_acquired copyright public staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(mime_type path extent resolution date_made date_acquired copyright public staff_notes)],
+	_order_fields        => [qw(path)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	mime_type       => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    not_null => 1,
+			    cell_width => 15},
+
+	path            => {access => "rw",
+			    data_type => "string",
+			    unique => 1,
+			    not_null => 1,
+			    width => 255,
+			    cell_width => 30},
+
+	extent          => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	resolution      => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	date_made       => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	date_acquired   => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	copyright       => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 20},
+
+	public          => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 1,
+			    cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    remote_media_items  => {
+	_worksheet => "remote_media_items",
+
+	_field_order         => [qw(ID mime_type uri extent resolution date_made date_linked copyright public staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(mime_type uri extent resolution date_made date_linked copyright public staff_notes)],
+	_order_fields        => [qw(uri)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	mime_type       => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    not_null => 1,
+			    cell_width => 15},
+
+	uri             => {access => "rw",
+			    data_type => "string",
+			    unique => 1,
+			    not_null => 1,
+			    width => 255,
+			    cell_width => 30},
+
+	extent          => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	resolution      => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	date_made       => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	date_linked     => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	copyright       => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 20},
+
+	public          => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 1,
+			    cell_width => 8},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    media_groups       => {
+	_worksheet => "media_groups",
+
+	_field_order         => [qw(ID short_description staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(short_description staff_notes)],
+	_order_fields        => [qw(ID)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	short_description => {access => "rw",
+			      data_type => "string",
+			      width => 64,
+			      cell_width => 30},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    media_in_group     => {
+	_worksheet => "media_items",
+
+	_field_order         => [qw(media_id group_id position)],
+	_unique_fields       => [qw(media_id group_id position)],
+	_single_select_field => "media_id",
+	_insert_fields       => [qw(media_id group_id position)],
+	_order_fields        => [qw(group_id position)],
+	_default_order       => "ASC",
+
+	media_id         => {access => "rw",
+			     data_type => "look_up",
+			     look_up => "media_items",
+			     not_null => 1,
+			     cell_width => 40},
+
+	group_id         => {access => "rw",
+			     data_type => "look_up",
+			     look_up => "media_item_groups",
+			     not_null => 1,
+			     cell_width => 40},
+
+	position         => {access => "rw",
+			     data_type => "integer",
+			     cell_width => 8}},
+
+    representation_of  => {
+	_worksheet => "representation_of",
+
+	_field_order         => [qw(source media_id related_table related_id relation)],
+	_unique_fields       => [qw(source media_id related_table related_id)],
+	_single_select_field => "media_id",
+	_insert_fields       => [qw(source media_id related_table related_id relation)],
+	_order_fields        => [qw(related_table related_id media_id)],
+	_default_order       => "ASC",
+
+	source          => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "media_sources",
+			    not_null => 1,
+			    cell_width => 10},
+
+	media_id        => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	related_table   => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "media_for",
+			    not_null => 1,
+			    cell_width => 10},
+
+	related_id      => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	relation        => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "media_relations",
+			    cell_width => 12}},
+
+    resources          => {
+	_worksheet => "resources",
+
+	_field_order         => [qw(ID uri title mime_type date_made date_linked staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(uri title mime_type date_made date_linked staff_notes)],
+	_order_fields        => [qw(uri)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	uri             => {access => "rw",
+			    data_type => "string",
+			    unique => 1,
+			    not_null => 1,
+			    width => 255,
+			    cell_width => 30},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 30},
+
+	mime_type       => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    not_null => 1,
+			    cell_width => 15},
+
+	date_made       => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	date_linked     => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    resource_about     => {
+	_worksheet => "resource_about",
+
+	_field_order         => [qw(resource_id related_table related_id relation)],
+	_unique_fields       => [qw(resource_id related_table related_id)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(resource_id related_table related_id relation)],
+	_order_fields        => [qw(related_table related_id)],
+	_default_order       => "ASC",
+
+	resource_id     => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	related_table   => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "resources_for",
+			    not_null => 1,
+			    cell_width => 10},
+
+	related_id      => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	relation        => {access => "rw",
+			    data_type => "string",
+			    cell_width => 12}});
 
 sub is_look_up {
     my ($table, $field_name) = @_;
