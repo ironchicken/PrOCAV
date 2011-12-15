@@ -15,7 +15,7 @@ use Excel::Writer::XLSX;
 use Excel::Writer::XLSX::Utility;
 use Spreadsheet::XLSX;
 use Text::Iconv;
-use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info get_record_stmt);
+use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt);
 use File::Temp qw(tempfile);
 
 package Ingestion;
@@ -57,7 +57,7 @@ sub create_workbook {
 
 	# add any requested records
 	if (exists $include_records->{$table}) {
-	    my $get_stmt = Database::get_record_stmt($table);
+	    my $get_stmt = Database::record_stmt($table);
 	    while (my ($row, $ID) = each @{ $include_records->{$table} }) {
 		push_record($sheet, $row+1, $get_stmt, $table, $ID);
 	    }

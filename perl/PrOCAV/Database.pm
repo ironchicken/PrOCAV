@@ -14,7 +14,7 @@ package Database;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(make_dbh get_record insert_record find_look_up registered_look_ups table_info table_order session create_session);
+our @EXPORT_OK = qw(make_dbh record insert_record find_look_up registered_look_ups table_info table_order session create_session);
 
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
@@ -1160,14 +1160,14 @@ sub create_session {
 
     my $sql = $schema{$table}->{_get};
 
-sub get_record_stmt {
+sub record_stmt {
     $schema{$_[0]}->{_get};
 }
     
-sub get_record {
+sub record {
     my ($table, $ID) = @_;
 
-    my $proc = $schema{$table}->{get};
+    my $proc = $schema{$table}->{_get};
 
     if (defined $proc) {
 	return $proc->($ID);
@@ -1223,7 +1223,7 @@ sub update_record {
 
 sub insert_work { }
 
-sub get_works_list {
+sub works_list {
     my $dbh = shift;
 
     my $works_list_stmt = $dbh->prepare(qq(SELECT * FROM works WHERE part_of IS NULL));
