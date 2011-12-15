@@ -273,8 +273,24 @@ CREATE TABLE remote_media_items (
   `public`          TINYINT NOT NULL DEFAULT 1,
   staff_notes       TEXT);
 
-CREATE TABLE representation_of (
+-- media_items may be organised into groups; for example, several
+-- image files which are the pages of a manuscript
+CREATE TABLE media_groups (
+  ID                INT PRIMARY KEY auto_increment,
+  short_description VARCHAR(64),
+  staff_notes       TEXT);
+
+-- asserts that a media_item is in a media_groups
+CREATE TABLE media_in_group (
   `source`          ENUM('local', 'remote') NOT NULL,
+  media_id          INT NOT NULL,
+  group_id          INT NOT NULL,
+  `position`        INT);
+
+-- asserts that a media_item (or media_groups) is a representation of
+-- something
+CREATE TABLE representation_of (
+  `source`          ENUM('local', 'remote', 'group') NOT NULL,
   media_id          INT NOT NULL,
   related_table     ENUM('works', 'editions', 'publications', 'performances',
                          'letters', 'manuscripts', 'texts', 'media_items',
