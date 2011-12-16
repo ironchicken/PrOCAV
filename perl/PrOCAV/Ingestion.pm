@@ -180,6 +180,11 @@ sub add_column {
 	    } elsif (exists $field_info->{maximum}) {
 		$validation->{criteria} = '<=';
 		$validation->{value} = $field_info->{value};
+	    } elsif (exists $field_info->{foreign_key}) {
+		$validation->{criteria} = '>=';
+		$validation->{value} = 0;
+		$validation->{input_title} = "Foreign key: " . $field_info->{foreign_key};
+		$validation->{input_message} = $field_info->{hint};
 	    } else {
 		$validation->{criteria} = '>=';
 		$validation->{value} = 0;
