@@ -224,7 +224,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	part_of         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of parent work"},
 
 	parent_relation => {access => "rw",
 			    data_type => "look_up",
@@ -270,7 +272,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	performance_direction => {access => "rw",
 				  data_type => "string",
@@ -329,25 +333,33 @@ my %schema = (
 	# 		    not_null => 1,
 	# 		    cell_width => 40},
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 	# manuscript_id   => {access => "rw",
 	# 		    data_type => "look_up",
 	# 		    look_up => "manuscripts",
 	# 		    cell_width => 30},
 	manuscript_id   => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "manuscripts",
+			    hint => "ID of the manuscript where this title appears"},
 	# edition_id      => {access => "rw",
 	# 		    data_type => "look_up",
 	# 		    look_up => "editions",
 	# 		    cell_width => 40},
 	edition_id      => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "editions",
+			    hint => "ID of the edition where this title appears"},
 	# person_id       => {access => "rw",
 	# 		    data_type => "look_up",
 	# 		    look_up => "persons",
 	# 		    cell_width => 30},
 	person_id       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person responsible for this title"},
 	title           => {access => "rw",
 			    data_type => "string",
 			    cell_width => 20},
@@ -386,7 +398,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	# catalogue_id    => {access => "rw",
 	# 		    data_type => "look_up",
@@ -395,7 +409,9 @@ my %schema = (
 	# 		    cell_width => 20},
 
 	catalogue_id    => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "catalogues",
+			    hint => "ID of the catalogue for this number"},
 
 	number          => {access => "rw",
 			    data_type => "integer",
@@ -436,7 +452,9 @@ my %schema = (
 	# 		    not_null => 1,
 	# 		    cell_width => 40},
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 	status          => {access => "rw",
 			    data_type => "look_up",
 			    look_up => "work_status",
@@ -465,7 +483,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	# genre           => {access => "rw",
 	# 		    data_type => "look_up",
@@ -492,7 +512,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	# instrument      => {access => "rw",
 	#  		    data_type => "look_up",
@@ -501,7 +523,9 @@ my %schema = (
 	# 		    cell_width => 10},
 
 	instrument      => {access => "rw",
-	 		    data_type => "integer"},
+	 		    data_type => "integer",
+			    foreign_key => "instruments",
+			    hint => "ID of the instrument"},
 
 	role            => {access => "rw",
 			    data_type => "string",
@@ -529,7 +553,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	precusor_work   => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the precursor work"},
 
 	# derived_work    => {access => "rw",
 	# 		    data_type => "look_up",
@@ -539,15 +565,14 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	derived_work    => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the derived work"},
 	
-	# derivation_relation => {access => "rw",
-	# 			data_type => "look_up",
-	# 			look_up => "derivation_relations",
-	# 			not_null => 1},
-
 	derivation_relation => {access => "rw",
-				data_type => "integer"},
+				data_type => "look_up",
+				look_up => "derivation_relations",
+				not_null => 1},
 
 	notes           => {access => "rw",
 			    data_type => "string",
@@ -578,7 +603,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work worked on"},
 
 	# manuscript_id   => {access => "rw",
 	# 		    data_type => "look_up",
@@ -587,16 +614,22 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	manuscript_id   => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "manuscripts",
+			    hint => "ID of the manscript worked on"},
 
 	period_start    => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date this period started"},
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	period_end      => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date this period ended"},
 
 	work_type       => {access => "rw",
 			    data_type => "look_up",
@@ -645,10 +678,14 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	date_made       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date this edition was made"},
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
@@ -659,7 +696,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	editor          => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person who edited this edition"},
 
 	score_type      => {access => "rw",
 			    data_type => "look_up",
@@ -741,7 +780,9 @@ my %schema = (
 	# 		    cell_width => 20},
 
 	edition_id      => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "editions",
+			    hint => "ID of the edition published"},
 
 	# publication_id  => {access => "rw",
 	# 		    data_type => "look_up",
@@ -750,7 +791,9 @@ my %schema = (
 	# 		    cell_width => 20},
 
 	publication_id  => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "publications",
+			    hint => "ID of the publication in which the edition was published"},
 
 	edition_extent  => {access => "rw",
 			    data_type => "string",
@@ -785,10 +828,14 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	date_performed  => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date of the performance"},
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
@@ -827,7 +874,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	person_id       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person who performed"},
 
 	# performance_id  => {access => "rw",
 	# 		    data_type => "look_up",
@@ -836,7 +885,9 @@ my %schema = (
 	# 		    cell_width => 20},
 
 	performance_id  => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "performances",
+			    hint => "ID of the performance"},
 
 	role            => {access => "rw",
 			    data_type => "string",
@@ -886,7 +937,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	addressee       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person the letter was addressed to"},
 
 	# signatory       => {access => "rw",
 	# 		    data_type => "look_up",
@@ -894,7 +947,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	signatory       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person the letter was signed by"},
 
 	original_text   => {access => "rw",
 			    data_type => "string",
@@ -929,7 +984,9 @@ my %schema = (
 	# 		    cell_width => 20},
 
 	letter_id       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "letters",
+			    hint => "ID of the letter"},
 
 	letter_range    => {access => "rw",
 			    data_type => "string",
@@ -1004,7 +1061,9 @@ my %schema = (
 			    cell_width => 8},
 
 	date_made       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date this manuscript was made"},
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
@@ -1015,7 +1074,9 @@ my %schema = (
 	# 		    cell_width => 20},
 
 	annotation_of   => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "editions",
+			    hint => "ID of an edition of which this manuscript is an annotation"},
 
 	location        => {access => "rw",
 			    data_type => "string",
@@ -1056,7 +1117,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	author          => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person who wrote this text"},
 
 	language        => {access => "rw",
 			    data_type => "string",
@@ -1134,7 +1197,9 @@ my %schema = (
 	# 		    cell_width => 40},
 
 	work_id         => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
  	# person_id       => {access => "rw",
 	# 		    data_type => "look_up",
@@ -1143,7 +1208,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	person_id       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person to whom the dedication was made"},
 
 	# manuscript_id   => {access => "rw",
 	# 		    data_type => "look_up",
@@ -1151,7 +1218,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	manuscript_id   => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "manuscripts",
+			    hint => "ID of the manuscript on which the dedication is found"},
 
 	# edition_id      => {access => "rw",
 	# 		    data_type => "look_up",
@@ -1159,7 +1228,9 @@ my %schema = (
 	# 		    cell_width => 30},
 
 	edition_id      => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "editions",
+			    hint => "ID of the edition in which the dedication is found"},
 
 	dedication_text => {access => "rw",
 			    data_type => "string",
@@ -1167,7 +1238,9 @@ my %schema = (
 			    cell_width => 15},
 
 	date_made       => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date this dedication was made"},
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
@@ -1478,7 +1551,9 @@ my %schema = (
 	# 		     cell_width => 40},
 
 	media_id         => {access => "rw",
-			     data_type => "integer"},
+			     data_type => "integer",
+			     foreign_key => "media_items",
+			     hint => "ID of the media item"},
 
 	# group_id         => {access => "rw",
 	# 		     data_type => "look_up",
@@ -1487,7 +1562,9 @@ my %schema = (
 	# 		     cell_width => 40},
 
 	group_id         => {access => "rw",
-			     data_type => "integer"},
+			     data_type => "integer",
+			     foreign_key => "media_item_groups",
+			     hint => "ID of the group"},
 
 	position         => {access => "rw",
 			     data_type => "integer",
@@ -1588,6 +1665,8 @@ my %schema = (
 
 	resource_id     => {access => "rw",
 			    data_type => "integer",
+			    foreign_key => "resources",
+			    hint => "ID of the resource",
 			    not_null => 1,
 			    cell_width => 8},
 
