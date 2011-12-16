@@ -1781,6 +1781,25 @@ sub spare_IDs {
     return @spares || (List::Util::max(@IDs) + 1);
 }
 
+sub all_records {
+    my $dbh = shift || make_dbh;
+
+    my %tables = ();
+
+    foreach my $table (@table_order) {
+	my $records = [];
+	$schema{$table}->{_list}->execute();
+	while (my $row = $schema{$table}->{_list}->fetchrow_hashref) {
+	    push $records, @{$row}{@{ $schema{$table}->{_unique_fields} }};
+	}
+	if ($records) {
+	    $tables{$table} = $records;
+	}
+    }
+
+    return \%tables;
+}
+
 ## The PrOCAV::Database modules also exposes subroutines which allow
 ## access to each table as: TABLE_NAME to retrieve an individual
 ## record; list_TABLE_NAME to retrieve multiple records;
