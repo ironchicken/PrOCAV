@@ -560,10 +560,10 @@ my %schema = (
     composition        => {
 	_worksheet => "composition",
 
-	_field_order         => [qw(ID work_id manuscript_id period_start work_type)],
+	_field_order         => [qw(ID work_id manuscript_id period_start period_end work_type)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(work_id manuscript_id period_start work_type)],
+	_insert_fields       => [qw(work_id manuscript_id period_start period_end work_type)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -594,6 +594,9 @@ my %schema = (
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	period_end      => {access => "rw",
+			    data_type => "integer"},
 
 	work_type       => {access => "rw",
 			    data_type => "look_up",
