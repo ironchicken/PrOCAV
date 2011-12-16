@@ -9,13 +9,15 @@
 
 use strict;
 use DBI;
+use List::Util qw(max min);
+use Array::Utils qw(:all);
 use AutoLoader;
 
 package Database;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(make_dbh record insert_record find_look_up registered_look_ups table_info table_order session create_session);
+our @EXPORT_OK = qw(make_dbh record insert_record find_look_up registered_look_ups table_info table_order session create_session spare_IDs);
 our $AUTOLOAD;
 
 my %db_attrs = (RaiseError  => 1,
@@ -1663,6 +1665,17 @@ sub update_record {
 					 @{ $record }{@{ $schema{$table}->{_unique_fields} }}))
 	or die $schema{$table}->{_update}->errstr;
     1;
+}
+
+sub spare_IDs {
+    my ($dbh, $table) = @_;
+
+    my $st = $dbh->prepare(qq(SELECT ID FROM $table ORDER BY ID));
+    $st->execute();
+    my @IDs; while (my $row = $st->fetchrow_arrayref) { push @IDs, $row->[0]; }
+    my @range = (List::Util::min(@IDs) .. List::Util::max(@IDs));
+    my @spares = Array::Utils::array_diff(@range, @IDs);
+    return @spares || (List::Util::max(@IDs) + 1);
 }
 
 ## The PrOCAV::Database modules also exposes subroutines which allow
