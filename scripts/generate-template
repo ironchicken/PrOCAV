@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+
+use strict;
+use PrOCAV::Ingestion qw(create_workbook);
+use PrOCAV::Database qw(all_records);
+
+sub main {
+    my $filename = Ingestion::create_workbook(Database::all_records);
+
+}
+
+main;
