@@ -15,8 +15,10 @@ use Excel::Writer::XLSX;
 use Excel::Writer::XLSX::Utility;
 use Spreadsheet::XLSX;
 use Text::Iconv;
-use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt);
+use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt spare_IDs);
 use File::Temp qw(tempfile);
+use List::Util qw(max min);
+use List::MoreUtils qw(first_index);
 
 package Ingestion;
 
@@ -56,10 +58,22 @@ sub create_workbook {
 	my $sheet = create_sheet($table);
 
 	# add any requested records
+	my $row = 1;
 	if (exists $include_records->{$table}) {
 	    my $get_stmt = Database::record_stmt($table);
-	    while (my ($row, $ID) = each @{ $include_records->{$table} }) {
-		push_record($sheet, $row+1, $get_stmt, $table, $ID);
+	    foreach my $ID (@{ $include_records->{$table} }) {
+		push_record($sheet, $row, $get_stmt, $table, $ID);
+		$row++;
+	    }
+	}
+
+	# if applicable, fill in spare IDs in remaining rows
+	if (exists Database::table_info($table)->{ID}) {
+	    my @spare_IDs = Database::spare_IDs($dbh, $table);
+	    my $next = List::Util::max(@spare_IDs) + 1 || 1;
+	    foreach my $r ($row..$MAX_RECORDS) {
+		#$sheet->write($r, List::MoreUtils::first_index { $_ eq "ID" } keys %{ Database::table_info($table) }, pop @spare_IDs || $next++);
+		$sheet->write($r, 0, pop @spare_IDs || $next++);
 	    }
 	}
     }
