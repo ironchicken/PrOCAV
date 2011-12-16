@@ -27,7 +27,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(create_workbook);
 
 my $workbook;
-my $MAX_RECORDS = 100;
+my $MAX_RECORDS = 1000;
 
 # package-local cell formats
 my %cell_formats = ();
