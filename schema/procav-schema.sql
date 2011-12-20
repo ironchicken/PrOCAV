@@ -142,7 +142,8 @@ CREATE TABLE performances (
   work_id           INT NOT NULL,
   date_performed    INT,
   venue_id          INT,
-  performance_type  ENUM('concert', 'broadcast', 'recording', 'private'),
+  performance_type  ENUM('concert', 'broadcast', 'recording', 'private',
+                         'staged', 'semi-staged'),
   notes             TEXT,
   staff_notes       TEXT);
 

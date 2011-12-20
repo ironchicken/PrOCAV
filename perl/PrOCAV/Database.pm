@@ -70,6 +70,8 @@ my %look_ups = (
     performance_types    => sub { [{value => "concert", display => "Concert"},
 				   {value => "broadcast", display => "Broadcast"},
 				   {value => "recording", display => "Recording"},
+				   {value => "staged", display => "Staged"},
+				   {value => "semi-staged", display => "Semi-staged"},
 				   {value => "private", display => "Private"}]; },
 
     mentionable_tables   => sub { [{value => "works", display => "Works"},
