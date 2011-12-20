@@ -527,7 +527,7 @@ my %schema = (
 	instrument      => {access => "rw",
 	 		    data_type => "integer",
 			    foreign_key => "instruments",
-			    hint => "ID of the instrument"},
+			    hint => "unique name of the instrument"},
 
 	role            => {access => "rw",
 			    data_type => "string",
