@@ -199,10 +199,10 @@ my %schema = (
     works => {
 	_worksheet => "works",
 
-	_field_order         => [qw(ID uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
+	_field_order         => [qw(ID uniform_title sub_title part_of parent_relation part_number part_position duration notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(uniform_title sub_title part_of parent_relation part_number part_position duration notes)],
+	_insert_fields       => [qw(uniform_title sub_title part_of parent_relation part_number part_position duration notes staff_notes)],
 	_order_fields        => [qw(uniform_title)],
 	_default_order       => "ASC",
 
@@ -260,10 +260,10 @@ my %schema = (
     musical_information => {
 	_worksheet => "musical_information",
 
-	_field_order         => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division)],
+	_field_order         => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division staff_notes)],
 	_unique_fields       => [qw(work_id)],
 	_single_select_field => "work_id",
-	_insert_fields       => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division)],
+	_insert_fields       => [qw(work_id performance_direction key_signature tonic tonic_chromatic mode time_sig_beats time_sig_division staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -319,10 +319,10 @@ my %schema = (
     titles => {
 	_worksheet => "titles",
 
-	_field_order         => [qw(ID work_id manuscript_id edition_id person_id title transliteration script language notes)],
+	_field_order         => [qw(ID work_id manuscript_id edition_id person_id title transliteration script language notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(work_id manuscript_id edition_id person_id title transliteration script language notes)],
+	_insert_fields       => [qw(work_id manuscript_id edition_id person_id title transliteration script language notes staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -386,10 +386,10 @@ my %schema = (
     catalogue_numbers  => {
 	_worksheet => "catalogue_numbers",
 
-	_field_order         => [qw(work_id catalogue_id number number_position suffix suffix_position)],
+	_field_order         => [qw(work_id catalogue_id number number_position suffix suffix_position staff_notes)],
 	_unique_fields       => [qw(work_id)],
 	_single_select_field => "work_id",
-	_insert_fields       => [qw(work_id catalogue_id number number_position suffix suffix_position)],
+	_insert_fields       => [qw(work_id catalogue_id number number_position suffix suffix_position staff_notes)],
 	_order_fields        => [qw(catalogue_id number_position suffix_position)],
 	_default_order       => "ASC",
 
@@ -500,10 +500,10 @@ my %schema = (
     scored_for         => {
 	_worksheet => "scored_for",
 
-	_field_order         => [qw(work_id instrument role)],
+	_field_order         => [qw(work_id instrument role staff_notes)],
 	_unique_fields       => [qw(work_id instrument role)],
 	_single_select_field => "work_id",
-	_insert_fields       => [qw(work_id instrument role)],
+	_insert_fields       => [qw(work_id instrument role staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -540,10 +540,10 @@ my %schema = (
     derived_from       => {
 	_worksheet => "derived_from",
 
-	_field_order         => [qw(precusor_work derived_work derivation_relation)],
+	_field_order         => [qw(precusor_work derived_work derivation_relation staff_notes)],
 	_unique_fields       => [qw(precusor_work derived_work derivation_relation)],
 	_single_select_field => "precusor_work",
-	_insert_fields       => [qw(precusor_work derived_work derivation_relation)],
+	_insert_fields       => [qw(precusor_work derived_work derivation_relation staff_notes)],
 	_order_fields        => [qw(precursor_work)],
 	_default_order       => "ASC",
 
@@ -662,10 +662,10 @@ my %schema = (
     editions           => {
 	_worksheet => "editions",
 
-	_field_order         => [qw(ID work_id date_made editor score_type work_extent notes)],
+	_field_order         => [qw(ID work_id date_made editor score_type work_extent notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(work_id date_made editor score_type work_extent notes)],
+	_insert_fields       => [qw(work_id date_made editor score_type work_extent notes staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -723,10 +723,10 @@ my %schema = (
     publications       => {
 	_worksheet => "publications",
 
-	_field_order         => [qw(ID title publisher publication_place date_published serial_number notes)],
+	_field_order         => [qw(ID title publisher publication_place date_published serial_number notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title publisher publication_place date_published serial_number notes)],
+	_insert_fields       => [qw(title publisher publication_place date_published serial_number notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -768,10 +768,10 @@ my %schema = (
     published_in       => {
 	_worksheet => "published_in",
 
-	_field_order         => [qw(edition_id publication_id edition_extent publication_range)],
+	_field_order         => [qw(edition_id publication_id edition_extent publication_range staff_notes)],
 	_unique_fields       => [qw(edition_id publication_id)],
 	_single_select_field => "edition_id",
-	_insert_fields       => [qw(edition_id publication_id edition_extent publication_range)],
+	_insert_fields       => [qw(edition_id publication_id edition_extent publication_range staff_notes)],
 	_order_fields        => [qw(publication_id)],
 	_default_order       => "ASC",
 
@@ -812,10 +812,10 @@ my %schema = (
     performances       => {
 	_worksheet => "performances",
 
-	_field_order         => [qw(ID work_id date_performed venue_id performance_type notes)],
+	_field_order         => [qw(ID work_id date_performed venue_id performance_type notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(work_id date_performed venue_id performance_type notes)],
+	_insert_fields       => [qw(work_id date_performed venue_id performance_type notes staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -862,10 +862,10 @@ my %schema = (
     performed_in       => {
 	_worksheet => "performed_in",
 
-	_field_order         => [qw(person_id performance_id role)],
+	_field_order         => [qw(person_id performance_id role staff_notes)],
 	_unique_fields       => [qw(person_id performance_id role)],
 	_single_select_field => "person_id",
-	_insert_fields       => [qw(person_id performance_id role)],
+	_insert_fields       => [qw(person_id performance_id role staff_notes)],
 	_order_fields        => [qw(performance_id)],
 	_default_order       => "ASC",
 
@@ -906,10 +906,10 @@ my %schema = (
     letters            => {
 	_worksheet => "letters",
 
-	_field_order         => [qw(ID letters_db_ID date_composed date_sent addressee signatory original_text english_text)],
+	_field_order         => [qw(ID letters_db_ID date_composed date_sent addressee signatory original_text english_text staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(letters_db_ID date_composed date_sent addressee signatory original_text english_text)],
+	_insert_fields       => [qw(letters_db_ID date_composed date_sent addressee signatory original_text english_text staff_notes)],
 	_order_fields        => [qw(ID)],
 	_default_order       => "ASC",
 
@@ -968,10 +968,10 @@ my %schema = (
     letter_mentions    => {
 	_worksheet => "letter_mentions",
 
-	_field_order         => [qw(ID letter_id letter_range mentioned_table mentioned_id mentioned_extent notes)],
+	_field_order         => [qw(ID letter_id letter_range mentioned_table mentioned_id mentioned_extent notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(letter_id letter_range mentioned_table mentioned_id mentioned_extent notes)],
+	_insert_fields       => [qw(letter_id letter_range mentioned_table mentioned_id mentioned_extent notes staff_notes)],
 	_order_fields        => [qw(letter_id)],
 	_default_order       => "ASC",
 
@@ -1020,10 +1020,10 @@ my %schema = (
     manuscripts        => {
 	_worksheet => "manuscripts",
 
-	_field_order         => [qw(ID title purpose physical_size medium extent missing date_made annotation_of location notes)],
+	_field_order         => [qw(ID title purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title purpose physical_size medium extent missing date_made annotation_of location notes)],
+	_insert_fields       => [qw(title purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -1096,10 +1096,10 @@ my %schema = (
     texts              => {
 	_worksheet => "texts",
 
-	_field_order         => [qw(ID title author language original_content english_content)],
+	_field_order         => [qw(ID title author language original_content english_content staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title author language original_content english_content)],
+	_insert_fields       => [qw(title author language original_content english_content staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -1143,10 +1143,10 @@ my %schema = (
     persons            => {
 	_worksheet => "persons",
 
-	_field_order         => [qw(ID given_name family_name sex nationality)],
+	_field_order         => [qw(ID given_name family_name sex nationality staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(given_name family_name sex nationality)],
+	_insert_fields       => [qw(given_name family_name sex nationality staff_notes)],
 	_order_fields        => [qw(family_name given_name)],
 	_default_order       => "ASC",
 
@@ -1181,10 +1181,10 @@ my %schema = (
     dedicated_to       => {
 	_worksheet => "dedicated_to",
 
-	_field_order         => [qw(ID work_id person_id manuscript_id edition_id dedication_text date_made)],
+	_field_order         => [qw(ID work_id person_id manuscript_id edition_id dedication_text date_made staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(work_id person_id manuscript_id edition_id dedication_text date_made)],
+	_insert_fields       => [qw(work_id person_id manuscript_id edition_id dedication_text date_made staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -1282,10 +1282,10 @@ my %schema = (
     dates              => {
 	_worksheet => "dates",
 
-	_field_order         => [qw(ID year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id)],
+	_field_order         => [qw(ID year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id)],
+	_insert_fields       => [qw(year year_accuracy month month_accuracy day day_accuracy end_year end_year_accuracy end_month end_month_accuracy end_day end_day_accuracy date_text source_table source_id staff_notes)],
 	_order_fields        => [qw(year month day)],
 	_default_order       => "DESC",
 
