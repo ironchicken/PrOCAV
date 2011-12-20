@@ -703,9 +703,8 @@ my %schema = (
 			    hint => "ID of the person who edited this edition"},
 
 	score_type      => {access => "rw",
-			    data_type => "look_up",
-			    look_up => "score_types",
-	 		    list_mutable => 1,
+			    data_type => "string",
+			    width => 128,
 			    cell_width => 15},
 
 	work_extent     => {access => "rw",
