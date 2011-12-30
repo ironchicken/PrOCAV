@@ -183,6 +183,7 @@ CREATE TABLE letter_mentions (
 -- a music manuscript relating to a work
 CREATE TABLE manuscripts (
   ID                INT PRIMARY KEY auto_increment,
+  work_id           INT,
   title             VARCHAR(128),
   purpose           ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
                          'extended draft short score', 'instrumental annotations',

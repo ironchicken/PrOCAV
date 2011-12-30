@@ -1020,16 +1020,21 @@ my %schema = (
     manuscripts        => {
 	_worksheet => "manuscripts",
 
-	_field_order         => [qw(ID title purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
+	_field_order         => [qw(ID work_id title purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
+	_insert_fields       => [qw(title work_id purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
 			    cell_width => 8},
+
+	work_id         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
 
 	title           => {access => "rw",
 			    data_type => "string",
