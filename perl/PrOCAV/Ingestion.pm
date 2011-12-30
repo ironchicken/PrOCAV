@@ -90,6 +90,8 @@ sub create_workbook {
     $lookups->hide();
     
     $workbook->close() or die("Could not close workbook file: $filename\n");
+
+    return $filename;
 }
 
 sub create_look_ups {
