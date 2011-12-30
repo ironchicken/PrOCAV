@@ -112,7 +112,6 @@ CREATE TABLE editions (
   work_id           INT NOT NULL,
   date_made	    INT,
   editor	    INT,
-  score_type        VARCHAR(128),
   work_extent       VARCHAR(64),
   notes             TEXT,
   staff_notes       TEXT);
@@ -125,6 +124,7 @@ CREATE TABLE publications (
   publication_place VARCHAR(128),
   date_published    INT,
   serial_number     VARCHAR(64),
+  score_type        VARCHAR(128),
   notes             TEXT,
   staff_notes       TEXT);
 

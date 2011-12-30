@@ -163,7 +163,7 @@ my %look_ups = (
 
     persons              => sub { @_[0]->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
 
-    score_types          => sub { @_[0]->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM editions ORDER BY score_type)); },
+    score_types          => sub { @_[0]->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM publications ORDER BY score_type)); },
 
     performances         => sub { @_[0]->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
 
@@ -663,10 +663,10 @@ my %schema = (
     editions           => {
 	_worksheet => "editions",
 
-	_field_order         => [qw(ID work_id date_made editor score_type work_extent notes staff_notes)],
+	_field_order         => [qw(ID work_id date_made editor work_extent notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(work_id date_made editor score_type work_extent notes staff_notes)],
+	_insert_fields       => [qw(work_id date_made editor work_extent notes staff_notes)],
 	_order_fields        => [qw(work_id)],
 	_default_order       => "ASC",
 
@@ -703,11 +703,6 @@ my %schema = (
 			    foreign_key => "persons",
 			    hint => "ID of the person who edited this edition"},
 
-	score_type      => {access => "rw",
-			    data_type => "string",
-			    width => 128,
-			    cell_width => 15},
-
 	work_extent     => {access => "rw",
 			    data_type => "string",
 			    cell_width => 8},
@@ -723,10 +718,10 @@ my %schema = (
     publications       => {
 	_worksheet => "publications",
 
-	_field_order         => [qw(ID title publisher publication_place date_published serial_number notes staff_notes)],
+	_field_order         => [qw(ID title publisher publication_place date_published serial_number score_type notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title publisher publication_place date_published serial_number notes staff_notes)],
+	_insert_fields       => [qw(title publisher publication_place date_published serial_number score_type notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -756,6 +751,11 @@ my %schema = (
 	serial_number   => {access => "rw",
 			    data_type => "string",
 			    cell_width => 12},
+
+	score_type      => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 15},
 
 	notes           => {access => "rw",
 			    data_type => "string",
