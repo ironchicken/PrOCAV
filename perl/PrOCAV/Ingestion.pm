@@ -141,7 +141,7 @@ sub create_sheet {
 
     my $sheet = $workbook->add_worksheet($table);
 
-    $sheet->protect("password");
+    #$sheet->protect("password");
 
     # configure the columns
     while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
