@@ -13,6 +13,7 @@ use DBI;
 #use Spreadsheet::WriteExcel::Utility;
 use Excel::Writer::XLSX;
 use Excel::Writer::XLSX::Utility;
+#use Spreadsheet::ParseExcel;
 use Spreadsheet::XLSX;
 use Text::Iconv;
 use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt spare_IDs);
@@ -37,6 +38,7 @@ sub create_workbook {
 
     my ($fh, $filename) = File::Temp::tempfile();
     $workbook = Excel::Writer::XLSX->new($filename);
+    #$workbook = Spreadsheet::WriteExcel->new($filename);
 
     if (not defined $workbook) {
 	die("Could not create workbook file: $filename\n");
@@ -124,7 +126,9 @@ sub create_look_ups {
 	# create a named range for this look-up
 	$workbook->define_name($name, "=lookups!" .
 	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell(0, $col, 1, 1) . ":" .
+	    #Spreadsheet::WriteExcel::Utility::xl_rowcol_to_cell(0, $col, 1, 1) . ":" .
 	    Excel::Writer::XLSX::Utility::xl_rowcol_to_cell($row, $col, 1, 1));
+	    #Spreadsheet::WriteExcel::Utility::xl_rowcol_to_cell($row, $col, 1, 1));
 
 	$look_up_count++;
     }
@@ -244,6 +248,7 @@ sub ingest_workbook {
 
     my $converter = Text::Iconv->new("utf-8", "windows-1251");
     my $workbook = Spreadsheet::XLSX->new($workbook_filename, $converter);
+    #my $workbook = Spreadsheet::ParseExcel->new($workbook_filename, $converter);
 
     if (not defined $workbook) { die("Could not parse $workbook_filename\n"); }
 
