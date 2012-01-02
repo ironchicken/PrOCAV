@@ -174,7 +174,7 @@ CREATE TABLE letter_mentions (
   letter_ragne      VARCHAR(64),
   mentioned_table   ENUM('works', 'titles', 'composition', 'editions', 'publications',
                          'performances', 'letters', 'manuscripts', 'texts',
-                         'dedicated_to') NOT NULL,
+                         'dedicated_to', 'commissioned_by') NOT NULL,
   mentioned_id      INT NOT NULL,
   mentioned_extent  VARCHAR(64),
   notes             TEXT,
@@ -226,6 +226,16 @@ CREATE TABLE dedicated_to (
   edition_id        INT,
   dedication_text   VARCHAR(255),
   date_made         INT,
+  staff_notes       TEXT);
+
+-- asserts that a work was commissioned by a person
+CREATE TABLE commissioned_by (
+  ID                INT PRIMARY KEY auto_increment,
+  work_id           INT NOT NULL,
+  person_id         INT NOT NULL,
+  commission_text   VARCHAR(255),
+  date_made         INT,
+  notes             TEXT,
   staff_notes       TEXT);
 
 -- MySQL DATE or DATETIME types are not used in this database; instead
@@ -316,7 +326,7 @@ CREATE TABLE resource_about (
   related_table     ENUM('works', 'titles', 'genres', 'instruments', 'composition',
                          'editions', 'publications', 'performances', 'letters',
                          'letter_mentions', 'manuscripts', 'texts', 'persons',
-                         'dedicated_to', 'remote_media_items'),
+                         'dedicated_to', 'commissioned_by', 'remote_media_items') NOT NULL,
   related_id        INT NOT NULL,
   relation          VARCHAR(128));
 

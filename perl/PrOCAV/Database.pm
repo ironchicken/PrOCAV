@@ -85,7 +85,8 @@ my %look_ups = (
 				   {value => "letters", display => "Letters"},
 				   {value => "manuscripts", display => "Manuscripts"},
 				   {value => "texts", display => "Texts"},
-				   {value => "dedicated_to", display => "Dedicated_to"}]; },
+				   {value => "dedicated_to", display => "Dedicated_to"},
+				   {value => "commissioned_by", display => "Commissioned_by"}]; },
 
     sex                  => sub { [{value => "male", display => "Male"},
 				   {value => "female", display => "Female"}]; },
@@ -134,6 +135,7 @@ my %look_ups = (
 				   {value => "persons", display => "Persons"},
 				   {value => "texts", display => "Texts"},
 				   {value => "dedicated_to", display => "Dedicated_to"},
+				   {value => "commissioned_by", display => "Commissioned_by"},
 				   {value => "remote_media_items", display => "remote_media_items"}]; },
 
     # FIXME Think about the logic of this; not after X is inclusive of
@@ -191,7 +193,7 @@ sub find_look_up {
 #### DATABASE SCHEMA
 #################################################################################################################
 
-my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 sub table_order {
     @table_order;
@@ -1252,6 +1254,48 @@ my %schema = (
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    commissioned_by     => {
+	_worksheet => "commissioned_by",
+
+	_field_order         => [qw(ID work_id person_id commission_text date_made notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(work_id person_id commission_text date_made notes staff_notes)],
+	_order_fields        => [qw(work_id)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	work_id         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "works",
+			    hint => "ID of the work"},
+
+	person_id       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    hint => "ID of the person who made the commission"},
+
+	commission_text => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 15},
+
+	date_made       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date the work was commissioned"},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
 
 	staff_notes     => {access => "rw",
 			    data_type => "string",
