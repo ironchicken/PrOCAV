@@ -526,7 +526,7 @@ my %schema = (
 	# 		    cell_width => 10},
 
 	instrument      => {access => "rw",
-	 		    data_type => "integer",
+	 		    data_type => "string",
 			    foreign_key => "instruments",
 			    hint => "unique name of the instrument"},
 
