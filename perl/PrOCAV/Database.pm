@@ -66,7 +66,8 @@ my %look_ups = (
 				   {value => "extended draft short score",    display => "Extended draft short score"},
 				   {value => "instrumental annotations",      display => "Instrumental annotations"},
 				   {value => "draft full score",              display => "Draft full score"},
-				   {value => "autograph complete full score", display => "Autograph complete full score"}]; },
+				   {value => "autograph complete full score", display => "Autograph complete full score"},
+				   {value => "annotated published score",     display => "Annotated published score"}]; },
 
     performance_types    => sub { [{value => "concert", display => "Concert"},
 				   {value => "broadcast", display => "Broadcast"},
