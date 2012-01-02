@@ -104,7 +104,8 @@ CREATE TABLE composition (
   period_end        INT,
   work_type         ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
                          'extended draft short score', 'instrumental annotations',
-                         'draft full score', 'autograph complete full score') NOT NULL);
+                         'draft full score', 'autograph complete full score',
+                         'annotated published score') NOT NULL);
 
 -- editions of works (or parts of works) which may be published
 CREATE TABLE editions (
@@ -187,7 +188,8 @@ CREATE TABLE manuscripts (
   title             VARCHAR(128),
   purpose           ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
                          'extended draft short score', 'instrumental annotations',
-                         'draft full score', 'autograph complete full score') NOT NULL,
+                         'draft full score', 'autograph complete full score',
+                         'annotated published score') NOT NULL,
   physical_size     VARCHAR(32),
   medium            VARCHAR(32),
   extent            INT,
