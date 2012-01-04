@@ -99,7 +99,7 @@ CREATE TABLE derived_from (
 CREATE TABLE composition (
   ID                INT PRIMARY KEY auto_increment,
   work_id           INT NOT NULL,
-  manuscript_id     INT NOT NULL,
+  manuscript_id     INT,
   period_start      INT,
   period_end        INT,
   work_type         ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
