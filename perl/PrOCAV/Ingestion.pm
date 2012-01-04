@@ -273,6 +273,11 @@ sub parse_look_up_value { @_[0] =~ /.*\[([^\]]+)\]$/; $1; }
 sub ingest_worksheet {
     my ($dbh, $workbook, $table, $sheet) = @_;
 
+    if (not defined $sheet) {
+	print "Ignoring unavailable table $table\n";
+	return 1;
+    }
+
     my ($row_min, $row_max) = $sheet->row_range();
     my ($col_min, $col_max) = $sheet->col_range();
 
