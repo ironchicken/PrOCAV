@@ -1889,6 +1889,16 @@ sub record_different {
     }
 }
 
+sub record_empty {
+    my ($table, $record) = @_;
+
+    while (my ($name, $value) = each %{ $record }) {
+	if ((defined $value) && (not grep {$_ eq $name} @{ $schema{$table}->{_unique_fields} })) { return 0; }
+    }
+
+    return 1;
+}
+
 sub insert_record {
     my ($table, $record) = @_;
 

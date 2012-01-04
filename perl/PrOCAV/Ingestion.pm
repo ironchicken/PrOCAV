@@ -288,6 +288,8 @@ sub ingest_worksheet {
 	    } else { $record{$field_name} = undef; }
 	}
 
+	last if (Database::record_empty($table, \%record));
+
 	# update or insert the record
 	if (Database::record_different($table, \%record)) {
 	    Database::update_record(($table, \%record));
