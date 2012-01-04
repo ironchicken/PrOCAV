@@ -247,7 +247,12 @@ sub push_record {
 
     if (defined $record) {
 	while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
-	    $sheet->write($row, $col, $record->{$field_name});
+	    my $field_info = Database::table_info($table)->{$field_name};
+	    if ($field_info->{data_type} eq "boolean") {
+		$sheet->write($row, $col, ($record->{$field_name} == 1) ? "yes" : "no");
+	    } else {
+		$sheet->write($row, $col, $record->{$field_name});
+	    }
 	}
     }
 }
