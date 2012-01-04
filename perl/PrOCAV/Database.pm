@@ -198,7 +198,7 @@ sub find_look_up {
 #### DATABASE SCHEMA
 #################################################################################################################
 
-my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts editions publications published_in performances performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+my @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts editions publications published_in performances venues performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 sub table_order {
     @table_order;
@@ -854,12 +854,60 @@ my %schema = (
 
 	venue_id        => {access => "rw",
 			    data_type => "integer",
-			    cell_width => 8},
+			    foreign_key => "venues",
+			    hint => "ID of the venue"},
 
 	performance_type => {access => "rw",
 			     data_type => "look_up",
 			     look_up => "performance_types",
 			     cell_width => 15},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    venues       => {
+	_worksheet => "venues",
+
+	_field_order         => [qw(ID name city country venue_type homepage notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(name city country venue_type homepage notes staff_notes)],
+	_order_fields        => [qw(country city)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	name            => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 20},
+
+	city            => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 15},
+
+	country         => {access => "rw",
+			    data_type => "string",
+			    width => 2,
+			    cell_width => 8},
+
+	venue_type      => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 12},
+
+	homepage        => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 20},
 
 	notes           => {access => "rw",
 			    data_type => "string",

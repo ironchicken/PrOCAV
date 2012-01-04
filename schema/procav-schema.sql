@@ -148,6 +148,17 @@ CREATE TABLE performances (
   notes             TEXT,
   staff_notes       TEXT);
 
+-- describes venues at which performances may take place
+CREATE TABLE venues (
+  ID                INT PRIMARY KEY auto_increment,
+  `name`            VARCHAR(255) NOT NULL,
+  city              VARCHAR(255),
+  country           CHAR(2),
+  venue_type        VARCHAR(128),
+  homepage          VARCHAR(255),
+  notes             TEXT,
+  staff_notes       TEXT);
+
 -- asserts that a person performed in a performance
 CREATE TABLE performed_in (
   person_id         INT NOT NULL,
