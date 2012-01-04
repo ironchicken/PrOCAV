@@ -1894,6 +1894,8 @@ sub record_different {
     }
 }
 
+use Data::Dumper;
+
 sub record_empty {
     my ($table, $record) = @_;
 
@@ -1908,7 +1910,9 @@ sub insert_record {
     my ($table, $record) = @_;
 
     $schema{$table}->{_insert}->execute(@{ $record }{@{ $schema{$table}->{_insert_fields} }})
-	or die $schema{$table}->{_insert}->errstr;
+	or die $schema{$table}->{_insert}->{Statement} . "\n" .
+	Dumper($schema{$table}->{_insert}->{ParamValues}) .
+	$schema{$table}->{_insert}->errstr;
     1;
 }
 
@@ -1917,7 +1921,9 @@ sub update_record {
 
     $schema{$table}->{_update}->execute((@{ $record }{@{ $schema{$table}->{_insert_fields} }},
 					 @{ $record }{@{ $schema{$table}->{_unique_fields} }}))
-	or die $schema{$table}->{_update}->errstr;
+	or die $schema{$table}->{_update}->{Statement} . "\n" .
+	Dumper($schema{$table}->{_update}->{ParamValues}) .
+	$schema{$table}->{_update}->errstr;
     1;
 }
 

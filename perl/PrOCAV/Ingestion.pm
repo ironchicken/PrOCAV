@@ -270,6 +270,8 @@ sub ingest_workbook {
 # value and returns the field value from that string
 sub parse_look_up_value { @_[0] =~ /.*\[([^\]]+)\]$/; $1; }
 
+use Data::Dumper;
+
 sub ingest_worksheet {
     my ($dbh, $workbook, $table, $sheet) = @_;
 
@@ -305,8 +307,10 @@ sub ingest_worksheet {
 	# update or insert the record
 	if (Database::record_different($table, \%record)) {
 	    Database::update_record(($table, \%record));
+	    print "Updated $table " . Dumper(\%record);
 	} elsif (not Database::record_exists($table, \%record)) {
 	    Database::insert_record(($table, \%record));
+	    print "Inserted $table " . Dumper(\%record);
 	}
     }
 
