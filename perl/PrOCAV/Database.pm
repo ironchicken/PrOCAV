@@ -33,7 +33,12 @@ sub make_dbh {
 			$db_opts{user},
 			$db_opts{password})
 	or die ("Could not connect to database.\n");
+
+    $dbh->{'mysql_enable_utf8'} = 1;
+    $dbh->do('SET NAMES utf8');
+
     prepare_statements($dbh);
+
     return $dbh;
 }
 

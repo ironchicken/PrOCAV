@@ -15,7 +15,7 @@ use Excel::Writer::XLSX;
 use Excel::Writer::XLSX::Utility;
 #use Spreadsheet::ParseExcel;
 use Spreadsheet::XLSX;
-use Text::Iconv;
+#use Text::Iconv;
 use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt spare_IDs);
 use File::Temp qw(tempfile);
 use List::Util qw(max min);
@@ -248,8 +248,9 @@ sub ingest_workbook {
 	$dbh = Database::make_dbh();
     }
 
-    my $converter = Text::Iconv->new("utf-8", "windows-1251");
-    my $workbook = Spreadsheet::XLSX->new($workbook_filename, $converter);
+    #my $converter = Text::Iconv->new("utf-8", "windows-1251");
+    #my $workbook = Spreadsheet::XLSX->new($workbook_filename, $converter);
+    my $workbook = Spreadsheet::XLSX->new($workbook_filename);
     #my $workbook = Spreadsheet::ParseExcel->new($workbook_filename, $converter);
 
     if (not defined $workbook) { die("Could not parse $workbook_filename\n"); }
