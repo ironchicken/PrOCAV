@@ -1947,7 +1947,7 @@ sub all_records {
 	my $records = [];
 	$schema{$table}->{_list}->execute();
 	while (my $row = $schema{$table}->{_list}->fetchrow_hashref) {
-	    push $records, @{$row}{@{ $schema{$table}->{_unique_fields} }};
+	    push $records, [@{$row}{@{ $schema{$table}->{_unique_fields} }}];
 	}
 	if ($records) {
 	    $tables{$table} = $records;

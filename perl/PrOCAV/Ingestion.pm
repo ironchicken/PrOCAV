@@ -23,6 +23,9 @@ use List::MoreUtils qw(first_index);
 
 package Ingestion;
 
+use Data::Dumper;
+$Data::Dumper::Indent = 0;
+
 require Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT_OK = qw(create_workbook);
@@ -235,7 +238,11 @@ sub add_column {
 sub push_record {
     my ($sheet, $row, $stmt, $table, $ID) = @_;
 
-    $stmt->execute($ID);
+    $stmt->execute(@$ID)
+	or die $stmt->{Statement} . "\n" .
+	Dumper($stmt->{ParamValues}) .
+	$stmt->errstr;
+
     my $record = $stmt->fetchrow_hashref();
 
     if (defined $record) {
