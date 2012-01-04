@@ -204,6 +204,12 @@ sub add_column {
 	} elsif ($field_info->{data_type} eq "boolean") {
 	    $sheet->data_validation($row, $col, {validate => 'list',
 						 value    => [qw(yes no)]});
+	} else {
+	    if (exists $field_info->{foreign_key}) {
+		$sheet->data_validation($row, $col, {validate      => 'any',
+						     input_title   => "Foreign key: " . $field_info->{foreign_key},
+						     input_message => $field_info->{hint}});
+	    }
 	}
 
 	# set the column width
