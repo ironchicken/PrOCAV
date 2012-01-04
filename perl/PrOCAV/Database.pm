@@ -1900,7 +1900,7 @@ sub record_empty {
     my ($table, $record) = @_;
 
     while (my ($name, $value) = each %{ $record }) {
-	if ((defined $value) && (not grep {$_ eq $name} @{ $schema{$table}->{_unique_fields} })) { return 0; }
+	return 0 if ((defined $value) && ($name ne "ID"));
     }
 
     return 1;
