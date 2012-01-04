@@ -746,7 +746,9 @@ my %schema = (
 			      cell_width => 15},
 
 	date_published  => {access => "rw",
-			    data_type => "integer"},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    hint => "ID of the date the publication was issued"},
 			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
