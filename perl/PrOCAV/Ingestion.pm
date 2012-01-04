@@ -271,9 +271,12 @@ sub ingest_workbook {
 sub parse_look_up_value { @_[0] =~ /.*\[([^\]]+)\]$/; $1; }
 
 use Data::Dumper;
+$Data::Dumper::Indent = 0;
 
 sub ingest_worksheet {
     my ($dbh, $workbook, $table, $sheet) = @_;
+
+    print "+ $table...\n";
 
     if (not defined $sheet) {
 	print "Ignoring unavailable table $table\n";
@@ -293,6 +296,7 @@ sub ingest_worksheet {
     foreach my $row ($row_min + 1 .. $row_max) {
 	# make a hash of the current row, mapping column (field) names
 	# to the values in the row
+	print "| + $row:\n";
 	my %record;
 	while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
 	    my $cell = $sheet->get_cell($row, $col);
@@ -302,15 +306,21 @@ sub ingest_worksheet {
 	    } else { $record{$field_name} = undef; }
 	}
 
+	#if (Database::record_empty($table, \%record)) {
+	#    print "| | $row is EMPTY, so stopping:\n" . Dumper(\%record) . "\n";
+	#} else {
+	#    print "| | $row is NOT empty:\n" . Dumper(\%record) . "\n";
+	#}
+
 	last if (Database::record_empty($table, \%record));
 
 	# update or insert the record
 	if (Database::record_different($table, \%record)) {
 	    Database::update_record(($table, \%record));
-	    print "Updated $table " . Dumper(\%record);
+	    print "| | Updated $table " . Dumper(\%record) . "\n";
 	} elsif (not Database::record_exists($table, \%record)) {
 	    Database::insert_record(($table, \%record));
-	    print "Inserted $table " . Dumper(\%record);
+	    print "| | Inserted $table " . Dumper(\%record) . "\n";
 	}
     }
 
