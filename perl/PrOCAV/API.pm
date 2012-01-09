@@ -23,13 +23,13 @@ use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tab
 package PrOCAV::API;
 
 sub authorised {
-    my ($r, $req, $handler) = @_;
+    my ($req, $apr_req, $handler) = @_;
 
     if (not exists $handler->{authorisation}) { return 1; }
 
-    my $s = $r->server;
+    my $s = $req->server;
 
-    my $in_cookies = $req->jar;
+    my $in_cookies = $apr_req->jar;
 
     $s->log_error(sprintf("Received cookies: %s", join ", ", keys %$in_cookies));
 
@@ -59,9 +59,9 @@ sub authorised {
 }
 
 sub params_present {
-    my ($r, $req, $hander) = @_;
+    my ($req, $apr_req, $hander) = @_;
 
-    my @supplied = $req->param;
+    my @supplied = $apr_req->param;
     my @required = (exists $hander->{required_parameters}) ? @{ $hander->{required_parameters} } : ();
     my @optional = (exists $hander->{optional_parameters}) ? @{ $hander->{optional_parameters} } : ();
     my @permissible = (@required, @optional);
@@ -69,15 +69,15 @@ sub params_present {
     my @missing = Array::Utils::array_minus(@required, @supplied);
     my @extra = Array::Utils::array_minus(@supplied, @permissible);
 
-    my $s = $r->server;
+    my $s = $req->server;
     $s->log_error("args: supplied: @supplied; permissible: @permissible; missing: @missing; extra: @extra");
 
     return (!@missing && !@extra);
 }
 
 sub handler {
-    my $r = shift;
-    my $req = APR::Request::Apache2->handle($r);
+    my $req = shift;
+    my $apr_req = APR::Request::Apache2->handle($req);
 
     my @DISPATCH_TABLE = (
 	\%PrOCAV::EditorUI::home,
@@ -85,25 +85,25 @@ sub handler {
 	\%PrOCAV::EditorUI::new_session
 	);
 
-    my $s = $r->server;
+    my $s = $req->server;
 
     my $dbh = Database::make_dbh;
 
     # iterate over all the URI handlers
     foreach my $h (@DISPATCH_TABLE) {
 
-	$s->log_error(sprintf("Test %s against %s", $r->uri, $h->{uri_pattern}));
+	$s->log_error(sprintf("Test %s against %s", $req->uri, $h->{uri_pattern}));
 
 	# check if the request path matches this handler's URI pattern
-	if ($r->uri =~ $h->{uri_pattern}) {
-	    $s->log_error(sprintf("%s matches %s", $r->uri, $h->{uri_pattern}));
+	if ($req->uri =~ $h->{uri_pattern}) {
+	    $s->log_error(sprintf("%s matches %s", $req->uri, $h->{uri_pattern}));
 
 	    # check the integrity of the request
-	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $r, $req, $h);
-	    return Apache2::Const::FORBIDDEN if (not authorised $r, $req, $h);
+	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $req, $apr_req, $h);
+	    return Apache2::Const::FORBIDDEN if (not authorised $req, $apr_req, $h);
 
 	    # call the handler's handle subroutine
-	    my $response = &{$h->{handle}}($r, $req, $dbh);
+	    my $response = &{$h->{handle}}($req, $apr_req, $dbh);
 
 	    # ensure that any database transactions are complete
 	    $dbh->commit;
