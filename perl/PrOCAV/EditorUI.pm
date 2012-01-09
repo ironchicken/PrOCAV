@@ -12,13 +12,14 @@ use Apache2::RequestRec ();
 use APR::Table;
 use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
-use PrOCAV::Database qw(session create_session);
+use JSON;
+use PrOCAV::Database qw(session create_session table_info);
 
 package PrOCAV::EditorUI;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table);
+our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
@@ -149,4 +150,17 @@ our %edit_table = (
     },
     authorisation => "editor");
 
+our %table_columns = (
+    uri_pattern => qr/^\/table_columns\/?$/,
+    required_parameters => [qw(table_name)],
+    handle => sub {
+	my ($req, $apr_req) = @_;
+
+	my $columns = Database::table_info($apr_req->param("table_name"))->{_field_order};
+
+	$req->content_type("text/javascript");
+	print JSON::encode_json $columns;
+	return Apache2::Const::OK;
+    },
+    authorisation => "editor");
 1;
