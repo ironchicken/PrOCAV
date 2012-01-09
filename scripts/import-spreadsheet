@@ -1,0 +1,24 @@
+#!/usr/bin/perl
+
+use strict;
+
+*CORE::GLOBAL::die = sub { require Carp; Carp::confess(); };
+$SIG{__WARN__} = sub { require Carp; Carp::confess(); };
+
+use Getopt::Std;
+use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
+
+# Command line options should be
+#   -i   input spreadshet
+my %options = ();
+getopts("i:", \%options);
+
+sub main {
+    if (exists $options{i}) {
+	Ingestion::ingest_workbook($options{i});
+    } else {
+	die "No filename supplied.\n";
+    }
+}
+
+main;
