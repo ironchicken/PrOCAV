@@ -19,7 +19,7 @@ package PrOCAV::EditorUI;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns);
+our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
@@ -160,6 +160,33 @@ our %table_columns = (
 
 	$req->content_type("text/javascript");
 	print JSON::encode_json $columns;
+	return Apache2::Const::OK;
+    },
+    authorisation => "editor");
+our %table_data = (
+    uri_pattern => qr/^\/table_data\/?$/,
+    required_parameters => [qw(table_name)],
+    handle => sub {
+	my ($req, $apr_req) = @_;
+
+	my $field_order = [@{ Database::table_info($apr_req->param("table_name"))->{_field_order} }];
+	my $columns = [map { {column => $_}; } @$field_order];
+
+	my $records = [];
+	foreach my $work (@{ Database::list($apr_req->param("table_name")) }) {
+	    my $fields = [];
+	    foreach my $fn (@$field_order) {
+		push $fields, $work->{$fn};
+	    }
+
+	    push $records, {id => $work->{ID}, cells => $fields};
+	}
+
+	my $data = {total => scalar @$records,
+		    records => $records};
+
+	$req->content_type("text/javascript");
+	print JSON::encode_json $data;
 	return Apache2::Const::OK;
     },
     authorisation => "editor");
