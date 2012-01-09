@@ -106,7 +106,7 @@ sub handler {
 	    my $response = &{$h->{handle}}($req, $apr_req, $dbh);
 
 	    # ensure that any database transactions are complete
-	    $dbh->commit;
+	    #$dbh->commit;
 
 	    # return whatever the handler's handle subroutine returned
 	    return $response;
