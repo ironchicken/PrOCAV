@@ -18,7 +18,7 @@ package PrOCAV::EditorUI;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables);
+our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
@@ -133,6 +133,19 @@ our %submit_tables = (
     uri_pattern => qr/^\/submit_tables\/?$/,
     handle => sub {
 	my ($req, $apr_req) = @_;
+    },
+    authorisation => "editor");
+
+our %edit_table = (
+    uri_pattern => qr/^\/edit_table\/?$/,
+    handle => sub {
+	my ($req, $apr_req) = @_;
+
+	my $template = HTML::Template->new(filename => $TEMPLATES_DIR . "edit_table.tmpl", global_vars => 1);
+
+	$req->content_type("text/html");
+	print $template->output();
+	return Apache2::Const::OK;
     },
     authorisation => "editor");
 
