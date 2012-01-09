@@ -77,15 +77,23 @@ sub test_handler {
 sub test_database_autoloader {
     Database::make_dbh;
 
+    print 'Database::work(1):'; print "\n";
     my $work_1 = Database::work(1);
     print Dumper($work_1) . "\n";
 
+    print 'Database::list_works():'; print "\n";
     my $works = Database::list_works();
     print scalar @$works . "\n";
     foreach my $work (@$works) {
 	print $work->{uniform_title} . "\n";
     }
 
+    print 'Database::list("works"):'; print "\n";
+    my $works = Database::list("works");
+    print scalar @$works . "\n";
+    foreach my $work (@$works) {
+	print $work->{uniform_title} . "\n";
+    }
 
     my $musical_information_1 = Database::musical_information(1);
     print Dumper($musical_information_1) . "\n";

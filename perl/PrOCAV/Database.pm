@@ -2021,13 +2021,16 @@ sub AUTOLOAD {
 
     if ($sub_name =~ m/(get|list|struct|complete|insert)_(.*)/) {
 	($operation, $table_name) = ($1, $2);
+    } elsif ($sub_name =~ m/^(get|list|struct|complete|insert)$/) {
+	$operation = $1;
+	$table_name = shift or die("Table name must be supplied.\n");
     } else {
 	$table_name = $sub_name;
     }
 
     my $table = $schema{$table_name} || $schema{$table_name . "s"} || die("No such table: $table_name\n");
 
-    printf("Doing %s on %s (%s); args: %s\n", $operation || "_get", $table_name, $table, join ", ", @_);
+    #printf("Doing %s on %s (%s); args: %s\n", $operation || "_get", $table_name, $table, join ", ", @_);
 
     if ((($operation eq "get") || (not defined $operation)) && (@_)) {
 	$table->{_get}->execute(@_);
