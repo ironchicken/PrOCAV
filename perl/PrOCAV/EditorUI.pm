@@ -93,7 +93,32 @@ our %login = (
 our %new_session = (
     uri_pattern => qr/^\/new_session\/?$/,
     handle => sub {
-	my ($r, $req) = @_;
+	my ($req, $apr_req) = @_;
+
+	my $template = HTML::Template->new(filename => $TEMPLATES_DIR . "new_session.tmpl", global_vars => 1);
+
+	my $field_order = [@{ Database::table_info('works')->{_field_order} }];
+	my $columns = [map { {column => $_}; } @$field_order];
+
+	my $records = [];
+	foreach my $work (@{ Database::list_works() }) {
+	    my $fields = [];
+	    foreach my $fn (@$field_order) {
+		push $fields, {value => $work->{$fn}};
+	    }
+
+	    push $records, {ID => $work->{ID}, fields => $fields};
+	}
+
+	my $param = {tables => [{table_name => 'works',
+				 columns => $columns,
+				 records => $records}]};
+
+	$template->param($param);
+
+	$req->content_type("text/html");
+	print $template->output();
+	return Apache2::Const::OK;
     },
     authorisation => "editor");
 

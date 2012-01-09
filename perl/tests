@@ -3,8 +3,10 @@
 use strict;
 use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
 use HTML::Template;
-use Apache2::FakeRequest;
+#use Apache2::FakeRequest;
 use PrOCAV::API qw(handler);
+use PrOCAV::Database;
+use Data::Dumper;
 
 sub test_create_workbook {
     Ingestion::create_workbook({works => [1,2,3,4,5]});
@@ -15,16 +17,55 @@ sub test_ingest_workbook {
 }
 
 sub test_editor_front_page {
-    my $template = HTML::Template->new(filename => "../web/editor/start_session.tmpl", global_vars => 1);
+    Database::make_dbh;
 
-    my $params = {tables => [{table_name => 'works',
-			      columns => [{column => 'ID'}, {column => 'uniform_title'}],
-			      records => [{ID => '1', fields => [{value => '1'}, {value => 'Helllo'}]}]},
-			     {table_name => 'dates',
-			      columns => [{column => 'ID'}, {column => 'year'}],
-			      records => [{ID => '16', fields => [{value => '16'}, {value => '1927'}]}]}]};
+    my $template = HTML::Template->new(filename => "../web/editor/new_session.tmpl", global_vars => 1);
 
-    $template->param($params);
+    # my $params = {tables => [{table_name => 'works',
+    # 			      columns => [{column => 'ID'}, {column => 'uniform_title'}],
+    # 			      records => [{ID => '1', fields => [{value => '1'}, {value => 'Helllo'}]}]},
+    # 			     {table_name => 'dates',
+    # 			      columns => [{column => 'ID'}, {column => 'year'}],
+    # 			      records => [{ID => '16', fields => [{value => '16'}, {value => '1927'}]}]}]};
+
+    # $template->param($params);
+ 
+    my $field_order = [@{ Database::table_info('works')->{_field_order} }];
+    my $columns = [map { {column => $_}; } @$field_order];
+
+    print Dumper($columns);
+    print "\n\n";
+
+    my $records = [];
+
+    foreach my $work (@{ Database::list_works() }) {
+	my $fields = [];
+	foreach my $fn (@$field_order) {
+	    push $fields, {value => $work->{$fn}};
+	}
+
+	push $records, {ID => $work->{ID},
+			#fields => map { {value => $work->{$_}}; } @{ Database::table_info('works')->{_field_order} }};
+			fields => $fields};
+    }
+    #my $_records = Database::list_works();
+    #my @records = map { {ID => $_->{ID}, fields => map { {value => $_}; } @{ Database::table_info('works')->{_field_order} } }; } @{ Database::list_works() };
+
+    #print Dumper(@records);
+
+    #for my $rec (@records) {
+	#print Dumper($rec) . "\n";
+	#print $rec->{ID} . "\n";
+	#print Dumper($rec->{fields}) . "\n";
+    #}
+
+    my $param = {tables => [{table_name => 'works',
+			     columns => $columns,
+			     records => $records}]};
+    print Dumper($param);
+    print "\n\n";
+
+    $template->param($param);
     print $template->output();
 }
 
@@ -33,11 +74,49 @@ sub test_handler {
     PrOCAV::API::handler($r);
 }
 
+sub test_database_autoloader {
+    Database::make_dbh;
+
+    my $work_1 = Database::work(1);
+    print Dumper($work_1) . "\n";
+
+    my $works = Database::list_works();
+    print scalar @$works . "\n";
+    foreach my $work (@$works) {
+	print $work->{uniform_title} . "\n";
+    }
+
+
+    my $musical_information_1 = Database::musical_information(1);
+    print Dumper($musical_information_1) . "\n";
+
+    my @musical_information = Database::list_musical_information();
+    print scalar @musical_information . "\n";
+    foreach my $musical_information (@musical_information) {
+	print $musical_information->{work_id} . "\n";
+    }
+
+    my $catalogue_number_1 = Database::catalogue_number(1);
+    print Dumper($catalogue_number_1) . "\n";
+
+    my @catalogue_numbers = Database::list_catalogue_numbers();
+    print scalar @catalogue_numbers . "\n";
+    foreach my $catalogue_number (@catalogue_numbers) {
+	print $catalogue_number->{number} . "\n";
+    }
+}
+
+sub test_all_records {
+    print Dumper(Database::all_records);
+}
+
 sub main {
     #test_create_workbook;
     #test_ingest_workbook;
-    #test_editor_front_page;
-    test_handler;
+    test_editor_front_page;
+    #test_handler;
+    #test_database_autoloader;
+    #test_all_records;
 }
 
 main;
