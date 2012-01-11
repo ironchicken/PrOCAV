@@ -18,7 +18,7 @@ use APR::Const -compile => qw(:error SUCCESS);
 #use JSON;
 use Array::Utils qw(:all);
 use PrOCAV::Database qw(session make_dbh);
-use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data);
+use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model);
 
 package PrOCAV::API;
 
@@ -85,7 +85,8 @@ sub handler {
 	\%PrOCAV::EditorUI::new_session,
 	\%PrOCAV::EditorUI::edit_table,
 	\%PrOCAV::EditorUI::table_columns,
-	\%PrOCAV::EditorUI::table_data
+	\%PrOCAV::EditorUI::table_data,
+	\%PrOCAV::EditorUI::table_model
 	);
 
     my $s = $req->server;

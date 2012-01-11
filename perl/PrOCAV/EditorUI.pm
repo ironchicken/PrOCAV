@@ -19,7 +19,7 @@ package PrOCAV::EditorUI;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data);
+our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
@@ -163,6 +163,97 @@ our %table_columns = (
 	return Apache2::Const::OK;
     },
     authorisation => "editor");
+
+our %table_model = (
+    uri_pattern => qr/^\/table_model\/?$/,
+    required_parameters => [qw(table_name)],
+    handle => sub {
+	my ($req, $apr_req) = @_;
+
+	sub column_model {
+	    my ($table, $column) = @_;
+
+	    my $column_info = Database::table_info($table)->{$column};
+	    my $column_model = {name => $column};
+	    my $editoptions = {NullIfEmpty => JSON::true};
+	    my $editrules = {};
+
+	    if ($column_info->{access} eq "rw") {
+		$column_model->{editable} = JSON::true;
+	    } elsif ($column_info->{access} eq "ro") {
+		$column_model->{editable} = JSON::false;
+		return $column_model;
+	    }
+
+	    if ($column_info->{not_null} eq 1) {
+		$column_model->{required} = JSON::true;
+	    }
+
+	    if ($column_info->{data_type} eq "string") {
+		$column_model->{edittype} = "text";
+		$editoptions->{maxlength} = $column_info->{width} if (exists $column_info->{width});
+
+	    } elsif ($column_info->{data_type} eq "integer") {
+		$column_model->{edittype} = "text";
+		$editrules->{integer} = JSON::true;
+		if (exists $column_info->{minimum} and exists $column_info->{maximum}) {
+		    $editrules->{minValue} = $column_info->{minimum};
+		    $editrules->{maxValue} = $column_info->{maximum};
+		} elsif (exists $column_info->{minimum}) {
+		    $editrules->{minValue} = $column_info->{value};
+		} elsif (exists $column_info->{maximum}) {
+		    $editrules->{maxValue} = $column_info->{value};
+		} elsif (exists $column_info->{foreign_key}) {
+		    $column_model->{edittype} = "select";
+		    $editoptions->{dataUrl} = "/look_up?table_name=" . $column_info->{foreign_key};
+		} else {
+		    $editrules->{minValue} = 0;
+		}
+
+	    } elsif ($column_info->{data_type} eq "decimal") {
+		$column_model->{edittype} = "text";
+		$editrules->{number} = JSON::true;
+
+	    } elsif ($column_info->{data_type} eq "boolean") {
+		$column_model->{edittype} = "checkbox";
+		$editoptions->{value} = "Yes:No";
+
+	    } elsif ($column_info->{data_type} eq "look_up") {
+		$column_model->{edittype} = "select";
+		$editoptions->{value} = &{Database::find_look_up($column_info->{look_up})}();
+
+	    } else {
+		if (exists $column_info->{foreign_key}) {
+		    $column_model->{edittype} = "select";
+		    $editoptions->{dataUrl} = "/look_up?table_name=" . $column_info->{foreign_key};
+		} else {
+		    $column_model->{edittype} = "text";
+		}
+	    }
+
+	    # # set the column width
+	    # if (exists $column_info->{width}) {
+	    # 	$sheet->data_validation($row, $col, {validate => 'length',
+	    # 					     criteria => '<=',
+	    # 					     value    => $column_info->{width}});
+	    # }
+
+	    if (keys %$editoptions) { $column_model->{editoptions} = $editoptions; }
+	    if (keys %$editrules) { $column_model->{editrules} = $editrules; }
+
+	    return $column_model;
+	}
+
+	my @field_order = @{ Database::table_info($apr_req->param("table_name"))->{_field_order} };
+	my $columns = [map { column_model($apr_req->param("table_name"), $_); } @field_order];
+	my $model = {colModel => $columns};
+
+	$req->content_type("text/javascript");
+	print JSON::encode_json $model;
+	return Apache2::Const::OK;
+    },
+    authorisation => "editor");
+
 our %table_data = (
     uri_pattern => qr/^\/table_data\/?$/,
     required_parameters => [qw(table_name)],
