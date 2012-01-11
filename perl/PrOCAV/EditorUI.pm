@@ -13,13 +13,13 @@ use APR::Table;
 use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
 use JSON;
-use PrOCAV::Database qw(session create_session table_info);
+use PrOCAV::Database qw(make_dbh session create_session table_info);
 
 package PrOCAV::EditorUI;
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model);
+our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";
@@ -205,7 +205,7 @@ our %table_model = (
 		    $editrules->{maxValue} = $column_info->{value};
 		} elsif (exists $column_info->{foreign_key}) {
 		    $column_model->{edittype} = "select";
-		    $editoptions->{dataUrl} = "/look_up?table_name=" . $column_info->{foreign_key};
+		    $editoptions->{dataUrl} = "/look_up?look_up_name=" . $column_info->{look_up};
 		} else {
 		    $editrules->{minValue} = 0;
 		}
@@ -225,7 +225,7 @@ our %table_model = (
 	    } else {
 		if (exists $column_info->{foreign_key}) {
 		    $column_model->{edittype} = "select";
-		    $editoptions->{dataUrl} = "/look_up?table_name=" . $column_info->{foreign_key};
+		    $editoptions->{dataUrl} = "/look_up?look_up_name=" . $column_info->{foreign_key};
 		} else {
 		    $column_model->{edittype} = "text";
 		}
@@ -278,6 +278,33 @@ our %table_data = (
 
 	$req->content_type("text/javascript");
 	print JSON::encode_json $data;
+	return Apache2::Const::OK;
+    },
+    authorisation => "editor");
+
+our %look_up = (
+    uri_pattern => qr/^\/look_up\/?$/,
+    optional_parameters => [qw(table_name look_up_name)],
+    handle => sub {
+	my ($req, $apr_req) = @_;
+	my $dbh = Database::make_dbh;
+
+	$req->content_type("text/html");
+
+	print '<select>';
+
+	if (grep { $_ eq "table_name"; } $apr_req->param) {
+	    
+	} elsif (grep { $_ eq "look_up_name"; } $apr_req->param) {
+	    my $look_up_stmt = &{ Database::find_look_up($apr_req->param("look_up_name")) }($dbh);
+	    $look_up_stmt->execute;
+	    while (my $item = $look_up_stmt->fetchrow_hashref) {
+		print qq|<option value="$item->{value}">$item->{display}</option>|;
+	    }
+	}
+
+	print '</select>';
+
 	return Apache2::Const::OK;
     },
     authorisation => "editor");
