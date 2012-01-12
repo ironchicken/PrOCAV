@@ -1904,6 +1904,9 @@ sub prepare_statements {
 	    sprintf(qq/SELECT * FROM %s ORDER BY %s/,
 		    $table,
 		    join(",", map { "$_ " . $schema{$table}->{_default_order}; } @{ $schema{$table}->{_order_fields} })));
+
+	# prepare _count statement
+	$schema{$table}->{_count} = $dbh->prepare_cached(qq/SELECT COUNT(*) AS extent FROM $table/);
     }
 
     # Statements used for the HTTP interface
@@ -2067,9 +2070,9 @@ sub AUTOLOAD {
 
     my $operation; my $table_name;
 
-    if ($sub_name =~ m/(get|list|struct|complete|insert)_(.*)/) {
+    if ($sub_name =~ m/(get|list|count|struct|complete|insert)_(.*)/) {
 	($operation, $table_name) = ($1, $2);
-    } elsif ($sub_name =~ m/^(get|list|struct|complete|insert)$/) {
+    } elsif ($sub_name =~ m/^(get|list|count|struct|complete|insert)$/) {
 	$operation = $1;
 	$table_name = shift or die("Table name must be supplied.\n");
     } else {
@@ -2090,7 +2093,9 @@ sub AUTOLOAD {
 	while (my $row = $table->{_list}->fetchrow_hashref) {
 	    push @rows, $row;
 	}
-	return @rows;
+    } elsif ($operation eq "count") {
+	$table->{_count}->execute(@_);
+	return $table->{_count}->fetchrow_hashref->{extent};
 
     } elsif ($operation eq "struct") {
 	$table->{_struct}->execute(@_);
