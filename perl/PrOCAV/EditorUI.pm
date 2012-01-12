@@ -139,6 +139,7 @@ our %submit_tables = (
 
 our %edit_table = (
     uri_pattern => qr/^\/edit_table\/?$/,
+    required_parameters => [qw(table_name)],
     handle => sub {
 	my ($req, $apr_req) = @_;
 
