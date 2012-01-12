@@ -246,10 +246,9 @@ our %table_model = (
 
 	my @field_order = @{ Database::table_info($apr_req->param("table_name"))->{_field_order} };
 	my $columns = [map { column_model($apr_req->param("table_name"), $_); } @field_order];
-	my $model = {colModel => $columns};
 
 	$req->content_type("text/javascript");
-	print JSON::encode_json $model;
+	print JSON::encode_json $columns;
 	return Apache2::Const::OK;
     },
     authorisation => "editor");
