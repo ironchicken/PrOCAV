@@ -72,7 +72,12 @@ sub params_present {
     my $s = $req->server;
     $s->log_error("args: supplied: @supplied; permissible: @permissible; missing: @missing; extra: @extra");
 
-    return (!@missing && !@extra);
+    # there should be no missing parameters, no extra parameters, and
+    # no empty required parameters
+    my @values = map { $apr_req->param($_); } @required;
+    #my $empties = grep { /^(\s*|undefined|null)$/ } @values;
+    #$s->log_error("arg values: @values; empties: $empties");
+    return (!@missing && !@extra && !grep { /^(\s*|undefined|null)$/ } @values);
 }
 
 sub handler {
