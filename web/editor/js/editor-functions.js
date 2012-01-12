@@ -19,7 +19,6 @@ var initialise_table = function(table_name) {
     var columns = null;
     var model = null;
     var table_made = false;
-    //var records = null;
 
     jQuery.ajax(
 	{type: 'POST',
@@ -46,21 +45,6 @@ var initialise_table = function(table_name) {
 	 error: function(request, status, error) {
 	     alert('Could not retrieve model for ' + table_name + '\n' + status);
 	 }});
-
-    /*
-    jQuery.ajax(
-	{type: 'POST',
-	 url: '/table_data',
-	 data: 'table_name=' + table_name,
-	 dataType: 'json',
-	 success: function(data, status, request) {
-	     records = data;
-	     make_table();
-	 },
-	 error: function(request, status, error) {
-	     alert('Could not retrieve columns for ' + table_name + '\n' + status);
-	 }});
-     */
 
     var make_table = function() {
 	if ((table_made === false) && (columns !== null) && (model !== null)) {
