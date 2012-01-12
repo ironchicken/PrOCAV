@@ -9,6 +9,9 @@
     <script type="text/javascript" src="/editor/js/grid.locale-en.js"> </script>
     <script type="text/javascript" src="/editor/js/jquery.jqGrid.min.js"> </script>
     <script type="text/javascript" src="/editor/js/editor-functions.js"> </script>
+    <script type="text/javascript">
+      jQuery(document).ready(function () { initialise_table(jQuery.getUrlVar('table_name')); });
+    </script>
   </head>
   <body>
     <h1>PrOCAV Editor</h1>
