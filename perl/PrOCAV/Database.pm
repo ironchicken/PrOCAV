@@ -1856,6 +1856,7 @@ sub table_info {
 
 
 use Data::UUID;
+use Text::Sprintf::Named;
 
 my $get_session_stmt;
 my $check_editor_credentials_stmt;
@@ -1904,6 +1905,22 @@ sub prepare_statements {
 	    sprintf(qq/SELECT * FROM %s ORDER BY %s/,
 		    $table,
 		    join(",", map { "$_ " . $schema{$table}->{_default_order}; } @{ $schema{$table}->{_order_fields} })));
+
+	# prepare _list_ordered statement
+	$schema{$table}->{_list_ordered} = Text::Sprintf::Named->new(
+	    {fmt => qq/SELECT * FROM $table ORDER BY %(order_by)s %(sort_order)s/});
+
+	# prepare _list_paged statement
+	$schema{$table}->{_list_paged} = Text::Sprintf::Named->new(
+	    {fmt => qq/SELECT * FROM / .
+		 $table .
+		 qq/ ORDER BY / .
+		 join(",", map { "$_ " . $schema{$table}->{_default_order}; } @{ $schema{$table}->{_order_fields} }) .
+		 qq/ LIMIT %(offset)d,%(limit)d/});
+
+	# prepare _list_ordered_paged statement
+	$schema{$table}->{_list_ordered_paged} = Text::Sprintf::Named->new(
+	    {fmt => qq/SELECT * FROM $table ORDER BY %(order_by)s %(sort_order)s LIMIT %(offset)d,%(limit)d/});
 
 	# prepare _count statement
 	$schema{$table}->{_count} = $dbh->prepare_cached(qq/SELECT COUNT(*) AS extent FROM $table/);
@@ -2081,6 +2098,9 @@ sub AUTOLOAD {
 
     my $table = $schema{$table_name} || $schema{$table_name . "s"} || die("No such table: $table_name\n");
 
+    my $options = shift || {};
+
+    #print Dumper($options);
     #printf("Doing %s on %s (%s); args: %s\n", $operation || "_get", $table_name, $table, join ", ", @_);
 
     if ((($operation eq "get") || (not defined $operation)) && (@_)) {
@@ -2088,11 +2108,41 @@ sub AUTOLOAD {
 	return $table->{_get}->fetchrow_hashref;
 
     } elsif ($operation eq "list") {
-	$table->{_list}->execute();
-	my @rows = ();
-	while (my $row = $table->{_list}->fetchrow_hashref) {
-	    push @rows, $row;
+	my $query = "_list";
+	my $st;
+
+	if (defined $options->{order_by} && defined $options->{limit}) {
+	    $query = "_list_ordered_paged";
+	    $st = make_dbh->prepare($table->{$query}->format({args => {'order_by'   => $options->{order_by},
+								       'sort_order' => $options->{sort_order} || "ASC",
+								       'offset'     => $options->{offset} || 0,
+								       'limit'      => $options->{limit}}}));
+	    $st->execute;
+	} elsif (defined $options->{limit}) {
+	    $query = "_list_paged";
+	    $st = make_dbh->prepare($table->{$query}->format({args => {'offset' => $options->{offset} || 0,
+								       'limit'  => $options->{limit}}}));
+	    $st->execute;
+	} elsif (defined $options->{order_by}) {
+	    $query = "_list_ordered";
+	    $st = make_dbh->prepare($table->{$query}->format({args => {'order_by'   => $options->{order_by},
+								       'sort_order' => $options->{sort_order} || "ASC"}}));
+	    $st->execute;
+	} else {
+	    $query = "_list";
+	    $st = $table->{$query};
+	    $st->execute;
 	}
+
+	#print $st->{Statement} . "\n";
+	#print Dumper($st->{ParamValues});
+
+	my $rows = [];
+	while (my $row = $st->fetchrow_hashref) {
+	    push $rows, $row;
+	}
+	return $rows;
+
     } elsif ($operation eq "count") {
 	$table->{_count}->execute(@_);
 	return $table->{_count}->fetchrow_hashref->{extent};
