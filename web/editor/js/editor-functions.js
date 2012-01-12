@@ -63,7 +63,9 @@ var initialise_table = function(table_name) {
 		 sortorder: 'asc',
 		 viewrecords: true,
 		 gridview: true, // disables afterInsertRow event
-		 caption: table_name});
+		 caption: table_name,
+		 height: 600,
+		 width: 800});
 	}
     };
 };
