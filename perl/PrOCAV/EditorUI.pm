@@ -257,24 +257,39 @@ our %table_model = (
 our %table_data = (
     uri_pattern => qr/^\/table_data\/?$/,
     required_parameters => [qw(table_name)],
+    optional_parameters => [qw(_search nd rows page sidx sord)],
     handle => sub {
-	my ($req, $apr_req) = @_;
+	use integer;
 
-	my $field_order = [@{ Database::table_info($apr_req->param("table_name"))->{_field_order} }];
+	my ($req, $apr_req) = @_;
+	my ($table_name, $search, $limit, $page, $order_by, $sort_order) =
+	    ($apr_req->param("table_name"), $apr_req->param("_search") || 0, int($apr_req->param("rows")) || 50,
+	     int($apr_req->param("page")) || 1, $apr_req->param("sidx"), $apr_req->param("sord"));
+
+	my $field_order = [@{ Database::table_info($table_name)->{_field_order} }];
 	my $columns = [map { {column => $_}; } @$field_order];
 
+	my $options = {limit      => $limit,
+		       offset     => ($page - 1) * $limit,
+		       order_by   => (grep { $_ eq $order_by; } @{ $field_order }) ? $order_by : undef,
+		       sort_order => ($order_by && ($sort_order =~ /^(ASC|DESC)$/i)) ? $sort_order : undef};
+
+	my $count = int(Database::count($table_name));
+
 	my $records = [];
-	foreach my $work (@{ Database::list($apr_req->param("table_name")) }) {
+	foreach my $work (@{ Database::list($table_name, $options) }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
 		push $fields, $work->{$fn};
 	    }
 
-	    push $records, {id => $work->{ID}, cells => $fields};
+	    push $records, {id => $work->{ID}, cell => $fields};
 	}
 
-	my $data = {total => scalar @$records,
-		    records => $records};
+	my $data = {total   => ($count / $limit) + (($count % $limit > 0) ? 1 : 0),
+		    page    => $page,
+		    records => $count,
+		    rows    => $records};
 
 	$req->content_type("text/javascript");
 	print JSON::encode_json $data;
