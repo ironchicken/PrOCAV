@@ -311,7 +311,7 @@ sub ingest_worksheet {
 	while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
 	    my $cell = $sheet->get_cell($row, $col);
 	    if (defined $cell) {
-		if (Database::is_look_up($table, $field_name)) { $record{$field_name} = parse_look_up_value($cell->value()); }
+		if (Database::is_look_up($table, $field_name)) { $record{$field_name} = parse_look_up_value($cell->value()) || $cell->value(); }
 		else { $record{$field_name} = $cell->value(); }
 	    } else { $record{$field_name} = undef; }
 	}
