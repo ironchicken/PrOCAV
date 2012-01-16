@@ -74,6 +74,10 @@ my %look_ups = (
 				   {value => "autograph complete full score", display => "Autograph complete full score"},
 				   {value => "annotated published score",     display => "Annotated published score"}]; },
 
+    instrument_cardinality => sub { [{value => "solo",   display => "Solo"},
+				     {value => "desk",   display => "Desk"},
+				     {value => "chorus", display => "Chorus"}]; },
+
     performance_types    => sub { [{value => "concert", display => "Concert"},
 				   {value => "broadcast", display => "Broadcast"},
 				   {value => "recording", display => "Recording"},
@@ -520,11 +524,11 @@ my %schema = (
     scored_for         => {
 	_worksheet => "scored_for",
 
-	_field_order         => [qw(work_id instrument role staff_notes)],
+	_field_order         => [qw(work_id instrument cardinality doubles_with role in_group notes staff_notes)],
 	_unique_fields       => [qw(work_id instrument role)],
 	_single_select_field => "work_id",
 	_insert_fields       => [qw(work_id instrument role staff_notes)],
-	_order_fields        => [qw(work_id)],
+	_order_fields        => [qw(work_id instrument role)],
 	_default_order       => "ASC",
 
 	# work_id         => {access => "rw",
@@ -551,9 +555,28 @@ my %schema = (
 	 		    look_up => "instruments",
 			    hint => "unique name of the instrument"},
 
+	cardinality     => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "instrument_cardinality",
+			    cell_width => 8},
+
+	doubles_with    => {access => "rw",
+	 		    data_type => "string",
+			    foreign_key => "instruments",
+	 		    look_up => "instruments",
+			    hint => "unique name of the instrument"},
+
 	role            => {access => "rw",
 			    data_type => "string",
 			    cell_width => 8},
+
+	in_group        => {access => "rw",
+			    data_type => "string",
+			    cell_width => 8},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
 
 	staff_notes     => {access => "rw",
 			    data_type => "string",

@@ -78,13 +78,18 @@ CREATE TABLE genres (
 -- information about known musical instruments
 CREATE TABLE instruments (
   instrument        VARCHAR(255) UNIQUE NOT NULL,
+  sort_position     INT,
   description       TEXT);
 
 -- works may require any number of instruments
 CREATE TABLE scored_for (
   work_id           INT NOT NULL,
   instrument        VARCHAR(255) NOT NULL,
-  `role`            VARCHAR(32),
+  `cardinality`     ENUM('solo','desk','chorus'),
+  doubles_with      VARCHAR(255),
+  `role`            VARCHAR(128),
+  in_group          VARCHAR(128), -- e.g. "principals", "orchestra", "chorus"
+  notes             TEXT,
   staff_notes       TEXT);
 
 -- works may be derived from other works
