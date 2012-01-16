@@ -283,13 +283,12 @@ sub ingest_workbook {
 # value and returns the field value from that string
 sub parse_look_up_value { @_[0] =~ /.*\[([^\]]+)\]$/; $1; }
 
-use Data::Dumper;
-$Data::Dumper::Indent = 0;
-
 sub ingest_worksheet {
     my ($dbh, $workbook, $table, $sheet) = @_;
 
-    print "+ $table...\n";
+    print "\n+ $table...\n";
+
+    #return 1 if ($table eq "scored_for");
 
     if (not defined $sheet) {
 	print "Ignoring unavailable table $table\n";
@@ -309,7 +308,7 @@ sub ingest_worksheet {
     foreach my $row ($row_min + 1 .. $row_max) {
 	# make a hash of the current row, mapping column (field) names
 	# to the values in the row
-	print "| + $row:\n";
+	print "| + $row:";
 	my %record;
 	while (my ($col, $field_name) = each @{ Database::table_info($table)->{_field_order} }) {
 	    my $cell = $sheet->get_cell($row, $col);
@@ -330,10 +329,12 @@ sub ingest_worksheet {
 	# update or insert the record
 	if (Database::record_different($table, \%record)) {
 	    Database::update_record(($table, \%record));
-	    print "| | Updated $table " . Dumper(\%record) . "\n";
+	    print " Updated $table " . Dumper(\%record) . "\n";
 	} elsif (not Database::record_exists($table, \%record)) {
 	    Database::insert_record(($table, \%record));
-	    print "| | Inserted $table " . Dumper(\%record) . "\n";
+	    print " Inserted $table " . Dumper(\%record) . "\n";
+	} else {
+	    print " No change.\n";
 	}
     }
 
