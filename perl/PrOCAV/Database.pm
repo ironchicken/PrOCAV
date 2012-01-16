@@ -527,7 +527,7 @@ my %schema = (
 	_field_order         => [qw(work_id instrument cardinality doubles_with role in_group notes staff_notes)],
 	_unique_fields       => [qw(work_id instrument role)],
 	_single_select_field => "work_id",
-	_insert_fields       => [qw(work_id instrument role staff_notes)],
+	_insert_fields       => [qw(work_id instrument cardinality doubles_with role in_group notes staff_notes)],
 	_order_fields        => [qw(work_id instrument role)],
 	_default_order       => "ASC",
 
