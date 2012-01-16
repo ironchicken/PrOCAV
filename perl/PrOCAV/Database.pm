@@ -553,7 +553,10 @@ my %schema = (
 	 		    data_type => "string",
 			    foreign_key => "instruments",
 	 		    look_up => "instruments",
-			    hint => "unique name of the instrument"},
+			    hint => "unique name of the instrument",
+			    update_hook => sub { my ($operation, $record) = @_; my $dbh = make_dbh;
+						 insert_record("instruments", {instrument => lc $record->{instrument}, description => undef}, 1) 
+						     if (not record_exists("instruments", {instrument => $record->{instrument}})); }},
 
 	cardinality     => {access => "rw",
 			    data_type => "look_up",
