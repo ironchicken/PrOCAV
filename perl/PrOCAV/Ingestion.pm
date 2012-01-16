@@ -288,8 +288,6 @@ sub ingest_worksheet {
 
     print "\n+ $table...\n";
 
-    #return 1 if ($table eq "scored_for");
-
     if (not defined $sheet) {
 	print "Ignoring unavailable table $table\n";
 	return 1;
