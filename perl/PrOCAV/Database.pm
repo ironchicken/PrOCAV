@@ -2047,23 +2047,49 @@ sub record_empty {
 }
 
 sub insert_record {
-    my ($table, $record) = @_;
+    my ($table, $record, $processing_hook) = @_;
+    $processing_hook = 0 if (not defined $processing_hook);
 
     $schema{$table}->{_insert}->execute(@{ $record }{@{ $schema{$table}->{_insert_fields} }})
 	or die $schema{$table}->{_insert}->{Statement} . "\n" .
 	Dumper($schema{$table}->{_insert}->{ParamValues}) .
 	$schema{$table}->{_insert}->errstr;
+
+    if (not $processing_hook) {
+	foreach my $fn (@{ $schema{$table}->{_insert_fields} }) {
+	    &{ $schema{$table}->{$fn}->{update_hook} }("insert", $record)
+		if (defined $schema{$table}->{$fn}->{update_hook});
+	}
+    }
     1;
 }
 
 sub update_record {
-    my ($table, $record) = @_;
+    my ($table, $record, $processing_hook) = @_;
+    $processing_hook = 0 if (not defined $processing_hook);
 
+    # first, get a copy of the record as it is before this udate
+    my $previous_record = undef;
+    if (not $processing_hook) {
+	$schema{$table}->{_get}->execute(map { ($_, (defined $_) ? 0 : 1); } @{ $record }{@{ $schema{$table}->{_unique_fields} }});
+	$previous_record = $schema{$table}->{_get}->fetchrow_arrayref;
+    }
+
+    # then update the record
     $schema{$table}->{_update}->execute((@{ $record }{@{ $schema{$table}->{_insert_fields} }},
 					 @{ $record }{@{ $schema{$table}->{_unique_fields} }}))
 	or die $schema{$table}->{_update}->{Statement} . "\n" .
 	Dumper($schema{$table}->{_update}->{ParamValues}) .
 	$schema{$table}->{_update}->errstr;
+
+    # then process any update_hooks
+    if (not $processing_hook) {
+	foreach my $fn (@{ $schema{$table}->{_insert_fields} }) {
+	    &{ $schema{$table}->{$fn}->{update_hook} }("update", $record)
+		if ((defined $schema{$table}->{$fn}->{update_hook}) &&
+		    ($record->{$fn} ne $previous_record->{$fn}));
+	}
+    }
     1;
 }
 
