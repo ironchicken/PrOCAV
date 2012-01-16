@@ -36,7 +36,7 @@ CREATE TABLE titles (
   manuscript_id     INT,
   edition_id        INT,
   person_id         INT,
-  title             VARCHAR(255) NOT NULL,
+  title             VARCHAR(255),-- NOT NULL,
   transliteration   VARCHAR(255),
   script            VARCHAR(32),
   `language`        CHAR(2),
@@ -110,7 +110,7 @@ CREATE TABLE composition (
   work_type         ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
                          'extended draft short score', 'instrumental annotations',
                          'draft full score', 'autograph complete full score',
-                         'annotated published score') NOT NULL);
+                         'annotated published score'));
 
 -- editions of works (or parts of works) which may be published
 CREATE TABLE editions (
@@ -205,11 +205,11 @@ CREATE TABLE manuscripts (
   purpose           ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
                          'extended draft short score', 'instrumental annotations',
                          'draft full score', 'autograph complete full score',
-                         'annotated published score') NOT NULL,
+                         'annotated published score'),
   physical_size     VARCHAR(32),
   medium            VARCHAR(32),
   extent            INT,
-  missing           TINYINT NOT NULL DEFAULT 0,
+  missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
   date_made         INT,
   annotation_of     INT,
   location          VARCHAR(128),
