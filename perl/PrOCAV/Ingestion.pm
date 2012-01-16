@@ -259,13 +259,14 @@ sub push_record {
 }
 
 sub ingest_workbook {
-    my $dbh; my $workbook_filename;
-    if (@_ == 2) {
-	($dbh, $workbook_filename) = @_;
-    } elsif (@_ == 1) {
-	$workbook_filename = shift;
-	$dbh = Database::make_dbh();
+    my $dbh; my $workbook_filename; my @exclude_tables = ();
+
+    for my $arg (@_) {
+	if (ref $arg eq "DBI::db") { $dbh = $arg; }
+	if (-f $arg) { $workbook_filename = $arg; }
+	if (grep { $_ eq $arg; } Database::table_order()) { push @exclude_tables, $arg; }
     }
+    if (not defined $dbh) { $dbh = Database::make_dbh(); }
 
     #my $converter = Text::Iconv->new("utf-8", "windows-1251");
     #my $workbook = Spreadsheet::XLSX->new($workbook_filename, $converter);
@@ -275,7 +276,9 @@ sub ingest_workbook {
     if (not defined $workbook) { die("Could not parse $workbook_filename\n"); }
 
     foreach my $table (Database::table_order()) {
-	ingest_worksheet($dbh, $workbook, $table, $workbook->worksheet($table)) or die("Could not parse sheet $table\n");
+	if (not grep { $_ eq $table; } @exclude_tables) {
+	    ingest_worksheet($dbh, $workbook, $table, $workbook->worksheet($table)) or die("Could not parse sheet $table\n");
+	}
     }
 }
 

@@ -11,11 +11,11 @@ use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
 # Command line options should be
 #   -i   input spreadshet
 my %options = ();
-getopts("i:", \%options);
+getopts("i:x:", \%options);
 
 sub main {
     if (exists $options{i}) {
-	Ingestion::ingest_workbook($options{i});
+	Ingestion::ingest_workbook($options{i}, split(/\,/, $options{x}));
     } else {
 	die "No filename supplied.\n";
     }
