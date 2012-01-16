@@ -238,7 +238,8 @@ sub add_column {
 sub push_record {
     my ($sheet, $row, $stmt, $table, $ID) = @_;
 
-    $stmt->execute(@$ID)
+    #$stmt->execute(@$ID)
+    $stmt->execute(map { ($_, (defined $_) ? 0 : 1); } @$ID)
 	or die $stmt->{Statement} . "\n" .
 	Dumper($stmt->{ParamValues}) .
 	$stmt->errstr;

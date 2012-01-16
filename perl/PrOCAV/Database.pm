@@ -1898,7 +1898,8 @@ sub prepare_statements {
 	$schema{$table}->{_get} = $dbh->prepare_cached(
 	    sprintf(qq/SELECT * FROM %s WHERE %s LIMIT 1/,
 		    $table,
-		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+		    #join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+		    join(" AND ", map { "($_=? OR ($_ IS NULL AND ?=1))"; } @{ $schema{$table}->{_unique_fields} })));
 
 	# prepare _list statement
 	$schema{$table}->{_list} = $dbh->prepare_cached(
@@ -1976,7 +1977,7 @@ sub record {
     my $proc = $schema{$table}->{_get};
 
     if (defined $proc) {
-	return $proc->($ID);
+	return $proc->(map { ($_, (defined $_) ? 0 : 1); } @$ID);
     } else {
 	warn("No get record procedure for $table.\n");
     }
@@ -2104,7 +2105,8 @@ sub AUTOLOAD {
     #printf("Doing %s on %s (%s); args: %s\n", $operation || "_get", $table_name, $table, join ", ", @_);
 
     if ((($operation eq "get") || (not defined $operation)) && (@_)) {
-	$table->{_get}->execute(@_);
+	#$table->{_get}->execute(@_);
+	$table->{_get}->execute(map { ($_, (defined $_) ? 0 : 1); } @_);
 	return $table->{_get}->fetchrow_hashref;
 
     } elsif ($operation eq "list") {
