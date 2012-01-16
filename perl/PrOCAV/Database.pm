@@ -2104,7 +2104,7 @@ sub update_record {
 	$schema{$table}->{_update}->errstr;
 
     # then process any update_hooks
-    if (not $processing_hook) {
+    if (not $flags->{processing_hook}) {
 	foreach my $fn (@{ $schema{$table}->{_insert_fields} }) {
 	    &{ $schema{$table}->{$fn}->{update_hook} }("update", $record)
 		if ((defined $schema{$table}->{$fn}->{update_hook}) &&
