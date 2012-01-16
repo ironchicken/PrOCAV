@@ -555,7 +555,9 @@ my %schema = (
 	 		    look_up => "instruments",
 			    hint => "unique name of the instrument",
 			    update_hook => sub { my ($operation, $record) = @_; my $dbh = make_dbh;
-						 insert_record("instruments", {instrument => lc $record->{instrument}, description => undef}, 1) 
+						 insert_record("instruments",
+							       {instrument => lc $record->{instrument}, description => undef},
+							       {processing_hook => 1}) 
 						     if (not record_exists("instruments", {instrument => $record->{instrument}})); }},
 
 	cardinality     => {access => "rw",
@@ -1891,6 +1893,9 @@ my $create_session_stmt;
 sub prepare_statements {
     my $dbh = shift;
 
+    # REMEBER You can trace statements like this:
+    #$schema{$table}->{_match_all}->{TraceLevel} = "2|SQL";
+
     foreach my $table (@table_order) {
 	# prepare _exists statement
 	$schema{$table}->{_exists} = $dbh->prepare_cached(
@@ -1912,6 +1917,13 @@ sub prepare_statements {
 		    $table,
 		    join(",", @{ $schema{$table}->{_insert_fields} }),
 		    join(",", (("?") x scalar @{ $schema{$table}->{_insert_fields} }))));
+
+	# prepare _insert_all_fields statement
+	$schema{$table}->{_insert_all_fields} = $dbh->prepare_cached(
+	    sprintf(qq/INSERT INTO %s (%s) VALUES (%s)/,
+		    $table,
+		    join(",", @{ $schema{$table}->{_field_order} }),
+		    join(",", (("?") x scalar @{ $schema{$table}->{_field_order} }))));
 
 	# prepare _update statement
 	$schema{$table}->{_update} = $dbh->prepare_cached(
@@ -2050,15 +2062,22 @@ sub record_empty {
 }
 
 sub insert_record {
-    my ($table, $record, $processing_hook) = @_;
-    $processing_hook = 0 if (not defined $processing_hook);
+    my ($table, $record, $flags) = @_;
 
-    $schema{$table}->{_insert}->execute(@{ $record }{@{ $schema{$table}->{_insert_fields} }})
-	or die $schema{$table}->{_insert}->{Statement} . "\n" .
-	Dumper($schema{$table}->{_insert}->{ParamValues}) .
-	$schema{$table}->{_insert}->errstr;
+    if ($flags->{insert_all_fields}) {
+	$schema{$table}->{_insert_all_fields}->execute(@{ $record }{@{ $schema{$table}->{_field_order} }})
+	    or die $schema{$table}->{_insert_all_fields}->{Statement} . "\n" .
+	    Dumper($schema{$table}->{_insert_all_fields}->{ParamValues}) .
+	    $schema{$table}->{_insert_all_fields}->errstr;
+    } else {
+	$schema{$table}->{_insert}->execute(@{ $record }{@{ $schema{$table}->{_insert_fields} }})
+	    or die $schema{$table}->{_insert}->{Statement} . "\n" .
+	    Dumper($schema{$table}->{_insert}->{ParamValues}) .
+	    $schema{$table}->{_insert}->errstr;
+    }
 
-    if (not $processing_hook) {
+    if (not $flags->{processing_hook}) {
+	# run any update_hooks
 	foreach my $fn (@{ $schema{$table}->{_insert_fields} }) {
 	    &{ $schema{$table}->{$fn}->{update_hook} }("insert", $record)
 		if (defined $schema{$table}->{$fn}->{update_hook});
@@ -2068,12 +2087,11 @@ sub insert_record {
 }
 
 sub update_record {
-    my ($table, $record, $processing_hook) = @_;
-    $processing_hook = 0 if (not defined $processing_hook);
+    my ($table, $record, $flags) = @_;
 
     # first, get a copy of the record as it is before this udate
     my $previous_record = undef;
-    if (not $processing_hook) {
+    if (not $flags->{processing_hook}) {
 	$schema{$table}->{_get}->execute(map { ($_, (defined $_) ? 0 : 1); } @{ $record }{@{ $schema{$table}->{_unique_fields} }});
 	$previous_record = $schema{$table}->{_get}->fetchrow_arrayref;
     }

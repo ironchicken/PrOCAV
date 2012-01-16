@@ -332,7 +332,7 @@ sub ingest_worksheet {
 	    Database::update_record(($table, \%record));
 	    print " Updated $table " . Dumper(\%record) . "\n";
 	} elsif (not Database::record_exists($table, \%record)) {
-	    Database::insert_record(($table, \%record));
+	    Database::insert_record(($table, \%record, {insert_all_fields => 1}));
 	    print " Inserted $table " . Dumper(\%record) . "\n";
 	} else {
 	    print " No change.\n";
