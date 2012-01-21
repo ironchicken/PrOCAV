@@ -21,14 +21,14 @@ sub dbpedia_uri {
 
     my $ua = LWP::UserAgent->new;
     $ua->agent("PrOCAV/1.0");
-    $ua->timeout(1);
+    $ua->timeout(5);
 
-    my $dbpedia_uri = URI->new("http://dbpedia.org/resource/$topic");
+    my $dbpedia_uri = URI->new("http://dbpedia.org/page/" . ucfirst $topic);
     my $req = HTTP::Request->new(GET => $dbpedia_uri);
-    $req->header("Accept", "application/xml+rdf");
+    $req->header("Accept", "text/html");
     my $response = $ua->request($req);
 
-    return $dbpedia_uri->uri if ($response->is_success);
+    return $dbpedia_uri->as_string if ($response->is_success);
 }
 
 1;
