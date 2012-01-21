@@ -2072,16 +2072,23 @@ sub record_empty {
 sub insert_record {
     my ($table, $record, $flags) = @_;
 
+    my $new_record_id;
     if ($flags->{insert_all_fields}) {
 	$schema{$table}->{_insert_all_fields}->execute(@{ $record }{@{ $schema{$table}->{_field_order} }})
 	    or die $schema{$table}->{_insert_all_fields}->{Statement} . "\n" .
 	    Dumper($schema{$table}->{_insert_all_fields}->{ParamValues}) .
 	    $schema{$table}->{_insert_all_fields}->errstr;
+	if ($new_record_id = $schema{$table}->{_insert_all_fields}->{'mysql_insertid'}) {
+	    $record->{ID} = $new_record_id;
+	}
     } else {
 	$schema{$table}->{_insert}->execute(@{ $record }{@{ $schema{$table}->{_insert_fields} }})
 	    or die $schema{$table}->{_insert}->{Statement} . "\n" .
 	    Dumper($schema{$table}->{_insert}->{ParamValues}) .
 	    $schema{$table}->{_insert}->errstr;
+	if ($new_record_id = $schema{$table}->{_insert}->{'mysql_insertid'}) {
+	    $record->{ID} = $new_record_id;
+	}
     }
 
     if (not $flags->{processing_hook}) {
@@ -2091,7 +2098,7 @@ sub insert_record {
 		if (defined $schema{$table}->{$fn}->{update_hook});
 	}
     }
-    1;
+    return $new_record_id or 0;
 }
 
 sub update_record {
