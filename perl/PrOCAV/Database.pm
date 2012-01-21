@@ -2098,6 +2098,11 @@ sub insert_record {
 		if (defined $schema{$table}->{$fn}->{update_hook});
 	}
     }
+
+    # run any auto-resource inserters
+    foreach my $inserter (@{ $schema{$table}->{_auto_resource_insert} }) {
+	&{ $inserter }("insert", $record);
+    }
     return $new_record_id or 0;
 }
 
@@ -2126,6 +2131,14 @@ sub update_record {
 		    ($record->{$fn} ne $previous_record->{$fn}));
 	}
     }
+
+    # run any auto-resource inserters
+    foreach my $inserter (@{ $schema{$table}->{_auto_resource_insert} }) {
+	&{ $inserter }("update", $record);
+    }
+    1;
+}
+
 sub insert_resource {
     my ($operation, $table, $record, $resource) = @_;
 
