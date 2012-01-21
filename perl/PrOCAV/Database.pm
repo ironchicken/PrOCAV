@@ -1801,7 +1801,7 @@ my %schema = (
 	_worksheet => "resources",
 
 	_field_order         => [qw(ID uri title mime_type date_made date_linked staff_notes)],
-	_unique_fields       => [qw(ID)],
+	_unique_fields       => [qw(uri)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(uri title mime_type date_made date_linked staff_notes)],
 	_order_fields        => [qw(uri)],
@@ -1848,7 +1848,7 @@ my %schema = (
 
 	_field_order         => [qw(resource_id related_table related_id relation)],
 	_unique_fields       => [qw(resource_id related_table related_id)],
-	_single_select_field => "ID",
+	_single_select_field => "resource_id",
 	_insert_fields       => [qw(resource_id related_table related_id relation)],
 	_order_fields        => [qw(related_table related_id)],
 	_default_order       => "ASC",
@@ -2125,6 +2125,26 @@ sub update_record {
 		if ((defined $schema{$table}->{$fn}->{update_hook}) &&
 		    ($record->{$fn} ne $previous_record->{$fn}));
 	}
+    }
+sub insert_resource {
+    my ($operation, $table, $record, $resource) = @_;
+
+    my $resource_id;
+    my $existing_resource = resources($resource->{uri});
+    if (not $existing_resource) { #record_exists($table, $record)) {
+	$resource_id = insert_record("resources", $resource)
+	    or return 0;
+    } else {
+	$resource_id = $existing_resource->{ID};
+    }
+
+    my $about = {resource_id   => $resource_id,
+		 related_table => $table,
+		 related_id    => $record->{ID}};
+
+    if (not record_exists("resource_about", $about)) {
+	insert_record("resource_about", $about)
+	    or return 0;
     }
     1;
 }

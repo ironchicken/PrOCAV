@@ -336,7 +336,7 @@ CREATE TABLE resources (
   title             VARCHAR(255),
   mime_type         VARCHAR(32) NOT NULL,
   date_made         DATETIME,
-  date_linked       DATETIME NOT NULL,
+  date_linked       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   staff_notes       TEXT);
 
 -- points an external resource to something in the database
