@@ -2184,8 +2184,6 @@ sub AUTOLOAD {
 
     my $table = $schema{$table_name} || $schema{$table_name . "s"} || die("No such table: $table_name\n");
 
-    my $options = shift || {};
-
     #print Dumper($options);
     #printf("Doing %s on %s (%s); args: %s\n", $operation || "_get", $table_name, $table, join ", ", @_);
 
@@ -2197,6 +2195,14 @@ sub AUTOLOAD {
     } elsif ($operation eq "list") {
 	my $query = "_list";
 	my $st;
+
+	my $options = {};
+	for $a (@_) {
+	    if ((ref $a eq "HASH") && ((defined $a->{order_by} || defined $a->{sort_order} || defined $a->{offset} || defined $a->{limit}))) {
+		$options = $a;
+		last;
+	    }
+	}
 
 	if (defined $options->{order_by} && defined $options->{limit}) {
 	    $query = "_list_ordered_paged";
