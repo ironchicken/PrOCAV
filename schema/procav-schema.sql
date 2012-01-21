@@ -77,6 +77,7 @@ CREATE TABLE genres (
 
 -- information about known musical instruments
 CREATE TABLE instruments (
+  ID                INT PRIMARY KEY auto_increment,
   instrument        VARCHAR(255) UNIQUE NOT NULL,
   sort_position     INT,
   description       TEXT);

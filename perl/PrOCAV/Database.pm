@@ -697,12 +697,16 @@ my %schema = (
     instruments        => {
 	_worksheet => "instruments",
 
-	_field_order         => [qw(instrument description)],
+	_field_order         => [qw(ID instrument sort_position description)],
 	_unique_fields       => [qw(instrument)],
 	_single_select_field => "instrument",
-	_insert_fields       => [qw(instrument description)],
-	_order_fields        => [qw(instrument)],
+	_insert_fields       => [qw(instrument sort_position description)],
+	_order_fields        => [qw(sort_position instrument)],
 	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
 
 	instrument      => {access => "rw",
 			    data_type => "string",
@@ -710,6 +714,10 @@ my %schema = (
 			    unique => 1,
 			    width => 255,
 			    cell_width => 15},
+
+	sort_position   => {access => "rw",
+			    data_type => "integer",
+			    cell_width => 8},
 
 	description     => {access => "rw",
 			    data_type => "string",
