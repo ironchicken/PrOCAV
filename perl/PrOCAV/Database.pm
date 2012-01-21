@@ -12,6 +12,7 @@ use DBI;
 use List::Util qw(max min);
 use Array::Utils qw(:all);
 use AutoLoader;
+use PrOCAV::Resources qw(dbpedia_uri);
 
 package Database;
 
@@ -703,6 +704,11 @@ my %schema = (
 	_insert_fields       => [qw(instrument sort_position description)],
 	_order_fields        => [qw(sort_position instrument)],
 	_default_order       => "ASC",
+	_auto_resource_insert => [sub { my ($operation, $record) = @_;
+					my $dbpedia_uri = Resources::dbpedia_uri($record->{instrument});
+					insert_resource($operation, "instruments", $record,
+							{uri => $dbpedia_uri, mime_type => 'text/html'})
+					    if ($dbpedia_uri)}],
 
 	ID              => {access => "ro",
 			    primary_key => 1,
