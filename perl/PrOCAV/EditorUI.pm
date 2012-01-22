@@ -6,6 +6,8 @@
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
+package PrOCAV::EditorUI;
+
 use strict;
 use HTML::Template;
 use Apache2::RequestRec ();
@@ -13,9 +15,7 @@ use APR::Table;
 use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
 use JSON;
-use PrOCAV::Database qw(make_dbh session create_session table_info);
-
-package PrOCAV::EditorUI;
+use PrOCAV::Database qw(make_dbh session create_session table_info find_look_up);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -34,7 +34,7 @@ our %home = (
 
 	my $in_cookies = $apr_req->jar;
 
-	if (Database::session("editor", $in_cookies->{"login_name"}, $in_cookies->{"procav_editor_sid"})) {
+	if (session("editor", $in_cookies->{"login_name"}, $in_cookies->{"procav_editor_sid"})) {
 	    $req->headers_out->set(Location => "/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
@@ -59,7 +59,7 @@ our %login = (
 
 	# FIXME Test for existing session
 
-	my $session_id = Database::create_session("editor", $apr_req->param("login_name"), $apr_req->param("password"));
+	my $session_id = create_session("editor", $apr_req->param("login_name"), $apr_req->param("password"));
 
 	if ($session_id) {
 	    $s->log_error(sprintf("Created new session for %s with ID %s", $apr_req->param("login_name"), $session_id));
@@ -98,11 +98,11 @@ our %new_session = (
 
 	my $template = HTML::Template->new(filename => $TEMPLATES_DIR . "new_session.tmpl", global_vars => 1);
 
-	my $field_order = [@{ Database::table_info('works')->{_field_order} }];
+	my $field_order = [@{ table_info('works')->{_field_order} }];
 	my $columns = [map { {column => $_}; } @$field_order];
 
 	my $records = [];
-	foreach my $work (@{ Database::list_works() }) {
+	foreach my $work (@{ PrOCAV::Database::list_works() }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
 		push $fields, {value => $work->{$fn}};
@@ -137,6 +137,8 @@ our %submit_tables = (
     },
     authorisation => "editor");
 
+our %edit_table_selector = ();
+
 our %edit_table = (
     uri_pattern => qr/^\/edit_table\/?$/,
     required_parameters => [qw(table_name)],
@@ -157,7 +159,7 @@ our %table_columns = (
     handle => sub {
 	my ($req, $apr_req) = @_;
 
-	my $columns = Database::table_info($apr_req->param("table_name"))->{_field_order};
+	my $columns = table_info($apr_req->param("table_name"))->{_field_order};
 
 	$req->content_type("text/javascript");
 	print JSON::encode_json $columns;
@@ -174,7 +176,7 @@ our %table_model = (
 	sub column_model {
 	    my ($table, $column) = @_;
 
-	    my $column_info = Database::table_info($table)->{$column};
+	    my $column_info = table_info($table)->{$column};
 	    my $column_model = {name => $column};
 	    my $editoptions = {NullIfEmpty => JSON::true};
 	    my $editrules = {};
@@ -221,7 +223,7 @@ our %table_model = (
 
 	    } elsif ($column_info->{data_type} eq "look_up") {
 		$column_model->{edittype} = "select";
-		$editoptions->{value} = &{Database::find_look_up($column_info->{look_up})}();
+		$editoptions->{value} = &{ find_look_up($column_info->{look_up}) }();
 
 	    } else {
 		if (exists $column_info->{foreign_key}) {
@@ -245,7 +247,7 @@ our %table_model = (
 	    return $column_model;
 	}
 
-	my @field_order = @{ Database::table_info($apr_req->param("table_name"))->{_field_order} };
+	my @field_order = @{ table_info($apr_req->param("table_name"))->{_field_order} };
 	my $columns = [map { column_model($apr_req->param("table_name"), $_); } @field_order];
 
 	$req->content_type("text/javascript");
@@ -266,7 +268,7 @@ our %table_data = (
 	    ($apr_req->param("table_name"), $apr_req->param("_search") || 0, int($apr_req->param("rows")) || 50,
 	     int($apr_req->param("page")) || 1, $apr_req->param("sidx"), $apr_req->param("sord"));
 
-	my $field_order = [@{ Database::table_info($table_name)->{_field_order} }];
+	my $field_order = [@{ table_info($table_name)->{_field_order} }];
 	my $columns = [map { {column => $_}; } @$field_order];
 
 	my $options = {limit      => $limit,
@@ -274,10 +276,10 @@ our %table_data = (
 		       order_by   => (grep { $_ eq $order_by; } @{ $field_order }) ? $order_by : undef,
 		       sort_order => ($order_by && ($sort_order =~ /^(ASC|DESC)$/i)) ? $sort_order : undef};
 
-	my $count = int(Database::count($table_name));
+	my $count = int(PrOCAV::Database::count($table_name));
 
 	my $records = [];
-	foreach my $work (@{ Database::list($table_name, $options) }) {
+	foreach my $work (@{ PrOCAV::Database::list($table_name, $options) }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
 		push $fields, $work->{$fn};
@@ -302,7 +304,7 @@ our %look_up = (
     optional_parameters => [qw(table_name look_up_name)],
     handle => sub {
 	my ($req, $apr_req) = @_;
-	my $dbh = Database::make_dbh;
+	my $dbh = make_dbh;
 
 	$req->content_type("text/html");
 
@@ -311,7 +313,7 @@ our %look_up = (
 	if (grep { $_ eq "table_name"; } $apr_req->param) {
 	    
 	} elsif (grep { $_ eq "look_up_name"; } $apr_req->param) {
-	    my $look_up_stmt = &{ Database::find_look_up($apr_req->param("look_up_name")) }($dbh);
+	    my $look_up_stmt = &{ find_look_up($apr_req->param("look_up_name")) }($dbh);
 	    $look_up_stmt->execute;
 	    while (my $item = $look_up_stmt->fetchrow_hashref) {
 		print qq|<option value="$item->{value}">$item->{display}</option>|;

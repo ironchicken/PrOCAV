@@ -1,23 +1,28 @@
 #!/usr/bin/perl
 
 use strict;
+
+#*CORE::GLOBAL::die = sub { require Carp; Carp::confess(); };
+#$SIG{__WARN__} = sub { require Carp; Carp::confess(); };
+
 use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
 use HTML::Template;
 #use Apache2::FakeRequest;
 use PrOCAV::API qw(handler);
-use PrOCAV::Database;
+use PrOCAV::Database qw(make_dbh all_records table_info insert_record insert_resource);
+use PrOCAV::Resources qw(dbpedia_uri);
 use Data::Dumper;
 
 sub test_create_workbook {
-    Ingestion::create_workbook({works => [1,2,3,4,5]});
+    create_workbook({works => [1,2,3,4,5]});
 }
 
 sub test_ingest_workbook {
-    Ingestion::ingest_workbook("../../test16.xlsx");
+    ingest_workbook("../../test16.xlsx");
 }
 
 sub test_editor_front_page {
-    Database::make_dbh;
+    make_dbh;
 
     my $template = HTML::Template->new(filename => "../web/editor/new_session.tmpl", global_vars => 1);
 
@@ -30,7 +35,7 @@ sub test_editor_front_page {
 
     # $template->param($params);
  
-    my $field_order = [@{ Database::table_info('works')->{_field_order} }];
+    my $field_order = [@{ table_info('works')->{_field_order} }];
     my $columns = [map { {column => $_}; } @$field_order];
 
     print Dumper($columns);
@@ -38,18 +43,18 @@ sub test_editor_front_page {
 
     my $records = [];
 
-    foreach my $work (@{ Database::list_works() }) {
+    foreach my $work (@{ PrOCAV::Database::list_works() }) {
 	my $fields = [];
 	foreach my $fn (@$field_order) {
 	    push $fields, {value => $work->{$fn}};
 	}
 
 	push $records, {ID => $work->{ID},
-			#fields => map { {value => $work->{$_}}; } @{ Database::table_info('works')->{_field_order} }};
+			#fields => map { {value => $work->{$_}}; } @{ table_info('works')->{_field_order} }};
 			fields => $fields};
     }
     #my $_records = Database::list_works();
-    #my @records = map { {ID => $_->{ID}, fields => map { {value => $_}; } @{ Database::table_info('works')->{_field_order} } }; } @{ Database::list_works() };
+    #my @records = map { {ID => $_->{ID}, fields => map { {value => $_}; } @{ table_info('works')->{_field_order} } }; } @{ Database::list_works() };
 
     #print Dumper(@records);
 
@@ -71,51 +76,70 @@ sub test_editor_front_page {
 
 sub test_handler {
     my $r = Apache2::FakeRequest->new(hostname => 'localhost');
-    PrOCAV::API::handler($r);
+    handler($r);
 }
 
 sub test_database_autoloader {
-    Database::make_dbh;
+    make_dbh;
 
-    print 'Database::work(1):'; print "\n";
-    my $work_1 = Database::work(1);
+    print 'PrOCAV::Database::work(1):'; print "\n";
+    my $work_1 = PrOCAV::Database::work(1);
     print Dumper($work_1) . "\n";
 
-    print 'Database::list_works():'; print "\n";
-    my $works = Database::list_works();
+    print 'PrOCAV::Database::list_works():'; print "\n";
+    my $works = PrOCAV::Database::list_works();
     print scalar @$works . "\n";
     foreach my $work (@$works) {
 	print $work->{uniform_title} . "\n";
     }
 
-    print 'Database::list("works"):'; print "\n";
-    my $works = Database::list("works");
+    print 'PrOCAV::Database::list("works"):'; print "\n";
+    my $works = PrOCAV::Database::list("works");
     print scalar @$works . "\n";
     foreach my $work (@$works) {
 	print $work->{uniform_title} . "\n";
     }
 
-    my $musical_information_1 = Database::musical_information(1);
+    my $musical_information_1 = PrOCAV::Database::musical_information(1);
     print Dumper($musical_information_1) . "\n";
 
-    my @musical_information = Database::list_musical_information();
-    print scalar @musical_information . "\n";
-    foreach my $musical_information (@musical_information) {
+    my $musical_information = PrOCAV::Database::list_musical_information();
+    print scalar @$musical_information . "\n";
+    foreach my $musical_information (@$musical_information) {
 	print $musical_information->{work_id} . "\n";
     }
 
-    my $catalogue_number_1 = Database::catalogue_number(1);
+    my $catalogue_number_1 = PrOCAV::Database::catalogue_number(1);
     print Dumper($catalogue_number_1) . "\n";
 
-    my @catalogue_numbers = Database::list_catalogue_numbers();
-    print scalar @catalogue_numbers . "\n";
-    foreach my $catalogue_number (@catalogue_numbers) {
+    my $catalogue_numbers = PrOCAV::Database::list_catalogue_numbers();
+    print scalar @$catalogue_numbers . "\n";
+    foreach my $catalogue_number (@$catalogue_numbers) {
 	print $catalogue_number->{number} . "\n";
     }
 }
 
 sub test_all_records {
-    print Dumper(Database::all_records);
+    print Dumper(all_records);
+}
+
+sub test_dbpedia_url {
+    print dbpedia_uri("clarinet") . "\n";
+}
+
+sub test_insert_resource {
+    make_dbh;
+    insert_resource("insert", "works",
+		    {ID => 139, uniform_title => "Ivan the Terrible"},
+		    {uri => 'http://en.wikipedia.org/wiki/Ivan_the_Terrible_(Prokofiev)', mime_type => 'text/html'});
+    insert_resource("insert", "works",
+		    {ID => 44, uniform_title => "The Fiery Angel"},
+		    {uri => 'http://en.wikipedia.org/wiki/The_Fiery_Angel_(opera)', mime_type => 'text/html'});
+}
+
+sub test_auto_resource_inserter {
+    make_dbh;
+    insert_record("instruments", {instrument => "xylophone"});
 }
 
 sub main {
@@ -123,8 +147,11 @@ sub main {
     #test_ingest_workbook;
     test_editor_front_page;
     #test_handler;
-    #test_database_autoloader;
-    #test_all_records;
+    test_database_autoloader;
+    test_all_records;
+    #test_dbpedia_url;
+    test_insert_resource;
+    test_auto_resource_inserter;
 }
 
 main;

@@ -6,11 +6,11 @@
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
+package PrOCAV::Resources;
+
 use strict;
 use LWP::UserAgent;
 use URI;
-
-package Resources;
 
 require Exporter;
 our @ISA = qw(Exporter);

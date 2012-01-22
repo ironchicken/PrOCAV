@@ -5,7 +5,7 @@ use PrOCAV::Ingestion qw(create_workbook);
 use PrOCAV::Database qw(all_records);
 
 sub main {
-    my $filename = Ingestion::create_workbook(Database::all_records);
+    my $filename = create_workbook(all_records);
 
 }
 

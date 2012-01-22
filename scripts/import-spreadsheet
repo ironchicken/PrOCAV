@@ -6,7 +6,7 @@ use strict;
 $SIG{__WARN__} = sub { require Carp; Carp::confess(); };
 
 use Getopt::Std;
-use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
+use PrOCAV::Ingestion qw(ingest_workbook);
 
 # Command line options should be
 #   -i   input spreadshet
@@ -15,7 +15,7 @@ getopts("i:x:", \%options);
 
 sub main {
     if (exists $options{i}) {
-	Ingestion::ingest_workbook($options{i}, split(/\,/, $options{x}));
+	ingest_workbook($options{i}, split(/\,/, $options{x}));
     } else {
 	die "No filename supplied.\n";
     }

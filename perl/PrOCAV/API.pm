@@ -7,6 +7,8 @@
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
+package PrOCAV::API;
+
 use strict;
 use APR::Request::Apache2;
 use Apache2::RequestRec ();
@@ -19,8 +21,6 @@ use APR::Const -compile => qw(:error SUCCESS);
 use Array::Utils qw(:all);
 use PrOCAV::Database qw(session make_dbh);
 use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
-
-package PrOCAV::API;
 
 sub authorised {
     my ($req, $apr_req, $handler) = @_;
@@ -50,7 +50,7 @@ sub authorised {
     if ($handler->{authorisation} eq "editor") {
 	my $login_name = $in_cookies->{"login_name"};
 	$s->log_error(sprintf("Found value for login_name: \"%s\"", $login_name));
-	return Database::session("editor", $login_name, $session_id);
+	return session("editor", $login_name, $session_id);
     }
 
     if ($handler->{authorisation} eq "consumer") {
@@ -97,7 +97,7 @@ sub handler {
 
     my $s = $req->server;
 
-    my $dbh = Database::make_dbh;
+    my $dbh = make_dbh;
 
     # iterate over all the URI handlers
     foreach my $h (@DISPATCH_TABLE) {
