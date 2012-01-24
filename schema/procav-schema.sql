@@ -95,7 +95,7 @@ CREATE TABLE scored_for (
 
 -- works may be derived from other works
 CREATE TABLE derived_from (
-  precusror_work    INT NOT NULL,
+  precursor_work    INT NOT NULL,
   derived_work      INT NOT NULL,
   derivation_relation ENUM('transcription', 'arrangement', 'off-shoot') NOT NULL,
   notes             TEXT,

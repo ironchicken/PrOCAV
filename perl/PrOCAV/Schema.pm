@@ -556,21 +556,21 @@ our %schema = (
     derived_from       => {
 	_worksheet => "derived_from",
 
-	_field_order         => [qw(precusor_work derived_work derivation_relation staff_notes)],
-	_unique_fields       => [qw(precusor_work derived_work derivation_relation)],
-	_single_select_field => "precusor_work",
-	_insert_fields       => [qw(precusor_work derived_work derivation_relation staff_notes)],
+	_field_order         => [qw(precursor_work derived_work derivation_relation staff_notes)],
+	_unique_fields       => [qw(precursor_work derived_work derivation_relation)],
+	_single_select_field => "precursor_work",
+	_insert_fields       => [qw(precursor_work derived_work derivation_relation staff_notes)],
 	_order_fields        => [qw(precursor_work)],
 	_default_order       => "ASC",
 
-	# precusor_work   => {access => "rw",
+	# precursor_work  => {access => "rw",
 	# 		    data_type => "look_up",
 	# 		    look_up => "parent_works",
 	# 		    list_mutable => 0,
 	# 		    not_null => 1,
 	# 		    cell_width => 40},
 
-	precusor_work   => {access => "rw",
+	precursor_work  => {access => "rw",
 			    data_type => "integer",
 			    foreign_key => "works",
 	 		    look_up => "parent_works",
