@@ -13,6 +13,9 @@ use PrOCAV::Database qw(make_dbh all_records table_info insert_record insert_res
 use PrOCAV::Resources qw(dbpedia_uri);
 use Data::Dumper;
 
+$Data::Dumper::Indent = 1;
+$Data::Dumper::Terse = 1;
+
 sub test_create_workbook {
     create_workbook({works => [1,2,3,4,5]});
 }
@@ -119,6 +122,19 @@ sub test_database_autoloader {
     }
 }
 
+sub test_schema_statements {
+    make_dbh;
+
+    my $work = PrOCAV::Database::complete_work(55);
+    print Dumper($work) . "\n\n";
+
+    my $work = PrOCAV::Database::complete_work(56);
+    print Dumper($work) . "\n\n";
+
+    my $work = PrOCAV::Database::complete_work(57);
+    print Dumper($work) . "\n\n";
+}
+
 sub test_all_records {
     print Dumper(all_records);
 }
@@ -145,13 +161,14 @@ sub test_auto_resource_inserter {
 sub main {
     #test_create_workbook;
     #test_ingest_workbook;
-    test_editor_front_page;
+    #test_editor_front_page;
     #test_handler;
-    test_database_autoloader;
-    test_all_records;
+    #test_database_autoloader;
+    #test_all_records;
     #test_dbpedia_url;
-    test_insert_resource;
-    test_auto_resource_inserter;
+    #test_insert_resource;
+    #test_auto_resource_inserter;
+    test_schema_statements;
 }
 
 main;

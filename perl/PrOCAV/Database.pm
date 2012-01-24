@@ -467,8 +467,21 @@ sub AUTOLOAD {
 	return $table->{_struct}->fetchrow_hashref;
 	
     } elsif ($operation eq "complete") {
-	$table->{_complete}->execute(@_);
-	return $table->{_complete}->fetchrow_hashref;
+	my $complete = {};
+
+	while (my ($name, $stmt) = each %{ $table->{_complete} }) {
+	    my ($stmt_cardinality, $stmt_name) = @$stmt;
+
+	    $table->{$stmt_name}->execute(@_);
+	    if ($stmt_cardinality eq 'ONE') {
+		$complete->{$name} = $table->{$stmt_name}->fetchrow_hashref;
+	    } elsif ($stmt_cardinality eq 'MANY') {
+		$complete->{$name} = ();
+		while (my $row = $table->{$stmt_name}->fetchrow_hashref) { push @{$complete->{$name}}, $row; }
+	    }
+	}
+
+	return $complete;
 
     } elsif ($operation eq "insert") {
 	$table->{_insert}->execute(@_);
