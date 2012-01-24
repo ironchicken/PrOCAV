@@ -15,7 +15,7 @@ use PrOCAV::Database qw(record_exists insert_record insert_resource);
 
 require Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw(%look_ups @table_order %schema);
+our @EXPORT = qw(%look_ups @table_order %schema schema_prepare_statments);
 
 #################################################################################################################
 #### NAMED LOOK-UPS
@@ -1847,54 +1847,105 @@ our %schema = (
 			    data_type => "string",
 			    cell_width => 12}});
 
-# # works._complete defines the queries necessary to retrieve a work and
-# # all its associated records
-# $schema{works}->{_complete} = [qw(_work_full _work_sub_works _work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
+sub schema_prepare_statments {
+    my $dbh = shift;
 
-# # works._full retrieves a single WORKS with its MUSICAL_INFORMATION
-# my $full_work = <<WORK_FULL;
-# SELECT works.ID, works.uniform_title, works.sub_title,
-#     works.part_of, works.parent_relation, works.duration, works.notes,
-#     musical_information.performance_direction, musical_information.tonic,
-#     musical_information.tonic_chromatic, musical_information.mode,
-#     musical_information.time_sig_beats, musical_information.time_sig_division
-#     FROM works
-#     JOIN musical_information ON musical_information.work_id = works.ID
-#     WHERE works.ID=?
-# WORK_FULL
+    # works._full retrieves a single WORKS with its MUSICAL_INFORMATION
+    $schema{works}->{_full} = $dbh->prepare_cached(q|SELECT works.ID, works.uniform_title, works.sub_title,
+    works.part_of, works.parent_relation, works.duration, works.notes,
+    musical_information.performance_direction, musical_information.tonic,
+    musical_information.tonic_chromatic, musical_information.mode,
+    musical_information.time_sig_beats, musical_information.time_sig_division
+    FROM works
+    LEFT JOIN musical_information ON musical_information.work_id = works.ID
+    WHERE works.ID=?|);
 
-# $schema{works}->{_full} = $dbh->prepare_cached($full_work);
+    # works._sub_works retrieves all the records from the WORKS table
+    # which stand in a part_of relation with the given WORKS record
+    $schema{works}->{_sub_works} = $dbh->prepare_cached(q|SELECT works.ID, sub_works.ID, sub_works.uniform_title, sub_works.sub_title, sub_works.parent_relation,
+    sub_works.duration, sub_works.notes, musical_information.performance_direction,
+    musical_information.tonic, musical_information.tonic_chromatic,
+    musical_information.mode, musical_information.time_sig_beats,
+    musical_information.time_sig_division
+    FROM works
+    JOIN works AS sub_works ON sub_works.part_of = works.ID
+    LEFT JOIN musical_information ON musical_information.work_id = sub_works.ID
+    WHERE works.ID=?
+    ORDER BY sub_works.part_position|);
 
-# # works._sub_works retrieves all the records from the WORKS table
-# # which stand in a part_of relation with the given WORKS record
-# $schema{works}->{_sub_works} = <<WORK_SUB_WORKS;
-# SELECT works.ID, sub_works.ID, sub_works.uniform_title, sub_works.sub_title, sub_works.parent_relation,
-#     sub_works.duration, sub_works.notes, musical_information.performance_direction,
-#     musical_information.tonic, musical_information.tonic_chromatic,
-#     musical_information.mode, musical_information.time_sig_beats,
-#     musical_information.time_sig_division
-#     FROM works
-#     JOIN works AS sub_works ON sub_works.part_of = works.ID
-#     JOIN musical_information ON musical_information.work_id = sub_works.ID
-#     WHERE works.ID=?
-#     ORDER BY sub_works.part_position
-# WORK_SUB_WORKS
+    # works._parent
+    $schema{works}->{_parent} = $dbh->prepare_cached(q|SELECT parent.ID, parent.uniform_title, parent.sub_title,
+    parent.part_of, parent.parent_relation, parent.duration, parent.notes,
+    musical_information.performance_direction, musical_information.tonic,
+    musical_information.tonic_chromatic, musical_information.mode,
+    musical_information.time_sig_beats, musical_information.time_sig_division
+    FROM works AS parent
+    JOIN works ON parent.ID=works.part_of
+    LEFT JOIN musical_information ON musical_information.work_id = parent.ID
+    WHERE works.ID=?|);
 
-# $schema{works}->{_statuses} = <<WORK_STATUSES;
-# SELECT work_id, status
-#     FROM work_status
-#     WHERE work_id=?
-# WORK_STATUSES
+    # works._statuses retrieves all the WORK_STATUSs for a given
+    # WORKS.ID
+    $schema{works}->{_statuses} = $dbh->prepare_cached(q|SELECT work_id, status FROM work_status WHERE work_id=?|);
 
-# $schema{works}->{_titles} = <<WORK_TITLES;
-# SELECT titles.ID, works.uniform_title, manuscripts.title, editions.title, persons.given_name, persons.family_name
-#     FROM works
-#     JOIN titles ON works.ID = titles.work_id
-#     JOIN manuscripts ON manuscripts.ID = titles.manuscript_id
-#     JOIN editions ON editions.ID = titles.edition_id
-#     JOIN persons ON editions.ID = titles.person_id
-#     WHERE works.ID=?
-#     ORDER BY titles.title
-# WORK_TITLES
+    # works._titles retrieves all the TITLEs for a given WORKS.ID
+    $schema{works}->{_titles} = $dbh->prepare_cached(q|SELECT titles.ID, titles.title, titles.transliteration,
+    titles.language, titles.script, manuscripts.title, persons.given_name, persons.family_name
+    FROM titles
+    LEFT JOIN manuscripts ON manuscripts.ID = titles.manuscript_id
+    LEFT JOIN editions ON editions.ID = titles.edition_id
+    LEFT JOIN persons ON editions.ID = titles.person_id
+    WHERE titles.work_id=?
+    ORDER BY titles.title|);
+
+    # works._catalogue_numbers
+    $schema{works}->{_catalogue_numbers} = $dbh->prepare_cached(q|SELECT catalogues.label, catalogue_numbers.number,
+    catalogue_numbers.number_position, catalogue_numbers.suffix, catalogue_numbers.suffix_position
+    FROM catalogue_numbers
+    JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE catalogue_numbers.work_id=?
+    ORDER BY catalogue_numbers.number_position, catalogue_numbers.suffix_position|);
+
+    # works._genres
+    $schema{works}->{_genres} = $dbh->prepare_cached(q|SELECT genres.ID, genres.genre
+    FROM genres
+    WHERE genres.work_id=?
+    ORDER BY genres.genre|);
+
+    # works._scored_for
+    $schema{works}->{_scored_for} = $dbh->prepare_cached(q|SELECT scored_for.instrument, scored_for.cardinality,
+    scored_for.doubles_with, scored_for.role, scored_for.in_group, scored_for.notes
+    FROM scored_for
+    JOIN instruments ON scored_for.instrument = instruments.instrument
+    WHERE scored_for.work_id=?
+    ORDER BY scored_for.in_group, instruments.sort_position|);
+
+    # works._derived_from
+    $schema{works}->{_derived_from} = $dbh->prepare_cached(q|SELECT derived_work, derivation_relation, notes
+    FROM derived_from
+    WHERE precursor_work=?
+    ORDER BY derivation_relation, derived_work|);
+
+    # works._derivations
+    $schema{works}->{_derivations} = $dbh->prepare_cached(q|SELECT precursor_work, derivation_relation, notes
+    FROM derived_from
+    WHERE derived_work=?
+    ORDER BY derivation_relation, precursor_work|);
+
+    # works._complete defines the queries necessary to retrieve a work
+    # and all its associated records
+    $schema{works}->{_complete} = {full              => ['ONE', '_full'],
+				   sub_works         => ['MANY', '_sub_works'],
+				   parent            => ['ONE', '_parent'],
+				   statuses          => ['MANY', '_statuses'],
+				   titles            => ['MANY', '_titles'],
+				   catalogue_numbers => ['MANY', '_catalogue_numbers'],
+				   genres            => ['MANY', '_genres'],
+				   scored_for        => ['MANY', '_scored_for'],
+				   derived_from      => ['MANY', '_derived_from'],
+				   derivations       => ['MANY', '_derivations']
+};
+#_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
+}
 
 1;

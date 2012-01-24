@@ -161,6 +161,10 @@ sub prepare_statements {
     $get_session_stmt = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
     $check_editor_credentials_stmt = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
     $create_session_stmt = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
+
+    # Call the Schema module's prepare_statements subroutine
+
+    schema_prepare_statments($dbh);
 }
 
 sub session {
