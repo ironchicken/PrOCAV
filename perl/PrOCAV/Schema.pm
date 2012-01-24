@@ -1850,6 +1850,18 @@ our %schema = (
 sub schema_prepare_statments {
     my $dbh = shift;
 
+    sub date_selector {
+	my $name = shift;
+
+	"$name.year AS $name\_year, $name.year_accuracy AS $name\_year_accuracy, " .
+	    "$name.month AS $name\_month, $name.month_accuracy AS $name\_month_accuracy, " . 
+	    "$name.day AS $name\_day, $name.day_accuracy AS $name\_day_accuracy, " . 
+	    "$name.end_year AS $name\_end_year, $name.end_year_accuracy AS $name\_end_year_accuracy, " . 
+	    "$name.end_month AS $name\_end_month, $name.end_month_accuracy AS $name\_end_month_accuracy, " . 
+	    "$name.end_day AS $name\_end_day, $name.end_day_accuracy AS $name\_end_day_accuracy, " . 
+	    "$name.date_text AS $name\_date_text ";
+    }
+
     # works._full retrieves a single WORKS with its MUSICAL_INFORMATION
     $schema{works}->{_full} = $dbh->prepare_cached(q|SELECT works.ID, works.uniform_title, works.sub_title,
     works.part_of, works.parent_relation, works.duration, works.notes,
@@ -1890,7 +1902,7 @@ sub schema_prepare_statments {
 
     # works._titles retrieves all the TITLEs for a given WORKS.ID
     $schema{works}->{_titles} = $dbh->prepare_cached(q|SELECT titles.ID, titles.title, titles.transliteration,
-    titles.language, titles.script, manuscripts.title, persons.given_name, persons.family_name
+    titles.language, titles.script, manuscripts.title AS manuscript_title, persons.given_name, persons.family_name
     FROM titles
     LEFT JOIN manuscripts ON manuscripts.ID = titles.manuscript_id
     LEFT JOIN editions ON editions.ID = titles.edition_id
@@ -1932,9 +1944,47 @@ sub schema_prepare_statments {
     WHERE derived_work=?
     ORDER BY derivation_relation, precursor_work|);
 
+    # works._composition
+    $schema{works}->{_composition} = $dbh->prepare_cached(q|SELECT manuscripts.title AS manuscript_title, | . date_selector("start") . ', ' . date_selector("end") . q|, composition.work_type
+    FROM composition
+    LEFT JOIN dates AS start ON composition.period_start = start.ID
+    LEFT JOIN dates AS end ON composition.period_end = end.ID
+    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.ID
+    WHERE composition.work_id=?
+    ORDER BY end.year, end.month, end.day, composition.work_type|);
+
+    # works._editions
+    $schema{works}->{_editions} = $dbh->prepare_cached(q|SELECT | . date_selector("made") . q|, editor.given_name AS editor_given_name,
+    editor.family_name AS editor_family_name, editions.work_extent, editions.notes
+    FROM editions
+    LEFT JOIN dates AS made ON editions.date_made = made.ID
+    LEFT JOIN persons AS editor ON editions.editor = editor.ID
+    WHERE editions.work_id=?
+    ORDER BY made.year, made.month, made.day|);
+
+    # works._publications
+    $schema{works}->{_publications} = $dbh->prepare_cached(q|SELECT publications.title, publications.publisher,
+    publications.publication_place, | . date_selector('pub_date') . q|, publications.serial_number, publications.score_type,
+    publications.notes, published_in.edition_extent, published_in.publication_range
+    FROM publications
+    JOIN published_in ON published_in.publication_id = publications.ID
+    JOIN editions ON published_in.edition_id = editions.ID
+    LEFT JOIN dates AS pub_date ON publications.date_published = pub_date.ID
+    WHERE editions.work_id=?
+    ORDER BY pub_date.year, pub_date.month, pub_date.day|);
+
+    # works._performanes
+    $schema{works}->{_performances} = $dbh->prepare_cached(q|SELECT | . date_selector('performed') . q|, venues.name AS venue, venues.city,
+    venues.country, venues.venue_type, performances.performance_type, performances.notes
+    FROM performances
+    LEFT JOIN dates AS performed ON performances.date_performed = performed.ID
+    LEFT JOIN venues ON performances.venue_id = venues.ID
+    WHERE performances.work_id=?
+    ORDER BY performed.year, performed.month, performed.day|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
-    $schema{works}->{_complete} = {full              => ['ONE', '_full'],
+    $schema{works}->{_complete} = {details           => ['ONE', '_full'],
 				   sub_works         => ['MANY', '_sub_works'],
 				   parent            => ['ONE', '_parent'],
 				   statuses          => ['MANY', '_statuses'],
@@ -1943,7 +1993,11 @@ sub schema_prepare_statments {
 				   genres            => ['MANY', '_genres'],
 				   scored_for        => ['MANY', '_scored_for'],
 				   derived_from      => ['MANY', '_derived_from'],
-				   derivations       => ['MANY', '_derivations']
+				   derivations       => ['MANY', '_derivations'],
+				   composition       => ['MANY', '_composition'],
+				   editions          => ['MANY', '_editions'],
+				   publications      => ['MANY', '_publications'],
+				   performances      => ['MANY', '_performances']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
