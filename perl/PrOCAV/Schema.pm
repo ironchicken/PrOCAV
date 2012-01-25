@@ -1996,6 +1996,16 @@ sub schema_prepare_statments {
     WHERE letter_mentions.mentioned_table = "works" AND letter_mentions.mentioned_id=?
     ORDER BY composed.year, composed.month, composed.day|);
 
+    #works._manuscripts
+    $schema{works}->{_manuscripts} = $dbh->prepare_cached(q|SELECT manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    manuscripts.location, manuscripts.notes
+    FROM manuscripts
+    LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
+    -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
+    WHERE manuscripts.work_id=?
+    ORDER BY made.year, made.month, made.day|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -2012,7 +2022,8 @@ sub schema_prepare_statments {
 				   editions          => ['MANY', '_editions'],
 				   publications      => ['MANY', '_publications'],
 				   performances      => ['MANY', '_performances'],
-				   letters           => ['MANY', '_letters']
+				   letters           => ['MANY', '_letters'],
+				   manuscripts       => ['MANY', '_manuscripts']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
