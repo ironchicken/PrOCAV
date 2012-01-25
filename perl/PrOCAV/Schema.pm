@@ -2006,6 +2006,15 @@ sub schema_prepare_statments {
     WHERE manuscripts.work_id=?
     ORDER BY made.year, made.month, made.day|);
 
+    # works._texts
+    $schema{works}->{_texts} = $dbh->prepare_cached(q|SELECT texts.title, author.given_name AS author_given_name,
+    author.family_name AS author_family_name, texts.no_author, texts.text_type, texts.original, texts.language, texts.source,
+    texts.citation, texts.original_content, texts.english_content, texts.notes
+    FROM texts
+    JOIN work_sets_text ON work_sets_text.text_id = texts.ID
+    LEFT JOIN persons AS author ON texts.author = author.ID
+    WHERE work_sets_text.work_id=?|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -2023,7 +2032,8 @@ sub schema_prepare_statments {
 				   publications      => ['MANY', '_publications'],
 				   performances      => ['MANY', '_performances'],
 				   letters           => ['MANY', '_letters'],
-				   manuscripts       => ['MANY', '_manuscripts']
+				   manuscripts       => ['MANY', '_manuscripts'],
+				   texts_set         => ['MANY', '_texts']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
