@@ -220,12 +220,25 @@ CREATE TABLE manuscripts (
 -- literary works set in a work
 CREATE TABLE texts (
   ID                INT PRIMARY KEY auto_increment,
-  title             VARCHAR(128) NOT NULL,
+  title             VARCHAR(128),
   author            INT,
+  no_author         ENUM('anonymous', 'traditional'),
+  text_type         VARCHAR(64),
+  original          TINYINT,
   `language`        CHAR(2),
+  `source`          VARCHAR(128), -- e.g. Bible
+  citation          VARCHAR(128), -- e.g. Ps 107:23
   original_content  TEXT,
-  engish_content    TEXT,
+  english_content    TEXT,
+  notes             TEXT,
   staff_notes       TEXT);
+
+-- asserts that a work sets a text or that the text of a work is
+-- unknown, unidentified, etc.
+CREATE TABLE work_sets_text (
+  work_id           INT NOT NULL,
+  text_id           INT,
+  text_status       ENUM('unknown', 'unidentified', 'partial', 'complete'));
 
 -- persons mentioned in the database
 CREATE TABLE persons (
