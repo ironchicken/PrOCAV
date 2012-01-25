@@ -1982,6 +1982,20 @@ sub schema_prepare_statments {
     WHERE performances.work_id=?
     ORDER BY performed.year, performed.month, performed.day|);
 
+    # works._letters
+    $schema{works}->{_letters} = $dbh->prepare_cached(q|SELECT | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
+    addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, letter_mentions.letter_ragne,
+    letter_mentions.mentioned_extent AS work_extent, letter_mentions.notes
+    FROM letters
+    JOIN letter_mentions ON letter_mentions.letter_id = letters.ID
+    LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
+    LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
+    LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
+    LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
+    WHERE letter_mentions.mentioned_table = "works" AND letter_mentions.mentioned_id=?
+    ORDER BY composed.year, composed.month, composed.day|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -1997,7 +2011,8 @@ sub schema_prepare_statments {
 				   composition       => ['MANY', '_composition'],
 				   editions          => ['MANY', '_editions'],
 				   publications      => ['MANY', '_publications'],
-				   performances      => ['MANY', '_performances']
+				   performances      => ['MANY', '_performances'],
+				   letters           => ['MANY', '_letters']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
