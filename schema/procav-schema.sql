@@ -247,6 +247,7 @@ CREATE TABLE persons (
   family_name       VARCHAR(255),
   sex               ENUM('male', 'female'),
   nationality       CHAR(2),
+  notes             TEXT,
   staff_notes       TEXT);
 
 -- asserts that a work is dedicated to a person

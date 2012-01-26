@@ -1283,10 +1283,10 @@ our %schema = (
     persons            => {
 	_worksheet => "persons",
 
-	_field_order         => [qw(ID given_name family_name sex nationality staff_notes)],
+	_field_order         => [qw(ID given_name family_name sex nationality notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(given_name family_name sex nationality staff_notes)],
+	_insert_fields       => [qw(given_name family_name sex nationality notes staff_notes)],
 	_order_fields        => [qw(family_name given_name)],
 	_default_order       => "ASC",
 
@@ -1313,6 +1313,10 @@ our %schema = (
 			    data_type => "string",
 			    width => 2,
 			    cell_width => 8},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
 
 	staff_notes     => {access => "rw",
 			    data_type => "string",
