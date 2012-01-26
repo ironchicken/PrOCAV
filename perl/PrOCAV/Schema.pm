@@ -2074,6 +2074,14 @@ sub schema_prepare_statments {
     WHERE commissioned_by.work_id=?
     ORDER BY made.year, made.month, made.day|);
 
+    # works._local_media_items
+    $schema{works}->{_local_media_items} = $dbh->prepare_cached(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
+    media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired, media_items.copyright,
+    media_items.public, representation_of.relation
+    FROM media_items
+    JOIN representation_of ON representation_of.media_id = media_items.ID
+    WHERE representation_of.source = "local" AND representation_of.related_table = "works" AND related_id=?|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -2094,7 +2102,8 @@ sub schema_prepare_statments {
 				   manuscripts       => ['MANY', '_manuscripts'],
 				   texts_set         => ['MANY', '_texts'],
 				   dedicated_to      => ['MANY', '_dedicated_to'],
-				   commissioned_by   => ['MANY', '_commissioned_by']
+				   commissioned_by   => ['MANY', '_commissioned_by'],
+				   local_media_items => ['MANY', '_local_media_items']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
