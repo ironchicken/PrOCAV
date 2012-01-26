@@ -2015,6 +2015,19 @@ sub schema_prepare_statments {
     LEFT JOIN persons AS author ON texts.author = author.ID
     WHERE work_sets_text.work_id=?|);
 
+    # works._dedicated_to
+    $schema{works}->{_dedicated_to} = $dbh->prepare_cached(q|SELECT dedicatee.given_name AS dedicatee_given_name,
+    dedicatee.family_name AS dedicatee_family_name, manuscripts.title AS manuscript_title, edition_date.year AS edition,
+    dedicated_to.dedication_text, | . date_selector('made') . q|
+    FROM dedicated_to
+    JOIN persons AS dedicatee ON dedicated_to.person_id = dedicatee.ID
+    LEFT JOIN manuscripts ON dedicated_to.manuscript_id = manuscripts.ID
+    LEFT JOIN editions ON dedicated_to.edition_id = editions.ID
+    LEFT JOIN dates AS edition_date ON editions.date_made = edition_date.ID
+    LEFT JOIN dates AS made ON dedicated_to.date_made = made.ID
+    WHERE dedicated_to.work_id=?
+    ORDER BY made.year, made.month, made.day|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -2033,7 +2046,8 @@ sub schema_prepare_statments {
 				   performances      => ['MANY', '_performances'],
 				   letters           => ['MANY', '_letters'],
 				   manuscripts       => ['MANY', '_manuscripts'],
-				   texts_set         => ['MANY', '_texts']
+				   texts_set         => ['MANY', '_texts'],
+				   dedicated_to      => ['MANY', '_dedicated_to']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
