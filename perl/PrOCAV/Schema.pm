@@ -2028,6 +2028,15 @@ sub schema_prepare_statments {
     WHERE dedicated_to.work_id=?
     ORDER BY made.year, made.month, made.day|);
 
+    # works._commissioned_by
+    $schema{works}->{_commissioned_by} = $dbh->prepare_cached(q|SELECT commissioner.given_name AS commissioner_given_name,
+    commissioner.family_name AS commissioner_family_name, commissioned_by.commission_text, | . date_selector('made') . q|
+    FROM commissioned_by
+    JOIN persons AS commissioner ON commissioned_by.person_id = commissioner.ID
+    LEFT JOIN dates AS made ON commissioned_by.date_made = made.ID
+    WHERE commissioned_by.work_id=?
+    ORDER BY made.year, made.month, made.day|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -2047,7 +2056,8 @@ sub schema_prepare_statments {
 				   letters           => ['MANY', '_letters'],
 				   manuscripts       => ['MANY', '_manuscripts'],
 				   texts_set         => ['MANY', '_texts'],
-				   dedicated_to      => ['MANY', '_dedicated_to']
+				   dedicated_to      => ['MANY', '_dedicated_to'],
+				   commissioned_by   => ['MANY', '_commissioned_by']
 };
 #_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
 }
