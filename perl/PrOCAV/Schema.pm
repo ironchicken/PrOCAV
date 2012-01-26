@@ -89,6 +89,9 @@ our %look_ups = (
 
     modes                => sub { [{value => "major", display => "Major"}, {value => "minor", display => "Minor"}]; },
 
+    no_author            => sub { [{value => "anonymous", display => "Anonymous"},
+				   {value => "traditional", display => "Traditional"}]; },
+
     media_sources        => sub { [{value => "local", display => "Local media"}, {value => "remote", display => "Remote media"}]; },
 
     media_for            => sub { [{value => "works", display => "Works"},
@@ -1202,10 +1205,10 @@ our %schema = (
     texts              => {
 	_worksheet => "texts",
 
-	_field_order         => [qw(ID title author language original_content english_content staff_notes)],
+	_field_order         => [qw(ID title author no_author text_type original language source citation original_content english_content notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title author language original_content english_content staff_notes)],
+	_insert_fields       => [qw(title author no_author text_type original language source citation original_content english_content notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -1230,10 +1233,36 @@ our %schema = (
 	 		    look_up => "persons",
 			    hint => "ID of the person who wrote this text"},
 
+	no_author       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "no_author",
+			    cell_width => 8},
+
+	text_type       => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+	original        => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0,
+			    cell_width => 8},
+
 	language        => {access => "rw",
 			    data_type => "string",
 			    width => 2,
 			    cell_width => 8},
+
+	source          => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 12},
+
+	citation        => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 12},
 
 	original_content => {access => "rw",
 			     data_type => "string",
@@ -1242,6 +1271,10 @@ our %schema = (
 	english_content => {access => "rw",
 			    data_type => "string",
 			    cell_width => 60},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
 
 	staff_notes     => {access => "rw",
 			    data_type => "string",
