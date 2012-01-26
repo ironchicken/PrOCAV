@@ -2114,6 +2114,13 @@ sub schema_prepare_statments {
       AND representation_of.related_table = "works" AND representation_of.related_id=?
     ORDER BY media_groups.ID, media_in_group.position|);
 
+    # works._resources
+    $schema{works}->{_resources} = $dbh->prepare(q|SELECT resources.uri, resources.title, resources.mime_type, resources.date_made,
+    resources.date_linked, resource_about.relation
+    FROM resources
+    JOIN resource_about ON resource_about.resource_id = resources.ID
+    WHERE resource_about.related_table = "works" AND resource_about.related_id=?|);
+
     # works._complete defines the queries necessary to retrieve a work
     # and all its associated records
     $schema{works}->{_complete} = {details           => ['ONE', '_full'],
@@ -2138,9 +2145,8 @@ sub schema_prepare_statments {
 				   local_media_items => ['MANY', '_local_media_items'],
 				   remote_media_items => ['MANY', '_remote_media_items'],
 				   local_media_groups => ['MANY', '_local_media_groups'],
-				   remote_media_groups => ['MANY', '_remote_media_groups']
-};
-#_work_statuses _work_titles _work_composition _work_genres _work_instruments _work_manuscripts _work_editions _work_dedicatees _work_performances _work_letters)];
+				   remote_media_groups => ['MANY', '_remote_media_groups'],
+				   resources         => ['MANY', '_resources']};
 }
 
 1;
