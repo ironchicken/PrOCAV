@@ -474,10 +474,28 @@ sub AUTOLOAD {
 
 	    $table->{$stmt_name}->execute(@_);
 	    if ($stmt_cardinality eq 'ONE') {
-		$complete->{$name} = $table->{$stmt_name}->fetchrow_hashref;
+		my $record = $table->{$stmt_name}->fetchrow_hashref;
+		# only add the record if it exists
+		if ($record) {
+		    # remove any undef fields
+		    foreach my $field (keys %$record) {
+			delete $record->{$field} if (not defined $record->{$field});
+		    }
+		    $complete->{$name} = $record;
+		}
 	    } elsif ($stmt_cardinality eq 'MANY') {
 		$complete->{$name} = ();
-		while (my $row = $table->{$stmt_name}->fetchrow_hashref) { push @{$complete->{$name}}, $row; }
+		while (my $record = $table->{$stmt_name}->fetchrow_hashref) {
+		    # remove any undef fields
+		    foreach my $field (keys %$record) {
+			delete $record->{$field} if (not defined $record->{$field});
+		    }
+		    push @{$complete->{$name}}, $record;
+		}
+		# if no records were added, then delete the list
+		if (not defined $complete->{$name}) {
+		    delete $complete->{$name};
+		}
 	    }
 	}
 
