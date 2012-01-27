@@ -113,7 +113,7 @@ sub handler {
 	    return Apache2::Const::FORBIDDEN if (not authorised $req, $apr_req, $h);
 
 	    # call the handler's handle subroutine
-	    my $response = &{$h->{handle}}($req, $apr_req, $dbh);
+	    my $response = &{$h->{handle}}($req, $apr_req, $dbh, \%+);
 
 	    # ensure that any database transactions are complete
 	    #$dbh->commit;
