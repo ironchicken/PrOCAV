@@ -21,6 +21,7 @@ use HTTP::Headers;
 #use JSON;
 use Array::Utils qw(:all);
 use PrOCAV::Database qw(session make_dbh);
+use PrOCAV::PublicUI qw(%view_work);
 use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
 require Exporter;
@@ -105,6 +106,7 @@ sub handler {
     my $apr_req = APR::Request::Apache2->handle($req);
 
     my @DISPATCH_TABLE = (
+	\%PrOCAV::PublicUI::view_work,
 	\%PrOCAV::EditorUI::home,
 	\%PrOCAV::EditorUI::login,
 	\%PrOCAV::EditorUI::new_session,
