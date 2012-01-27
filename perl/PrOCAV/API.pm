@@ -16,11 +16,16 @@ use Apache2::Const -compile => qw(:common :log :http);
 use APR::Request::Cookie;
 use Apache2::Log;
 use APR::Const -compile => qw(:error SUCCESS);
+use HTTP::Headers;
 #use Apache2::Ajax;
 #use JSON;
 use Array::Utils qw(:all);
 use PrOCAV::Database qw(session make_dbh);
 use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
+
+require Exporter;
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(request_content_type);
 
 sub authorised {
     my ($req, $apr_req, $handler) = @_;
@@ -78,6 +83,21 @@ sub params_present {
     #my $empties = grep { /^(\s*|undefined|null)$/ } @values;
     #$s->log_error("arg values: @values; empties: $empties");
     return (!@missing && !@extra && !grep { /^(\s*|undefined|null)$/ } @values);
+}
+
+sub request_content_type {
+    my ($req, $apr_req, $acceptable) = @_;
+
+    my $header = HTTP::Headers->new();
+    $header->header(Accept => ($apr_req->param('accept')) ? $apr_req->param('accept') : $req->headers_in->get('Accept'));
+    my @accepts = $header->header('Accept');
+
+    my @possibles = Array::Utils::intersect(@$acceptable, @accepts);
+
+    $req->server->log_error('Selected Content-Type: ' . @possibles[0]) if (@possibles);
+    return @possibles[0] if (@possibles);
+    $req->server->log_error('Selected Content-Type: text/html');
+    return "text/html";
 }
 
 sub handler {
