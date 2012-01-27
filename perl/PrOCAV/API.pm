@@ -64,11 +64,11 @@ sub authorised {
 }
 
 sub params_present {
-    my ($req, $apr_req, $hander) = @_;
+    my ($req, $apr_req, $handler) = @_;
 
     my @supplied = $apr_req->param;
-    my @required = (exists $hander->{required_parameters}) ? @{ $hander->{required_parameters} } : ();
-    my @optional = (exists $hander->{optional_parameters}) ? @{ $hander->{optional_parameters} } : ();
+    my @required = (exists $handler->{required_parameters}) ? @{ $handler->{required_parameters} } : ();
+    my @optional = (exists $handler->{optional_parameters}) ? @{ $handler->{optional_parameters} } : ();
     my @permissible = (@required, @optional);
 
     my @missing = Array::Utils::array_minus(@required, @supplied);
