@@ -74,11 +74,18 @@ sub create_workbook {
 
 	# if applicable, fill in spare IDs in remaining rows
 	if (exists table_info($table)->{ID}) {
-	    my @spare_IDs = spare_IDs($dbh, $table);
-	    my $next = List::Util::max(@spare_IDs) + 1 || 1;
+	    my $spare_IDs = spare_IDs($dbh, $table);
+	    my $next;
+	    if (ref $spare_IDs eq "ARRAY") {
+		$next = List::Util::max(@$spare_IDs) + 1;
+	    } else {
+		$next = $spare_IDs;
+		$spare_IDs = [];
+	    }
+	    print "next = $next\n";
 	    foreach my $r ($row..$MAX_RECORDS) {
 		#$sheet->write($r, List::MoreUtils::first_index { $_ eq "ID" } keys %{ table_info($table) }, pop @spare_IDs || $next++);
-		$sheet->write($r, 0, pop @spare_IDs || $next++);
+		$sheet->write($r, 0, shift @$spare_IDs || $next++);
 	    }
 	}
     }

@@ -356,10 +356,12 @@ sub spare_IDs {
 
     my $st = $dbh->prepare(qq(SELECT ID FROM $table ORDER BY ID));
     $st->execute();
-    my @IDs; while (my $row = $st->fetchrow_arrayref) { push @IDs, $row->[0]; }
+    my @IDs; while (my $row = $st->fetchrow_arrayref) { push @IDs, int($row->[0]); }
     my @range = (List::Util::min(@IDs) .. List::Util::max(@IDs));
     my @spares = Array::Utils::array_diff(@range, @IDs);
-    return @spares || (List::Util::max(@IDs) + 1);
+
+    return List::Util::max(@IDs) + 1 if (not @spares);
+    return \@spares;
 }
 
 sub all_records {
