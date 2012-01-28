@@ -1991,7 +1991,7 @@ sub schema_prepare_statments {
     ORDER BY end.year, end.month, end.day, composition.work_type|);
 
     # works._editions
-    $schema{works}->{_editions} = $dbh->prepare_cached(q|SELECT | . date_selector("made") . q|, editor.given_name AS editor_given_name,
+    $schema{works}->{_editions} = $dbh->prepare_cached(q|SELECT editions.ID, | . date_selector("made") . q|, editor.given_name AS editor_given_name,
     editor.family_name AS editor_family_name, editions.work_extent, editions.notes
     FROM editions
     LEFT JOIN dates AS made ON editions.date_made = made.ID
@@ -2000,7 +2000,7 @@ sub schema_prepare_statments {
     ORDER BY made.year, made.month, made.day|);
 
     # works._publications
-    $schema{works}->{_publications} = $dbh->prepare_cached(q|SELECT publications.title, publications.publisher,
+    $schema{works}->{_publications} = $dbh->prepare_cached(q|SELECT publications.ID, publications.title, publications.publisher,
     publications.publication_place, | . date_selector('pub_date') . q|, publications.serial_number, publications.score_type,
     publications.notes, published_in.edition_extent, published_in.publication_range
     FROM publications
@@ -2011,7 +2011,7 @@ sub schema_prepare_statments {
     ORDER BY pub_date.year, pub_date.month, pub_date.day|);
 
     # works._performanes
-    $schema{works}->{_performances} = $dbh->prepare_cached(q|SELECT | . date_selector('performed') . q|, venues.name AS venue, venues.city,
+    $schema{works}->{_performances} = $dbh->prepare_cached(q|SELECT performances.ID, | . date_selector('performed') . q|, venues.name AS venue, venues.city,
     venues.country, venues.venue_type, performances.performance_type, performances.notes
     FROM performances
     LEFT JOIN dates AS performed ON performances.date_performed = performed.ID
