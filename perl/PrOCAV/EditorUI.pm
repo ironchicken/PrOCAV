@@ -282,10 +282,10 @@ our %table_data = (
 	foreach my $work (@{ PrOCAV::Database::list($table_name, $options) }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
-		push $fields, $work->{$fn};
+		push @$fields, $work->{$fn};
 	    }
 
-	    push $records, {id => $work->{ID}, cell => $fields};
+	    push @$records, {id => $work->{ID}, cell => $fields};
 	}
 
 	my $data = {total   => ($count / $limit) + (($count % $limit > 0) ? 1 : 0),
