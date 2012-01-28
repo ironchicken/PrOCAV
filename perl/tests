@@ -49,10 +49,10 @@ sub test_editor_front_page {
     foreach my $work (@{ PrOCAV::Database::list_works() }) {
 	my $fields = [];
 	foreach my $fn (@$field_order) {
-	    push $fields, {value => $work->{$fn}};
+	    push @$fields, {value => $work->{$fn}};
 	}
 
-	push $records, {ID => $work->{ID},
+	push @$records, {ID => $work->{ID},
 			#fields => map { {value => $work->{$_}}; } @{ table_info('works')->{_field_order} }};
 			fields => $fields};
     }
