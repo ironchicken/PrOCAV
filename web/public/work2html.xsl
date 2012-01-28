@@ -291,7 +291,12 @@
     <span class="name">Missing</span><xsl:text>: </xsl:text>
     <span class="content manuscript-missing"
 	  about="{$URI_ROOT}/manuscripts/{ID}"
-	  property="procav:missing"><xsl:apply-templates /></span>
+	  property="procav:missing">
+      <xsl:choose>
+        <xsl:when test="./text()='0'">No</xsl:when>
+        <xsl:when test="./text()='1'">Yes</xsl:when>
+      </xsl:choose>
+    </span>
   </div>
 </xsl:template> 
 
