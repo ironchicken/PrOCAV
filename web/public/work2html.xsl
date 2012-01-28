@@ -163,10 +163,32 @@
 	  property="event:time"
 	  typeof="time:Interval"
 	  content="http://placetime.com/interval/gregorian/{end_year}-{end_month}-{end_day}T00:00:00Z/P1Y">
+      <xsl:if test="start_day">
+        <xsl:value-of select="start_day" /><xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:if test="start_month">
+        <xsl:call-template name="month">
+          <xsl:with-param name="month"><xsl:value-of select="start_month" /></xsl:with-param>
+	</xsl:call-template>
+        <xsl:text> </xsl:text>
+      </xsl:if>
       <xsl:if test="start_year"><a href="{$URI_ROOT}/year/{start_year}"><xsl:value-of select="start_year" /></a></xsl:if>
+
       <xsl:if test="start_year and end_year"><xsl:text> - </xsl:text></xsl:if>
+
+      <xsl:if test="end_day">
+        <xsl:value-of select="end_day" /><xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:if test="end_month">
+        <xsl:call-template name="month">
+          <xsl:with-param name="month"><xsl:value-of select="end_month" /></xsl:with-param>
+	</xsl:call-template>
+        <xsl:text> </xsl:text>
+      </xsl:if>
       <xsl:if test="end_year"><a href="{$URI_ROOT}/year/{end_year}"><xsl:value-of select="end_year" /></a></xsl:if>
+
       <xsl:if test="work_type">; <xsl:value-of select="work_type" /></xsl:if>
+
       <xsl:if test="notes"><span class="value-notes hidden"><xsl:apply-templates select="notes" /></span></xsl:if>
     </span>
   </li>
