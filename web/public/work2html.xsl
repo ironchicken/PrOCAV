@@ -253,7 +253,7 @@
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="dc:title"><xsl:apply-templates /></span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/purpose">
   <div class="field manuscript-purpose">
@@ -262,7 +262,7 @@
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:purpose"><xsl:apply-templates /></span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/phsyical_size">
   <div class="field manuscript-phsyical-size">
@@ -271,7 +271,7 @@
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:phsyical_size"><xsl:apply-templates /></span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/medium">
   <div class="field manuscript-medium">
@@ -280,7 +280,7 @@
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:medium"><xsl:apply-templates /></span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/extent">
   <div class="field manuscript-extent">
@@ -289,7 +289,7 @@
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:extent"><xsl:apply-templates /></span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/missing">
   <div class="field manuscript-missing">
@@ -303,7 +303,7 @@
       </xsl:choose>
     </span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/date_made_year">
   <div class="field manuscript-date-made">
@@ -332,7 +332,7 @@
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:location"><xsl:apply-templates /></span>
   </div>
-</xsl:template> 
+</xsl:template>
 
 <xsl:template match="manuscripts/notes">
   <div class="field manuscript-notes">
@@ -341,7 +341,108 @@
        about="{$URI_ROOT}/manuscripts/{../ID}"
        property="procav:notes"><xsl:apply-templates /></p>
   </div>
-</xsl:template> 
+</xsl:template>
+
+<xsl:template match="publications">
+  <div class="publication"
+       id="publication{ID}"
+       about="{$URI_ROOT}/publications/{ID}"
+       typeof="mo:Publication"
+       rev="mo:publication"
+       resource="{$ID}">
+    <xsl:apply-templates select="title" />
+    <xsl:apply-templates select="publisher" />
+    <xsl:apply-templates select="publication_place" />
+    <xsl:apply-templates select="pub_date_year" />
+    <xsl:apply-templates select="serial_number" />
+    <xsl:apply-templates select="score_type" />
+    <!-- <xsl:apply-templates select="edition_extent" /> -->
+    <!-- <xsl:apply-templates select="publication_range" /> -->
+    <xsl:apply-templates select="notes" />
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/title">
+  <div class="field publication-title">
+    <span class="name">Title</span><xsl:text>: </xsl:text>
+    <span class="content publication-title"
+	  about="{$URI_ROOT}/publications/{../ID}"
+	  property="dc:title"><xsl:apply-templates /></span>
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/publisher">
+  <div class="field publication-publisher">
+    <span class="name">Publisher</span><xsl:text>: </xsl:text>
+    <span class="content publication-publisher"
+	  about="{$URI_ROOT}/publications/{../ID}"
+	  property="procav:publisher">
+      <a href="{$URI_ROOT}/publications?publisher={.}"><xsl:apply-templates /></a>
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/publication_place">
+  <div class="field publication-publication-place">
+    <span class="name">Publication place</span><xsl:text>: </xsl:text>
+    <span class="content publication-publication-place"
+	  about="{$URI_ROOT}/publications/{../ID}"
+	  property="procav:publication_place">
+      <a href="{$URI_ROOT}/places/{.}"><xsl:apply-templates /></a>
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/pub_date_year">
+  <div class="field publication-pub-date">
+    <span class="name">Date</span><xsl:text>: </xsl:text>
+    <span class="content publication-pub-date"
+	  about="{$URI_ROOT}/publications/{../ID}"
+	  property="dc:date">
+      <xsl:if test="../pub_date_day">
+        <xsl:value-of select="../pub_date_day" /><xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:if test="../pub_date_month">
+        <xsl:call-template name="month">
+          <xsl:with-param name="month"><xsl:value-of select="../pub_date_month" /></xsl:with-param>
+	</xsl:call-template>
+        <xsl:text> </xsl:text>
+      </xsl:if>
+      <a href="{$URI_ROOT}/year/{.}"><xsl:value-of select="." /></a>
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/serial_number">
+  <div class="field publication-serial-number">
+    <span class="name">Serial number</span><xsl:text>: </xsl:text>
+    <span class="content publication-serial-number"
+	  about="{$URI_ROOT}/publications/{../ID}"
+	  property="procav:serial_number">
+      <xsl:apply-templates />
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/score_type">
+  <div class="field publication-score-type">
+    <span class="name">Score type</span><xsl:text>: </xsl:text>
+    <span class="content publication-score-type"
+	  about="{$URI_ROOT}/publications/{../ID}"
+	  property="procav:score_type">
+      <xsl:apply-templates />
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="publications/notes">
+  <div class="field publication-notes">
+    <span class="name">Notes</span><xsl:text>: </xsl:text>
+    <p class="content publication-notes"
+       about="{$URI_ROOT}/publications/{../ID}"
+       property="procav:notes"><xsl:apply-templates /></p>
+  </div>
+</xsl:template>
 
 <xsl:template name="month">
   <xsl:param name="month" />
