@@ -466,6 +466,91 @@
   </div>
 </xsl:template>
 
+<xsl:template match="performances">
+  <div class="performance"
+       id="performance{ID}"
+       about="{$URI_ROOT}/performances/{ID}"
+       typeof="mo:Performance"
+       rev="mo:performance"
+       resource="{$ID}">
+    <xsl:apply-templates select="performed_year" />
+    <xsl:apply-templates select="performance_type" />
+    <xsl:apply-templates select="venue" />
+    <xsl:apply-templates select="notes" />
+  </div>
+</xsl:template>
+
+<xsl:template match="performances/performed_year">
+  <div class="field performance-performed">
+    <span class="name">Date</span><xsl:text>: </xsl:text>
+    <span class="content performance-performed"
+	  about="{$URI_ROOT}/performances/{../ID}"
+	  property="dc:date">
+      <xsl:if test="../performed_day">
+        <xsl:value-of select="../performed_day" /><xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:if test="../performed_month">
+        <xsl:call-template name="month">
+          <xsl:with-param name="month"><xsl:value-of select="../performed_month" /></xsl:with-param>
+	</xsl:call-template>
+        <xsl:text> </xsl:text>
+      </xsl:if>
+      <a href="{$URI_ROOT}/year/{.}"><xsl:value-of select="." /></a>
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="performances/venue">
+  <div class="field performance-performance-type">
+    <span class="name">Venue</span><xsl:text>: </xsl:text>
+    <span class="content performance-venue"
+	  about="{$URI_ROOT}/performances/{../ID}"
+	  property="procav:venue">
+      <a href="{$URI_ROOT}/venues/{.}"><xsl:apply-templates /></a>
+      <xsl:if test="../city">
+        <xsl:text>, </xsl:text>
+        <span about="{$URI_ROOT}/venues/{.}"
+	      property="procav:city">
+          <a href="{$URI_ROOT}/places/{../city}"><xsl:value-of select="../city" /></a>
+	</span>
+      </xsl:if>
+      <xsl:if test="../country">
+        <xsl:text>, </xsl:text>
+        <span about="{$URI_ROOT}/venues/{.}"
+	      property="procav:country">
+          <a href="{$URI_ROOT}/places/{../country}"><xsl:value-of select="../country" /></a>
+	</span>
+      </xsl:if>
+      <xsl:if test="../venue_type">
+        <xsl:text> (</xsl:text>
+        <span about="{$URI_ROOT}/venues/{.}"
+	      property="procav:venue_type">
+          <xsl:value-of select="../venue_type" />
+	</span>
+        <xsl:text>)</xsl:text>
+      </xsl:if>
+    </span>
+  </div>
+</xsl:template>
+
+<xsl:template match="performances/performance_type">
+  <div class="field performance-performance-type">
+    <span class="name">Performance type</span><xsl:text>: </xsl:text>
+    <span class="content performance-performance-type"
+	  about="{$URI_ROOT}/performances/{../ID}"
+	  property="procav:performance_type"><xsl:apply-templates /></span>
+  </div>
+</xsl:template>
+
+<xsl:template match="performances/notes">
+  <div class="field performance-notes">
+    <span class="name">Notes</span><xsl:text>: </xsl:text>
+    <p class="content performance-notes"
+       about="{$URI_ROOT}/performances/{../ID}"
+       property="procav:notes"><xsl:apply-templates /></p>
+  </div>
+</xsl:template>
+
 <xsl:template name="month">
   <xsl:param name="month" />
   <xsl:choose>
