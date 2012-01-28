@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="procav.css" />
   </head>
   <body>
-    <h1>Sergei Prokofiev Catalogue</h1>
+    <h1>Serge Prokofiev Catalogue</h1>
     <ul id="catalogue-menu">
       <li><a href="#">Home</a></li>
       <li><a href="#">Works</a></li>
