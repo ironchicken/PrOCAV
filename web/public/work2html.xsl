@@ -226,7 +226,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscript">
+<xsl:template match="manuscripts">
   <div class="manuscript"
        id="manuscript{ID}"
        about="{$URI_ROOT}/manuscripts/{ID}"
