@@ -114,9 +114,7 @@
       <xsl:apply-templates select="//sub_works" />
     </xsl:if>
 
-    <div class="notes">
-      <xsl:apply-templates select="notes" />
-    </div>
+    <xsl:apply-templates select="notes" />
 
     <xsl:if test="//manuscripts">
       <h3>Manuscripts</h3>
@@ -197,6 +195,13 @@
     <a href="{$URI_ROOT}/works?genre={genre}"><xsl:value-of select="genre" /></a>
     <xsl:if test="notes"><span class="value-notes hidden"><xsl:apply-templates select="notes" /></span></xsl:if>
   </li>
+</xsl:template>
+
+<xsl:template match="details/notes">
+  <div class="notes">
+  <h4>Notes</h4>
+    <p><xsl:apply-templates /></p>
+  </div>
 </xsl:template>
 
 <xsl:template match="sub_works">
