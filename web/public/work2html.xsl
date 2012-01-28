@@ -239,7 +239,7 @@
     <xsl:apply-templates select="medium" />
     <xsl:apply-templates select="extent" />
     <xsl:apply-templates select="missing" />
-    <!-- <xsl:apply-templates select="date_made" /> -->
+    <xsl:apply-templates select="date_made_year" />
     <!-- <xsl:apply-templates select="annotation_of" /> -->
     <xsl:apply-templates select="location" />
     <xsl:apply-templates select="notes" />
@@ -304,6 +304,26 @@
     </span>
   </div>
 </xsl:template> 
+
+<xsl:template match="manuscripts/date_made_year">
+  <div class="field manuscript-date-made">
+    <span class="name">Date</span><xsl:text>: </xsl:text>
+    <span class="content manuscript-date-made"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
+	  property="dc:date">
+      <xsl:if test="../date_made_day">
+        <xsl:value-of select="../date_made_day" /><xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:if test="../date_made_month">
+        <xsl:call-template name="month">
+          <xsl:with-param name="month"><xsl:value-of select="../date_made_month" /></xsl:with-param>
+	</xsl:call-template>
+        <xsl:text> </xsl:text>
+      </xsl:if>
+      <a href="{$URI_ROOT}/year/{.}"><xsl:value-of select="." /></a>
+    </span>
+  </div>
+</xsl:template>
 
 <xsl:template match="manuscripts/location">
   <div class="field manuscript-location">
