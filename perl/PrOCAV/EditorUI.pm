@@ -105,10 +105,10 @@ our %new_session = (
 	foreach my $work (@{ PrOCAV::Database::list_works() }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
-		push $fields, {value => $work->{$fn}};
+		push @$fields, {value => $work->{$fn}};
 	    }
 
-	    push $records, {ID => $work->{ID}, fields => $fields};
+	    push @$records, {ID => $work->{ID}, fields => $fields};
 	}
 
 	my $param = {tables => [{table_name => 'works',
