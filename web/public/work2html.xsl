@@ -250,7 +250,7 @@
   <div class="field manuscript-title">
     <span class="name">Title</span><xsl:text>: </xsl:text>
     <span class="content manuscript-title"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="dc:title"><xsl:apply-templates /></span>
   </div>
 </xsl:template> 
@@ -259,7 +259,7 @@
   <div class="field manuscript-purpose">
     <span class="name">Purpose</span><xsl:text>: </xsl:text>
     <span class="content manuscript-purpose"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:purpose"><xsl:apply-templates /></span>
   </div>
 </xsl:template> 
@@ -268,7 +268,7 @@
   <div class="field manuscript-phsyical-size">
     <span class="name">Phsyical_Size</span><xsl:text>: </xsl:text>
     <span class="content manuscript-phsyical-size"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:phsyical_size"><xsl:apply-templates /></span>
   </div>
 </xsl:template> 
@@ -277,7 +277,7 @@
   <div class="field manuscript-medium">
     <span class="name">Medium</span><xsl:text>: </xsl:text>
     <span class="content manuscript-medium"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:medium"><xsl:apply-templates /></span>
   </div>
 </xsl:template> 
@@ -286,7 +286,7 @@
   <div class="field manuscript-extent">
     <span class="name">Extent</span><xsl:text>: </xsl:text>
     <span class="content manuscript-extent"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:extent"><xsl:apply-templates /></span>
   </div>
 </xsl:template> 
@@ -295,7 +295,7 @@
   <div class="field manuscript-missing">
     <span class="name">Missing</span><xsl:text>: </xsl:text>
     <span class="content manuscript-missing"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:missing">
       <xsl:choose>
         <xsl:when test="./text()='0'">No</xsl:when>
@@ -329,7 +329,7 @@
   <div class="field manuscript-location">
     <span class="name">Location</span><xsl:text>: </xsl:text>
     <span class="content manuscript-location"
-	  about="{$URI_ROOT}/manuscripts/{ID}"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
 	  property="procav:location"><xsl:apply-templates /></span>
   </div>
 </xsl:template> 
@@ -338,7 +338,7 @@
   <div class="field manuscript-notes">
     <span class="name">Notes</span><xsl:text>: </xsl:text>
     <p class="content manuscript-notes"
-       about="{$URI_ROOT}/manuscripts/{ID}"
+       about="{$URI_ROOT}/manuscripts/{../ID}"
        property="procav:notes"><xsl:apply-templates /></p>
   </div>
 </xsl:template> 
