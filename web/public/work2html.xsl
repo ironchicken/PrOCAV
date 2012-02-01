@@ -22,7 +22,7 @@
     <script type="text/javascript" src="jquery-1.6.2.js"> //script </script>
     <script type="text/javascript" src="json2.js"> //script </script>
     <link href="http://fonts.googleapis.com/css?family=Crimson+Text|Droid+Sans" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="/public/css/procav.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/composercat.css" />
   </head>
   <body>
     <h1>Serge Prokofiev Catalogue</h1>
@@ -277,7 +277,7 @@
     <span class="name">Purpose</span>
     <span class="content manuscript-purpose"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="procav:purpose"><xsl:apply-templates /></span>
+	  property="composercat:purpose"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -286,7 +286,7 @@
     <span class="name">Phsyical_Size</span>
     <span class="content manuscript-phsyical-size"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="procav:phsyical_size"><xsl:apply-templates /></span>
+	  property="composercat:phsyical_size"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -295,7 +295,7 @@
     <span class="name">Medium</span>
     <span class="content manuscript-medium"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="procav:medium"><xsl:apply-templates /></span>
+	  property="composercat:medium"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -304,7 +304,7 @@
     <span class="name">Extent</span>
     <span class="content manuscript-extent"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="procav:extent"><xsl:apply-templates /></span>
+	  property="composercat:extent"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -313,7 +313,7 @@
     <span class="name">Missing</span>
     <span class="content manuscript-missing"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="procav:missing">
+	  property="composercat:missing">
       <xsl:choose>
         <xsl:when test="./text()='0'">No</xsl:when>
         <xsl:when test="./text()='1'">Yes</xsl:when>
@@ -347,7 +347,7 @@
     <span class="name">Location</span>
     <span class="content manuscript-location"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="procav:location"><xsl:apply-templates /></span>
+	  property="composercat:location"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -356,7 +356,7 @@
     <span class="name">Notes</span>
     <p class="content manuscript-notes"
        about="{$URI_ROOT}/manuscripts/{../ID}"
-       property="procav:notes"><xsl:apply-templates /></p>
+       property="composercat:notes"><xsl:apply-templates /></p>
   </div>
 </xsl:template>
 
@@ -393,7 +393,7 @@
     <span class="name">Publisher</span>
     <span class="content publication-publisher"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="procav:publisher">
+	  property="composercat:publisher">
       <a href="{$URI_ROOT}/publications?publisher={.}"><xsl:apply-templates /></a>
     </span>
   </div>
@@ -404,7 +404,7 @@
     <span class="name">Publication place</span>
     <span class="content publication-publication-place"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="procav:publication_place">
+	  property="composercat:publication_place">
       <a href="{$URI_ROOT}/places/{.}"><xsl:apply-templates /></a>
     </span>
   </div>
@@ -435,7 +435,7 @@
     <span class="name">Serial number</span>
     <span class="content publication-serial-number"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="procav:serial_number">
+	  property="composercat:serial_number">
       <xsl:apply-templates />
     </span>
   </div>
@@ -446,7 +446,7 @@
     <span class="name">Score type</span>
     <span class="content publication-score-type"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="procav:score_type">
+	  property="composercat:score_type">
       <xsl:apply-templates />
     </span>
   </div>
@@ -457,7 +457,7 @@
     <span class="name">Notes</span>
     <p class="content publication-notes"
        about="{$URI_ROOT}/publications/{../ID}"
-       property="procav:notes"><xsl:apply-templates /></p>
+       property="composercat:notes"><xsl:apply-templates /></p>
   </div>
 </xsl:template>
 
@@ -500,26 +500,26 @@
     <span class="name">Venue</span>
     <span class="content performance-venue"
 	  about="{$URI_ROOT}/performances/{../ID}"
-	  property="procav:venue">
+	  property="composercat:venue">
       <a href="{$URI_ROOT}/venues/{.}"><xsl:apply-templates /></a>
       <xsl:if test="../city">
         <xsl:text>, </xsl:text>
         <span about="{$URI_ROOT}/venues/{.}"
-	      property="procav:city">
+	      property="composercat:city">
           <a href="{$URI_ROOT}/places/{../city}"><xsl:value-of select="../city" /></a>
 	</span>
       </xsl:if>
       <xsl:if test="../country">
         <xsl:text>, </xsl:text>
         <span about="{$URI_ROOT}/venues/{.}"
-	      property="procav:country">
+	      property="composercat:country">
           <a href="{$URI_ROOT}/places/{../country}"><xsl:value-of select="../country" /></a>
 	</span>
       </xsl:if>
       <xsl:if test="../venue_type">
         <xsl:text> (</xsl:text>
         <span about="{$URI_ROOT}/venues/{.}"
-	      property="procav:venue_type">
+	      property="composercat:venue_type">
           <xsl:value-of select="../venue_type" />
 	</span>
         <xsl:text>)</xsl:text>
@@ -533,7 +533,7 @@
     <span class="name">Performance type</span>
     <span class="content performance-performance-type"
 	  about="{$URI_ROOT}/performances/{../ID}"
-	  property="procav:performance_type"><xsl:apply-templates /></span>
+	  property="composercat:performance_type"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -542,7 +542,7 @@
     <span class="name">Notes</span>
     <p class="content performance-notes"
        about="{$URI_ROOT}/performances/{../ID}"
-       property="procav:notes"><xsl:apply-templates /></p>
+       property="composercat:notes"><xsl:apply-templates /></p>
   </div>
 </xsl:template>
 
