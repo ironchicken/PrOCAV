@@ -1,17 +1,17 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module provides prepared statements and other useful functions
-# for working with the PrOCAV database.
+# for working with the ComposerCat database.
 #
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::Schema;
+package ComposerCat::Schema;
 
 use strict;
-use PrOCAV::Resources qw(dbpedia_uri);
-use PrOCAV::Database qw(record_exists insert_record insert_resource);
+use ComposerCat::Resources qw(dbpedia_uri);
+use ComposerCat::Database qw(record_exists insert_record insert_resource);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -521,12 +521,12 @@ our %schema = (
 	 		    look_up => "instruments",
 			    hint => "unique name of the instrument",
 			    update_hook => sub { my ($dbh, $operation, $record) = @_;
-						 PrOCAV::Database::insert_record("instruments",
+						 ComposerCat::Database::insert_record("instruments",
 							       {instrument => lc $record->{instrument}, description => undef},
 							       {processing_hook => 1}) 
 						     if (defined $record->{instrument} &&
 							 ($record->{instrument} ne '') &&
-							 (not PrOCAV::Database::record_exists("instruments",
+							 (not ComposerCat::Database::record_exists("instruments",
 											      {instrument => $record->{instrument}}))); }},
 
 	cardinality     => {access => "rw",
@@ -674,7 +674,7 @@ our %schema = (
 	_default_order       => "ASC",
 	_auto_resource_insert => [sub { my ($dbh, $operation, $record) = @_;
 					my $dbpedia_uri = dbpedia_uri($record->{instrument});
-					PrOCAV::Database::insert_resource($operation, "instruments", $record,
+					ComposerCat::Database::insert_resource($operation, "instruments", $record,
 							{uri => $dbpedia_uri, mime_type => 'text/html'})
 					    if ($dbpedia_uri)}],
 

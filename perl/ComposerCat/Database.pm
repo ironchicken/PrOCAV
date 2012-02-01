@@ -1,22 +1,22 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module provides prepared statements and other useful functions
-# for working with the PrOCAV database.
+# for working with the ComposerCat database.
 #
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::Database;
+package ComposerCat::Database;
 
 use strict;
 use DBI;
 use List::Util qw(max min);
 use Array::Utils qw(:all);
 use AutoLoader;
-#use PrOCAV::Schema qw(%look_ups @table_order %schema);
-#lib 'PrOCAV';
-use PrOCAV::Schema;
+#use ComposerCat::Schema qw(%look_ups @table_order %schema);
+#lib 'ComposerCat';
+use ComposerCat::Schema;
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -383,7 +383,7 @@ sub all_records {
     return \%tables;
 }
 
-## The PrOCAV::Database modules also exposes subroutines which allow
+## The ComposerCat::Database modules also exposes subroutines which allow
 ## access to each table as: TABLE_NAME to retrieve an individual
 ## record; list_TABLE_NAME to retrieve multiple records;
 ## insert_TABLE_NAME to insert into TABLE_NAME; struct_TABLE_NAME to

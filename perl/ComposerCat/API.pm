@@ -1,5 +1,5 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module exports public API functions which are mapped to
 # URLs. FIXME No, it does not.
@@ -7,7 +7,7 @@
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::API;
+package ComposerCat::API;
 
 use strict;
 use APR::Request::Apache2;
@@ -20,9 +20,9 @@ use HTTP::Headers;
 #use Apache2::Ajax;
 #use JSON;
 use Array::Utils qw(:all);
-use PrOCAV::Database qw(session make_dbh);
-use PrOCAV::PublicUI qw(%view_work);
-use PrOCAV::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
+use ComposerCat::Database qw(session make_dbh);
+use ComposerCat::PublicUI qw(%view_work);
+use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -106,15 +106,15 @@ sub handler {
     my $apr_req = APR::Request::Apache2->handle($req);
 
     my @DISPATCH_TABLE = (
-	\%PrOCAV::PublicUI::view_work,
-	\%PrOCAV::EditorUI::home,
-	\%PrOCAV::EditorUI::login,
-	\%PrOCAV::EditorUI::new_session,
-	\%PrOCAV::EditorUI::edit_table,
-	\%PrOCAV::EditorUI::table_columns,
-	\%PrOCAV::EditorUI::table_data,
-	\%PrOCAV::EditorUI::table_model,
-	\%PrOCAV::EditorUI::look_up
+	\%ComposerCat::PublicUI::view_work,
+	\%ComposerCat::EditorUI::home,
+	\%ComposerCat::EditorUI::login,
+	\%ComposerCat::EditorUI::new_session,
+	\%ComposerCat::EditorUI::edit_table,
+	\%ComposerCat::EditorUI::table_columns,
+	\%ComposerCat::EditorUI::table_data,
+	\%ComposerCat::EditorUI::table_model,
+	\%ComposerCat::EditorUI::look_up
 	);
 
     my $s = $req->server;

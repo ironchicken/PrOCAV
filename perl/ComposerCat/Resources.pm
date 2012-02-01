@@ -1,12 +1,12 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module provides methods for retrieving external resources.
 #
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::Resources;
+package ComposerCat::Resources;
 
 use strict;
 use LWP::UserAgent;
@@ -20,7 +20,7 @@ sub dbpedia_uri {
     my $topic = shift;
 
     my $ua = LWP::UserAgent->new;
-    $ua->agent("PrOCAV/1.0");
+    $ua->agent("ComposerCat/1.0");
     $ua->timeout(5);
 
     my $dbpedia_uri = URI->new("http://dbpedia.org/page/" . ucfirst $topic);

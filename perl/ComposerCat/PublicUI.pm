@@ -1,12 +1,12 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module provides URL handlers for the public Web user interface
 #
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::PublicUI;
+package ComposerCat::PublicUI;
 
 use strict;
 use Apache2::RequestRec ();
@@ -20,8 +20,8 @@ use XML::Filter::XSLT;
 #use XML::Handler::HTMLWriter;
 use XML::SAX::Writer;
 use JSON;
-use PrOCAV::Database qw(make_dbh session create_session table_info find_look_up);
-use PrOCAV::API qw(request_content_type);
+use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
+use ComposerCat::API qw(request_content_type);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -37,9 +37,9 @@ our %view_work = (
     handle => sub {
 	my ($req, $apr_req, $dbh, $url_args) = @_;
 
-	my $work = PrOCAV::Database::complete_work(int($url_args->{work_id}));
+	my $work = ComposerCat::Database::complete_work(int($url_args->{work_id}));
 
-	my $content_type = PrOCAV::API::request_content_type($req, $apr_req, [('text/html', 'text/xml', 'application/xml+rdf')]);
+	my $content_type = ComposerCat::API::request_content_type($req, $apr_req, [('text/html', 'text/xml', 'application/xml+rdf')]);
 
 	my $stylesheets = {'text/html'           => $TEMPLATES_DIR . 'work2html.xsl',
 			   'application/xml+rdf' => $TEMPLATES_DIR . 'work2rdf.xsl'};

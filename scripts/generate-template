@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 
 use strict;
-use PrOCAV::Ingestion qw(create_workbook);
-use PrOCAV::Database qw(all_records);
+
+#*CORE::GLOBAL::die = sub { require Carp; Carp::confess(); };
+#$SIG{__WARN__} = sub { require Carp; Carp::confess(); };
+
+use ComposerCat::Ingestion qw(create_workbook);
+use ComposerCat::Database qw(all_records);
 
 sub main {
     my $filename = create_workbook(all_records);

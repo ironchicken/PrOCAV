@@ -5,12 +5,12 @@ use strict;
 #*CORE::GLOBAL::die = sub { require Carp; Carp::confess(); };
 #$SIG{__WARN__} = sub { require Carp; Carp::confess(); };
 
-use PrOCAV::Ingestion qw(create_workbook ingest_workbook);
+use ComposerCat::Ingestion qw(create_workbook ingest_workbook);
 use HTML::Template;
 #use Apache2::FakeRequest;
-use PrOCAV::API qw(handler);
-use PrOCAV::Database qw(make_dbh all_records table_info insert_record insert_resource);
-use PrOCAV::Resources qw(dbpedia_uri);
+use ComposerCat::API qw(handler);
+use ComposerCat::Database qw(make_dbh all_records table_info insert_record insert_resource);
+use ComposerCat::Resources qw(dbpedia_uri);
 use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
@@ -46,7 +46,7 @@ sub test_editor_front_page {
 
     my $records = [];
 
-    foreach my $work (@{ PrOCAV::Database::list_works() }) {
+    foreach my $work (@{ ComposerCat::Database::list_works() }) {
 	my $fields = [];
 	foreach my $fn (@$field_order) {
 	    push @$fields, {value => $work->{$fn}};
@@ -85,37 +85,37 @@ sub test_handler {
 sub test_database_autoloader {
     make_dbh;
 
-    print 'PrOCAV::Database::work(1):'; print "\n";
-    my $work_1 = PrOCAV::Database::work(1);
+    print 'ComposerCat::Database::work(1):'; print "\n";
+    my $work_1 = ComposerCat::Database::work(1);
     print Dumper($work_1) . "\n";
 
-    print 'PrOCAV::Database::list_works():'; print "\n";
-    my $works = PrOCAV::Database::list_works();
+    print 'ComposerCat::Database::list_works():'; print "\n";
+    my $works = ComposerCat::Database::list_works();
     print scalar @$works . "\n";
     foreach my $work (@$works) {
 	print $work->{uniform_title} . "\n";
     }
 
-    print 'PrOCAV::Database::list("works"):'; print "\n";
-    my $works = PrOCAV::Database::list("works");
+    print 'ComposerCat::Database::list("works"):'; print "\n";
+    my $works = ComposerCat::Database::list("works");
     print scalar @$works . "\n";
     foreach my $work (@$works) {
 	print $work->{uniform_title} . "\n";
     }
 
-    my $musical_information_1 = PrOCAV::Database::musical_information(1);
+    my $musical_information_1 = ComposerCat::Database::musical_information(1);
     print Dumper($musical_information_1) . "\n";
 
-    my $musical_information = PrOCAV::Database::list_musical_information();
+    my $musical_information = ComposerCat::Database::list_musical_information();
     print scalar @$musical_information . "\n";
     foreach my $musical_information (@$musical_information) {
 	print $musical_information->{work_id} . "\n";
     }
 
-    my $catalogue_number_1 = PrOCAV::Database::catalogue_number(1);
+    my $catalogue_number_1 = ComposerCat::Database::catalogue_number(1);
     print Dumper($catalogue_number_1) . "\n";
 
-    my $catalogue_numbers = PrOCAV::Database::list_catalogue_numbers();
+    my $catalogue_numbers = ComposerCat::Database::list_catalogue_numbers();
     print scalar @$catalogue_numbers . "\n";
     foreach my $catalogue_number (@$catalogue_numbers) {
 	print $catalogue_number->{number} . "\n";
@@ -125,13 +125,13 @@ sub test_database_autoloader {
 sub test_schema_statements {
     make_dbh;
 
-    my $work = PrOCAV::Database::complete_work(55);
+    my $work = ComposerCat::Database::complete_work(55);
     print Dumper($work) . "\n\n";
 
-    my $work = PrOCAV::Database::complete_work(56);
+    my $work = ComposerCat::Database::complete_work(56);
     print Dumper($work) . "\n\n";
 
-    my $work = PrOCAV::Database::complete_work(57);
+    my $work = ComposerCat::Database::complete_work(57);
     print Dumper($work) . "\n\n";
 }
 

@@ -1,12 +1,12 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module provides URL handlers for the editors' user interface
 #
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::EditorUI;
+package ComposerCat::EditorUI;
 
 use strict;
 use HTML::Template;
@@ -15,7 +15,7 @@ use APR::Table;
 use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
 use JSON;
-use PrOCAV::Database qw(make_dbh session create_session table_info find_look_up);
+use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -102,7 +102,7 @@ our %new_session = (
 	my $columns = [map { {column => $_}; } @$field_order];
 
 	my $records = [];
-	foreach my $work (@{ PrOCAV::Database::list_works() }) {
+	foreach my $work (@{ ComposerCat::Database::list_works() }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
 		push @$fields, {value => $work->{$fn}};
@@ -276,10 +276,10 @@ our %table_data = (
 		       order_by   => (grep { $_ eq $order_by; } @{ $field_order }) ? $order_by : undef,
 		       sort_order => ($order_by && ($sort_order =~ /^(ASC|DESC)$/i)) ? $sort_order : undef};
 
-	my $count = int(PrOCAV::Database::count($table_name));
+	my $count = int(ComposerCat::Database::count($table_name));
 
 	my $records = [];
-	foreach my $work (@{ PrOCAV::Database::list($table_name, $options) }) {
+	foreach my $work (@{ ComposerCat::Database::list($table_name, $options) }) {
 	    my $fields = [];
 	    foreach my $fn (@$field_order) {
 		push @$fields, $work->{$fn};

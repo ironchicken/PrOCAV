@@ -1,5 +1,5 @@
 #
-# PrOCAV
+# ComposerCat
 #
 # This module provides functions to ingest data from Excel
 # spreadsheets and to prepare template spreadsheets for data entry.
@@ -7,7 +7,7 @@
 # Author: Richard Lewis
 # Email: richard.lewis@gold.ac.uk
 
-package PrOCAV::Ingestion;
+package ComposerCat::Ingestion;
 
 use strict;
 use DBI;
@@ -18,7 +18,7 @@ use Excel::Writer::XLSX::Utility;
 #use Spreadsheet::ParseExcel;
 use Spreadsheet::XLSX;
 #use Text::Iconv;
-use PrOCAV::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt spare_IDs record_empty record_different record_exists insert_record update_record);
+use ComposerCat::Database qw(make_dbh find_look_up registered_look_ups is_look_up table_order table_info record_stmt spare_IDs record_empty record_different record_exists insert_record update_record);
 use File::Temp qw(tempfile);
 use List::Util qw(max min);
 use List::MoreUtils qw(first_index);
