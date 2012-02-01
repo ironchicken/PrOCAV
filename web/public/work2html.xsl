@@ -22,7 +22,7 @@
     <script type="text/javascript" src="jquery-1.6.2.js"> //script </script>
     <script type="text/javascript" src="json2.js"> //script </script>
     <link href="http://fonts.googleapis.com/css?family=Crimson+Text|Droid+Sans" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="procav.css" />
+    <link rel="stylesheet" type="text/css" href="/public/css/procav.css" />
   </head>
   <body>
     <h1>Serge Prokofiev Catalogue</h1>
