@@ -2150,6 +2150,12 @@ sub schema_prepare_statments {
 				   local_media_groups => ['MANY', '_local_media_groups'],
 				   remote_media_groups => ['MANY', '_remote_media_groups'],
 				   resources         => ['MANY', '_resources']};
+
+    # works._list_by_scored_for
+    $schema{works}->{_list_by_scored_for} = $dbh->prepare(q|SELECT works.* FROM works
+    JOIN scored_for ON works.ID=scored_for.work_id
+    WHERE scored_for.instrument LIKE ?|);
+
 }
 
 1;
