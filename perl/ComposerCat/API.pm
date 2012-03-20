@@ -28,7 +28,7 @@ use HTTP::Headers;
 #use JSON;
 use Array::Utils qw(:all);
 use ComposerCat::Database qw(session make_dbh);
-use ComposerCat::PublicUI qw(%view_work);
+use ComposerCat::PublicUI qw(%view_work %browse_works_by_scored_for);
 use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
 sub authorised {
@@ -110,6 +110,7 @@ sub handler {
 
     my @DISPATCH_TABLE = (
 	\%ComposerCat::PublicUI::view_work,
+	\%ComposerCat::PublicUI::browse_works_by_scored_for,
 	\%ComposerCat::EditorUI::home,
 	\%ComposerCat::EditorUI::login,
 	\%ComposerCat::EditorUI::new_session,
