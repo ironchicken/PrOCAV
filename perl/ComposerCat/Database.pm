@@ -10,6 +10,15 @@
 package ComposerCat::Database;
 
 use strict;
+
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw(make_dbh record_stmt record all_records insert_record insert_resource
+      find_look_up is_look_up registered_look_ups table_info table_order session create_session spare_IDs
+      record_empty record_different record_exists update_record);
+}
+
 use DBI;
 use List::Util qw(max min);
 use Array::Utils qw(:all);
@@ -18,11 +27,6 @@ use AutoLoader;
 #lib 'ComposerCat';
 use ComposerCat::Schema;
 
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(make_dbh record_stmt record all_records insert_record insert_resource
-  find_look_up is_look_up registered_look_ups table_info table_order session create_session spare_IDs
-  record_empty record_different record_exists update_record);
 our $AUTOLOAD;
 
 my %db_attrs = (RaiseError  => 1,

@@ -8,13 +8,15 @@
 
 package ComposerCat::Resources;
 
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw(dbpedia_uri);
+}
+
 use strict;
 use LWP::UserAgent;
 use URI;
-
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(dbpedia_uri);
 
 sub dbpedia_uri {
     my $topic = shift;

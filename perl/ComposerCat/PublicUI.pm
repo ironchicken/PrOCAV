@@ -9,6 +9,13 @@
 package ComposerCat::PublicUI;
 
 use strict;
+
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw(%view_work %browse_works_by_scored_for);
+}
+
 use Apache2::RequestRec ();
 use APR::Table;
 use APR::Request::Cookie;
@@ -23,11 +30,7 @@ use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
 use ComposerCat::API qw(request_content_type);
 
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%view_work);
-
-my $PROCAV_DOMAIN = "localhost";
+my $PROCAV_DOMAIN = "fayrfax.doc.gold.ac.uk";
 my $PUBLIC_PATH = "/";
 my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 

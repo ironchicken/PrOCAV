@@ -9,6 +9,13 @@
 package ComposerCat::EditorUI;
 
 use strict;
+
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
+}
+
 use HTML::Template;
 use Apache2::RequestRec ();
 use APR::Table;
@@ -16,10 +23,6 @@ use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
 use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
-
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH = "/";

@@ -10,6 +10,13 @@
 package ComposerCat::Ingestion;
 
 use strict;
+
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw(create_workbook ingest_workbook);
+}
+
 use DBI;
 #use Spreadsheet::WriteExcel;
 #use Spreadsheet::WriteExcel::Utility;
@@ -25,10 +32,6 @@ use List::MoreUtils qw(first_index);
 
 use Data::Dumper;
 $Data::Dumper::Indent = 0;
-
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(create_workbook ingest_workbook);
 
 my $workbook;
 my $MAX_RECORDS = 1000;

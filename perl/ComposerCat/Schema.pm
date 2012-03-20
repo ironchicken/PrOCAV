@@ -10,12 +10,15 @@
 package ComposerCat::Schema;
 
 use strict;
+
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT = qw(%look_ups @table_order %schema schema_prepare_statments);
+}
+
 use ComposerCat::Resources qw(dbpedia_uri);
 use ComposerCat::Database qw(record_exists insert_record insert_resource);
-
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT = qw(%look_ups @table_order %schema schema_prepare_statments);
 
 #################################################################################################################
 #### NAMED LOOK-UPS

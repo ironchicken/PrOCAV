@@ -10,6 +10,13 @@
 package ComposerCat::API;
 
 use strict;
+
+BEGIN {
+    use Exporter;
+    our @ISA = qw(Exporter);
+    our @EXPORT_OK = qw(request_content_type handler);
+}
+
 use APR::Request::Apache2;
 use Apache2::RequestRec ();
 use Apache2::Const -compile => qw(:common :log :http);
@@ -23,10 +30,6 @@ use Array::Utils qw(:all);
 use ComposerCat::Database qw(session make_dbh);
 use ComposerCat::PublicUI qw(%view_work);
 use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
-
-require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(request_content_type);
 
 sub authorised {
     my ($req, $apr_req, $handler) = @_;
