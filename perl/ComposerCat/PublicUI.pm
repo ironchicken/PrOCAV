@@ -88,10 +88,10 @@ our %view_work = (
 
 	my $work = ComposerCat::Database::complete_work(int($url_args->{work_id}));
 
-	my $content_type = ComposerCat::API::request_content_type($req, $apr_req, [('text/html', 'text/xml', 'application/xml+rdf')]);
+	my $content_type = ComposerCat::API::request_content_type($req, $apr_req, [('text/html', 'text/xml', 'application/rdf+xml')]);
 
 	my $stylesheets = {'text/html'           => $TEMPLATES_DIR . 'work2html.xsl',
-			   'application/xml+rdf' => $TEMPLATES_DIR . 'work2rdf.xsl'};
+			   'application/rdf+xml' => $TEMPLATES_DIR . 'work2rdf.xsl'};
 
 	if (defined $stylesheets->{$content_type}) {
 	    my $writer    = XML::SAX::Writer->new();
