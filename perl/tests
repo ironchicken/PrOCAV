@@ -8,7 +8,7 @@ use strict;
 use ComposerCat::Ingestion qw(create_workbook ingest_workbook);
 use HTML::Template;
 #use Apache2::FakeRequest;
-use ComposerCat::API qw(handler);
+use ComposerCat::API qw(handler make_api_function);
 use ComposerCat::Database qw(make_dbh all_records table_info insert_record insert_resource);
 use ComposerCat::Resources qw(dbpedia_uri);
 use Data::Dumper;
@@ -156,6 +156,89 @@ sub test_insert_resource {
 sub test_auto_resource_inserter {
     make_dbh;
     insert_record("instruments", {instrument => "xylophone"});
+}
+
+sub test_make_api_function {
+    my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
+
+    my $browse_works_by_instrumentation = make_api_function(
+	{ uri_pattern         => qr/^\/works\/?$/,
+
+	  required_parameters => [qw(scored_for)],
+	  optional_parameters => [qw(accept)],
+	  accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+
+	  generator           => {type => 'proc',
+				  proc => sub {
+				      my ($req, $apr_req, $dbh, $url_args) = @_;
+			     
+				      my $st = ComposerCat::Database::table_info('works')->{_list_by_scored_for};
+				      $st->execute($apr_req->param("scored_for"));
+				      my $works = [];
+				      while (my $work = $st->fetchrow_hashref) {
+					  push @$works, $work;
+				      }
+			     
+				      return $works;
+				  },
+				  rootname   => 'works',
+				  recordname => 'work'},
+
+	  transforms          => {'text/html' => [$TEMPLATES_DIR . 'browse-works2html.xsl'],
+				  'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
+
+    my $view_work = make_api_function(
+	{ uri_pattern => qr/^\/works\/(?<work_id>[0-9]+)\/?$/,
+
+	  optional_parameters => [qw(accept)],
+	  accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+
+	  generator           => {type     => 'proc',
+				  proc     => sub {
+				      my ($req, $apr_req, $dbh, $url_args) = @_;
+				      return ComposerCat::Database::complete_work(int($url_args->{work_id}));
+				  },
+				  rootname => 'work'},
+	  transforms          => {'text/html'           => [$TEMPLATES_DIR . 'work2html.xsl'],
+				  'application/rdf+xml' => [$TEMPLATES_DIR . 'work2rdf.xsl']} });
+
+    &{ $browse_works_by_instrumentation->{handle} }();
+}
+
+sub test_sax_machines_xslt {
+    use XML::SAX::Machines qw(Pipeline);
+    use XML::Filter::XSLT;
+    use XML::Generator::PerlData;
+    use XML::SAX::Writer;
+    use Data::Dumper;
+
+    # sub XML::Filter::XSLT::LibXSLT::set_handler {
+    # 	my $self = shift;
+    # 	$self->{Handler} = shift;
+    # 	$self->{Parser}->set_handler( $self->{Handler} )
+    # 	    if $self->{Parser};
+    # }
+
+    my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
+
+    #my $xslt_filt = XML::Filter::XSLT->new( Source => { SystemId => $TEMPLATES_DIR . 'work2html.xsl' } );
+    #$xslt_filt->set_stylesheet_uri($TEMPLATES_DIR . 'work2html.xsl');
+
+    my $p = Pipeline(XML::Filter::XSLT->new( Source => { SystemId => $TEMPLATES_DIR . 'work2html.xsl' } ), XML::SAX::Writer->new( Output => \*STDOUT ));
+    #my $p = Pipeline(XML::Filter::XSLT->new( Source => { String => '<?xml version="1.0" encoding="utf-8" ?><xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"><xsl:output method="html" /><xsl:template match="/"><xsl:apply-templates /></xsl:template></xsl:stylesheet>' } ), XML::SAX::Writer->new( Output => \*STDOUT ));
+
+    print Dumper($p->parts);
+
+    ComposerCat::Database::make_dbh;
+    my $work = ComposerCat::Database::complete_work(59);
+    #my $work = {ID => 59, title => 'Hello'};
+
+    my $g = XML::Generator::PerlData->new(Handler => $p, rootname => 'work');
+    #my $g = XML::Generator::PerlData->new(Handler => $p);
+    #print Dumper($g->parse({work => $work}));
+    $g->parse({work => $work});
+    #print $g->parse({work => $work});
+    print "\n";
 }
 
 sub main {

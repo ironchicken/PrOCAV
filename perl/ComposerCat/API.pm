@@ -14,7 +14,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(request_content_type handler);
+    our @EXPORT_OK = qw(request_content_type make_api_function handler);
 }
 
 use APR::Request::Apache2;
@@ -27,6 +27,8 @@ use HTTP::Headers;
 #use Apache2::Ajax;
 #use JSON;
 use Array::Utils qw(:all);
+use XML::SAX::Machines qw(Pipeline);
+use XML::Filter::XSLT;
 use ComposerCat::Database qw(session make_dbh);
 use ComposerCat::PublicUI qw(%view_work %browse_works_by_scored_for);
 use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
@@ -102,6 +104,52 @@ sub request_content_type {
     return @possibles[0] if (@possibles);
     $req->server->log_error('Selected Content-Type: text/html');
     return "text/html";
+}
+
+sub make_api_function {
+    my $options = shift;
+
+    my $func = {
+	uri_pattern         => $options->{uri_pattern},
+	required_parameters => $options->{required_parameters} || [],
+	optional_parameters => $options->{optional_parameters} || []};
+
+    $func->{handle} = $options->{handle} || sub {
+	my ($req, $apr_req, $dbh, $url_args) = @_;
+	
+	use Data::Dumper;
+
+	my $content_type = request_content_type($req, $apr_req, (defined $options->{accept_types}) ?
+						$options->{accept_types} :
+						['text/html', 'text/xml']);
+
+	my $pipeline;
+
+	if (defined $options->{transforms} && defined $options->{transforms}->{$content_type}) {
+	    my @p = map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
+	    push @p, XML::SAX::Writer->new( Output => \*STDOUT );
+	    $pipeline = Pipeline(@p);
+	} else {
+	    $req->server->log_error("Creating pipeline with SAX::Writer");
+	    $pipeline = XML::SAX::Writer->new( Output => \*STDOUT );
+	}
+
+	$req->content_type($content_type);
+
+	my $generator;
+
+	if ($options->{generator}->{type} eq 'proc') {
+	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => $options->{generator}->{rootname});
+	    # Call XML::Generator::PerlData's parse function with
+	    # the array ref wrapped up in a hash. This will ensure
+	    # that each record is in a <work> element.
+	    $generator->parse({$options->{generator}->{recordname} || $options->{generator}->{rootname} => &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args)});
+	} elsif ($options->{generator}->{type} eq 'file') {
+	    $pipeline->parse_file($options->{generator}->{path});
+	}
+    };
+
+    return $func;
 }
 
 sub handler {
