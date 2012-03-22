@@ -30,8 +30,6 @@ use Array::Utils qw(:all);
 use XML::SAX::Machines qw(Pipeline);
 use XML::Filter::XSLT;
 use ComposerCat::Database qw(session make_dbh);
-use ComposerCat::PublicUI qw(%view_work %browse_works_by_scored_for);
-use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
 sub authorised {
     my ($req, $apr_req, $handler) = @_;
@@ -156,9 +154,12 @@ sub handler {
     my $req = shift;
     my $apr_req = APR::Request::Apache2->handle($req);
 
+    use ComposerCat::PublicUI qw($view_work $browse_works_by_scored_for);
+    use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
+
     my @DISPATCH_TABLE = (
-	\%ComposerCat::PublicUI::view_work,
-	\%ComposerCat::PublicUI::browse_works_by_scored_for,
+	$ComposerCat::PublicUI::view_work,
+	$ComposerCat::PublicUI::browse_works_by_scored_for,
 	\%ComposerCat::EditorUI::home,
 	\%ComposerCat::EditorUI::login,
 	\%ComposerCat::EditorUI::new_session,
