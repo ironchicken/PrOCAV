@@ -141,7 +141,12 @@ sub make_api_function {
 	    # Call XML::Generator::PerlData's parse function with
 	    # the array ref wrapped up in a hash. This will ensure
 	    # that each record is in a <work> element.
-	    $generator->parse({$options->{generator}->{recordname} || $options->{generator}->{rootname} => &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args)});
+	    my $data = &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args);
+	    if (ref $data eq "ARRAY") {
+		$generator->parse({$options->{generator}->{recordname} => $data});
+	    } else {
+		$generator->parse($data);
+	    }
 	} elsif ($options->{generator}->{type} eq 'file') {
 	    $pipeline->parse_file($options->{generator}->{path});
 	}
