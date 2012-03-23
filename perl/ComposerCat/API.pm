@@ -14,7 +14,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(request_content_type make_api_function handler);
+    our @EXPORT_OK = qw(request_content_type make_api_function handler init);
 }
 
 use APR::Request::Apache2;
@@ -150,25 +150,29 @@ sub make_api_function {
     return $func;
 }
 
-sub handler {
-    my $req = shift;
-    my $apr_req = APR::Request::Apache2->handle($req);
+our @DISPATCH_TABLE = ();
 
+sub init {
     use ComposerCat::PublicUI qw($view_work $browse_works_by_scored_for);
     use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
-    my @DISPATCH_TABLE = (
-	$ComposerCat::PublicUI::view_work,
-	$ComposerCat::PublicUI::browse_works_by_scored_for,
-	\%ComposerCat::EditorUI::home,
-	\%ComposerCat::EditorUI::login,
-	\%ComposerCat::EditorUI::new_session,
-	\%ComposerCat::EditorUI::edit_table,
-	\%ComposerCat::EditorUI::table_columns,
-	\%ComposerCat::EditorUI::table_data,
-	\%ComposerCat::EditorUI::table_model,
-	\%ComposerCat::EditorUI::look_up
-	);
+    @DISPATCH_TABLE = (
+    	$ComposerCat::PublicUI::view_work,
+    	$ComposerCat::PublicUI::browse_works_by_scored_for,
+    	\%ComposerCat::EditorUI::home,
+    	\%ComposerCat::EditorUI::login,
+    	\%ComposerCat::EditorUI::new_session,
+    	\%ComposerCat::EditorUI::edit_table,
+    	\%ComposerCat::EditorUI::table_columns,
+    	\%ComposerCat::EditorUI::table_data,
+    	\%ComposerCat::EditorUI::table_model,
+    	\%ComposerCat::EditorUI::look_up
+    	);
+}
+
+sub handler {
+    my $req = shift;
+    my $apr_req = APR::Request::Apache2->handle($req);
 
     my $s = $req->server;
 
