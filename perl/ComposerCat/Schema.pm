@@ -2156,6 +2156,10 @@ sub schema_prepare_statments {
     JOIN scored_for ON works.ID=scored_for.work_id
     WHERE scored_for.instrument LIKE ?|);
 
+    # works._list_by_genre
+    $schema{works}->{_list_by_genre} = $dbh->prepare(q|SELECT works.* FROM works
+    JOIN genres ON works.ID=genres.work_id
+    WHERE genres.genre LIKE ?|);
 }
 
 1;

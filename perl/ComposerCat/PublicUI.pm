@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($view_work $browse_works_by_scored_for);
+    our @EXPORT_OK = qw($view_work $browse_works_by_scored_for $browse_works_by_genre);
 }
 
 use Apache2::RequestRec ();
@@ -67,6 +67,29 @@ our $browse_works_by_scored_for = make_api_function(
 				  
 				  my $st = ComposerCat::Database::table_info('works')->{_list_by_scored_for};
 				  $st->execute($apr_req->param("scored_for"));
+				  my $works = [];
+				  while (my $work = $st->fetchrow_hashref) {
+				      push @$works, $work;
+				  }
+				  
+				  return $works;
+			      },
+			      rootname   => 'works',
+			      recordname => 'work'},
+      transforms          => {'text/html'           => [$TEMPLATES_DIR . 'browse-works2html.xsl'],
+			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
+
+our $browse_works_by_genre = make_api_function(
+    { uri_pattern         => qr/^\/works\/?$/,
+      required_parameters => [qw(genre)],
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      generator           => {type => 'proc',
+			      proc => sub {
+				  my ($req, $apr_req, $dbh, $url_args) = @_;
+				  
+				  my $st = ComposerCat::Database::table_info('works')->{_list_by_genre};
+				  $st->execute($apr_req->param("genre"));
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
