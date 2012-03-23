@@ -193,7 +193,14 @@ sub handler {
 	    $s->log_error(sprintf("%s matches %s", $req->uri, $h->{uri_pattern}));
 
 	    # check the integrity of the request
-	    return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $req, $apr_req, $h);
+
+	    #return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $req, $apr_req, $h);
+
+	    # FIXME Now incorrect parameters will result in 404, not
+	    # 400. But handlers with identical URI patterns will have
+	    # a chance to be matched. Consider saving some state
+	    # information when a params_present test fails.
+	    next if (not params_present $req, $apr_req, $h);
 	    return Apache2::Const::FORBIDDEN if (not authorised $req, $apr_req, $h);
 
 	    # call the handler's handle subroutine
