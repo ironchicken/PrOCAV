@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($view_work $browse_works_by_scored_for $browse_works_by_genre);
+    our @EXPORT_OK = qw($home $view_work $browse_works_by_scored_for $browse_works_by_genre);
 }
 
 use Apache2::RequestRec ();
@@ -32,29 +32,16 @@ use ComposerCat::API qw(request_content_type make_api_function);
 
 my $PROCAV_DOMAIN = "fayrfax.doc.gold.ac.uk";
 my $PUBLIC_PATH = "/";
+my $DOCUMENTS_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 
-our %browse_works_by_scored_for = (
-    uri_pattern => qr/^\/works\/?$/,
-    required_parameters => [qw(scored_for)],
-    optional_parameters => [qw(accept)],
-    handle => sub {
-	my ($req, $apr_req) = @_;
-
-	} elsif ($content_type eq 'text/xml') {
-	    my $writer    = XML::SAX::Writer->new();
-	    my $generator = XML::Generator::PerlData->new(Handler => $writer, rootname => 'works');
-
-	
-    });
-
-our %browse_works = (
-    uri_pattern => qr/^\/works\/?$/,
-    optional_parameters => [qw(accept)],
-    handle => sub {
-	my ($req, $apr_req, $dbh, $url_args) = @_;
-
-    });
+our $home = make_api_function(
+    { uri_pattern         => qr/^\/?$/,
+      required_parameters => [],
+      optional_parameters => [],
+      accept_types        => ['text/html'],
+      generator           => {type => 'file', path => $DOCUMENTS_DIR . 'home.xml'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse_works_by_scored_for = make_api_function(
     { uri_pattern         => qr/^\/works\/?$/,

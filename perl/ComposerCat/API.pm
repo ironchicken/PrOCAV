@@ -158,10 +158,11 @@ sub make_api_function {
 our @DISPATCH_TABLE = ();
 
 sub init {
-    use ComposerCat::PublicUI qw($view_work $browse_works_by_scored_for $browse_works_by_genre);
+    use ComposerCat::PublicUI qw($home $view_work $browse_works_by_scored_for $browse_works_by_genre);
     use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
 
     @DISPATCH_TABLE = (
+    	$ComposerCat::PublicUI::home,
     	$ComposerCat::PublicUI::view_work,
     	$ComposerCat::PublicUI::browse_works_by_scored_for,
 	$ComposerCat::PublicUI::browse_works_by_genre,
