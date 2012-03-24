@@ -133,6 +133,8 @@ sub make_api_function {
 	}
 
 	$req->content_type($content_type);
+	print '<?xml version="1.0" encoding="utf-8" ?>';
+	print '<!DOCTYPE html>' if ($content_type eq 'text/html');
 
 	my $generator;
 
