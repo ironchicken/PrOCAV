@@ -22,7 +22,7 @@ var initialise_table = function(table_name) {
 
     jQuery.ajax(
 	{type: 'POST',
-	 url: '/table_columns',
+	 url: '/editor/table_columns',
 	 data: 'table_name=' + table_name,
 	 dataType: 'json',
 	 success: function(data, status, request) {
@@ -35,7 +35,7 @@ var initialise_table = function(table_name) {
 
     jQuery.ajax(
 	{type: 'POST',
-	 url: '/table_model',
+	 url: '/editor/table_model',
 	 data: 'table_name=' + table_name,
 	 dataType: 'json',
 	 success: function(data, status, request) {
@@ -50,7 +50,7 @@ var initialise_table = function(table_name) {
 	if ((table_made === false) && (columns !== null) && (model !== null)) {
 	    table_made = true;
 	    jQuery("#table").jqGrid(
-		{url: '/table_data',
+		{url: '/editor/table_data',
 		 mtype: 'POST',
 		 postData: {table_name: table_name},
 		 datatype: 'json',
@@ -65,7 +65,7 @@ var initialise_table = function(table_name) {
 		 gridview: true, // disables afterInsertRow event
 		 cellEdit: true,
 		 cellsubmit: 'remote',
-		 cellUrl: '/update_field',
+		 cellUrl: '/editor/update_field',
 		 caption: table_name,
 		 height: 600,
 		 width: 800});

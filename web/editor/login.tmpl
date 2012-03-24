@@ -2,15 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>PrOCAV Editor</title>
-    <link rel="stylesheet" type="text/css" href="/styles/editor-style.css" />
-    <script type="text/javascript" src="/styles/editor-functions.js"> </script>
+    <link rel="stylesheet" type="text/css" href="/editor/styles/editor-style.css" />
+    <script type="text/javascript" src="/editor/styles/editor-functions.js"> </script>
   </head>
   <body>
     <h1>PrOCAV Editor</h1>
     <TMPL_IF message>
       <p class="error"><TMPL_VAR message></p>
     </TMPL_IF>
-    <form id="login-form" method="post" action="/login">
+    <form id="login-form" method="post" action="/editor/login">
       <p>
 	<label for="login_name">Login: </label><input type="text" name="login_name" id="login_name" />
       </p>

@@ -25,11 +25,11 @@ use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
 
 my $PROCAV_DOMAIN = "localhost";
-my $EDITOR_PATH = "/";
+my $EDITOR_PATH   = "/editor";
 my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/editor/";
 
 our %home = (
-    uri_pattern => qr/^\/?$/,
+    uri_pattern => qr/^\/editor\/?$/,
     required_parameters => [],
     optional_parameters => [qw(failed)],
     handle => sub {
@@ -38,7 +38,7 @@ our %home = (
 	my $in_cookies = $apr_req->jar;
 
 	if (session("editor", $in_cookies->{"login_name"}, $in_cookies->{"procav_editor_sid"})) {
-	    $req->headers_out->set(Location => "/new_session");
+	    $req->headers_out->set(Location => "/editor/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
 	    my $template = HTML::Template->new(filename => $TEMPLATES_DIR . "login.tmpl", global_vars => 1);
@@ -52,7 +52,7 @@ our %home = (
     });
 
 our %login = (
-    uri_pattern => qr/^\/login\/?$/,
+    uri_pattern => qr/^\/editor\/login\/?$/,
     required_parameters => [qw(login_name password)],
     optional_parameters => [qw(login)],
     handle => sub {
@@ -84,18 +84,18 @@ our %login = (
 	    $req->err_headers_out->add("Set-Cookie", $session_cookie->as_string);
 	    $req->err_headers_out->add("Set-Cookie", $login_cookie->as_string);
 
-	    $req->headers_out->set(Location => "/new_session");
+	    $req->headers_out->set(Location => "/editor/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
 	    $s->log_error(sprintf("Failed to creat new session for %s", $apr_req->param("login_name")));
 
-	    $req->headers_out->set(Location => "/?failed=authentication_error");
+	    $req->headers_out->set(Location => "/editor/?failed=authentication_error");
 	    return Apache2::Const::REDIRECT;
 	}
     });
 
 our %new_session = (
-    uri_pattern => qr/^\/new_session\/?$/,
+    uri_pattern => qr/^\/editor\/new_session\/?$/,
     handle => sub {
 	my ($req, $apr_req) = @_;
 
@@ -127,14 +127,14 @@ our %new_session = (
     authorisation => "editor");
 
 our %generate_template = (
-    uri_pattern => qr/^\/generate_template\/?$/,
+    uri_pattern => qr/^\/editor\/generate_template\/?$/,
     handle => sub {
 	my ($req, $apr_req) = @_;
     },
     authorisation => "editor");
 
 our %submit_tables = (
-    uri_pattern => qr/^\/submit_tables\/?$/,
+    uri_pattern => qr/^\/editor\/submit_tables\/?$/,
     handle => sub {
 	my ($req, $apr_req) = @_;
     },
@@ -143,7 +143,7 @@ our %submit_tables = (
 our %edit_table_selector = ();
 
 our %edit_table = (
-    uri_pattern => qr/^\/edit_table\/?$/,
+    uri_pattern => qr/^\/editor\/edit_table\/?$/,
     required_parameters => [qw(table_name)],
     handle => sub {
 	my ($req, $apr_req) = @_;
@@ -157,7 +157,7 @@ our %edit_table = (
     authorisation => "editor");
 
 our %table_columns = (
-    uri_pattern => qr/^\/table_columns\/?$/,
+    uri_pattern => qr/^\/editor\/table_columns\/?$/,
     required_parameters => [qw(table_name)],
     handle => sub {
 	my ($req, $apr_req) = @_;
@@ -171,7 +171,7 @@ our %table_columns = (
     authorisation => "editor");
 
 our %table_model = (
-    uri_pattern => qr/^\/table_model\/?$/,
+    uri_pattern => qr/^\/editor\/table_model\/?$/,
     required_parameters => [qw(table_name)],
     handle => sub {
 	my ($req, $apr_req) = @_;
@@ -211,7 +211,7 @@ our %table_model = (
 		    $editrules->{maxValue} = $column_info->{value};
 		} elsif (exists $column_info->{foreign_key}) {
 		    $column_model->{edittype} = "select";
-		    $editoptions->{dataUrl} = "/look_up?look_up_name=" . $column_info->{look_up};
+		    $editoptions->{dataUrl} = "/editor/look_up?look_up_name=" . $column_info->{look_up};
 		} else {
 		    $editrules->{minValue} = 0;
 		}
@@ -231,7 +231,7 @@ our %table_model = (
 	    } else {
 		if (exists $column_info->{foreign_key}) {
 		    $column_model->{edittype} = "select";
-		    $editoptions->{dataUrl} = "/look_up?look_up_name=" . $column_info->{foreign_key};
+		    $editoptions->{dataUrl} = "/editor/look_up?look_up_name=" . $column_info->{foreign_key};
 		} else {
 		    $column_model->{edittype} = "text";
 		}
@@ -260,7 +260,7 @@ our %table_model = (
     authorisation => "editor");
 
 our %table_data = (
-    uri_pattern => qr/^\/table_data\/?$/,
+    uri_pattern => qr/^\/editor\/table_data\/?$/,
     required_parameters => [qw(table_name)],
     optional_parameters => [qw(_search nd rows page sidx sord)],
     handle => sub {
@@ -303,7 +303,7 @@ our %table_data = (
     authorisation => "editor");
 
 our %look_up = (
-    uri_pattern => qr/^\/look_up\/?$/,
+    uri_pattern => qr/^\/editor\/look_up\/?$/,
     optional_parameters => [qw(table_name look_up_name)],
     handle => sub {
 	my ($req, $apr_req) = @_;
