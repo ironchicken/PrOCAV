@@ -4,7 +4,7 @@
 
 <xsl:output method="html" />
 
-<xsl:variable name="URI_ROOT">http://fayrfax.doc.gold.ac.uk</xsl:variable>
+<xsl:variable name="URI_ROOT">http://localhost</xsl:variable>
 <xsl:variable name="ID"><xsl:value-of select="$URI_ROOT" />/works/<xsl:value-of select="/work/details/ID" /></xsl:variable>
 
 <xsl:template match="/">
