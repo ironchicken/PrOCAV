@@ -115,8 +115,6 @@ sub make_api_function {
     $func->{handle} = $options->{handle} || sub {
 	my ($req, $apr_req, $dbh, $url_args) = @_;
 	
-	use Data::Dumper;
-
 	my $content_type = request_content_type($req, $apr_req, (defined $options->{accept_types}) ?
 						$options->{accept_types} :
 						['text/html', 'text/xml']);
@@ -140,9 +138,6 @@ sub make_api_function {
 
 	if ($options->{generator}->{type} eq 'proc') {
 	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => $options->{generator}->{rootname});
-	    # Call XML::Generator::PerlData's parse function with
-	    # the array ref wrapped up in a hash. This will ensure
-	    # that each record is in a <work> element.
 	    my $data = &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args);
 	    if (ref $data eq "ARRAY") {
 		$generator->parse({$options->{generator}->{recordname} => $data});
@@ -219,6 +214,7 @@ sub handler {
     }
 
     # fall through to returning NOT FOUND if no URI handler matched
+    $s->log_error("Fell through to NOT_FOUND");
     return Apache2::Const::NOT_FOUND;
 }
 

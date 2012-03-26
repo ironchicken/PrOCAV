@@ -21,7 +21,6 @@ use APR::Table;
 use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
 use XML::Generator::PerlData;
-use XML::Generator::DBI;
 use XML::Filter::XSLT;
 #use XML::Filter::SAX1toSAX2;
 #use XML::Handler::HTMLWriter;
@@ -90,7 +89,7 @@ our $browse_works_by_genre = make_api_function(
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
 
 our $view_work = make_api_function(
-    { uri_pattern => qr/^\/works\/(?<work_id>[0-9]+)\/?$/,
+    { uri_pattern         => qr/^\/works\/(?<work_id>[0-9]+)\/?$/,
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type     => 'proc',
