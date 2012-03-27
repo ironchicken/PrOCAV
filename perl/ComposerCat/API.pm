@@ -17,6 +17,7 @@ BEGIN {
     our @EXPORT_OK = qw(request_content_type make_api_function handler init);
 }
 
+use DateTime;
 use APR::Request::Apache2;
 use Apache2::RequestRec ();
 use Apache2::Const -compile => qw(:common :log :http);
@@ -175,13 +176,31 @@ sub make_api_function {
 	my $generator;
 
 	if ($options->{generator}->{type} eq 'proc') {
-	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => $options->{generator}->{rootname});
+	    # add some request information to the response data
+	    my @params = $apr_req->param;
+	    my $response = {request => {retrieved  => sprintf("%s", DateTime->now(time_zone => 'local')),
+					path       => $req->uri,
+					params     => [map { {name => $_, value => $apr_req->param($_) }; } @params],
+					session_id => $apr_req->jar->{composercat_public_sid}}};
+
+	    # execute the handler procedure
 	    my $data = &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args);
+
+	    # set up an XML generator
+	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => 'response');
 	    if (ref $data eq "ARRAY") {
-		$generator->parse({$options->{generator}->{recordname} => $data});
+		# if the handler procedure returned an array, then add
+		# it to the response data using the supplied
+		# 'recordname' as a key; this will ensure that the
+		# multiple items in the array are each contained in
+		# elements whose tag name is the value of 'recordname'
+		$response->{content} = {$options->{generator}->{recordname} => $data};
 	    } else {
-		$generator->parse($data);
+		# otherwise, add the handler return value to the
+		# response data using the supplied 'rootname' as a key
+		$response->{content} = {$options->{generator}->{rootname} => $data};
 	    }
+	    $generator->parse($response);
 	} elsif ($options->{generator}->{type} eq 'file') {
 	    $pipeline->parse_file($options->{generator}->{path});
 	}
