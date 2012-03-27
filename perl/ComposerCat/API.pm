@@ -43,8 +43,8 @@ sub authorised {
     $s->log_error(sprintf("Received cookies: %s", join ", ", keys %$in_cookies));
 
     my $sid_name;
-    $sid_name = "procav_editor_sid"   if ($handler->{authorisation} eq "editor");
-    $sid_name = "procav_consumer_sid" if ($handler->{authorisation} eq "consumer");
+    $sid_name = "composercat_editor_sid"   if ($handler->{authorisation} eq "editor");
+    $sid_name = "composercat_consumer_sid" if ($handler->{authorisation} eq "consumer");
 
     $s->log_error(sprintf("Require cookie %s", $sid_name));
 

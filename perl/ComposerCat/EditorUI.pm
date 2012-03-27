@@ -37,7 +37,7 @@ our %home = (
 
 	my $in_cookies = $apr_req->jar;
 
-	if (session("editor", $in_cookies->{"login_name"}, $in_cookies->{"procav_editor_sid"})) {
+	if (session("editor", $in_cookies->{"login_name"}, $in_cookies->{"composercat_editor_sid"})) {
 	    $req->headers_out->set(Location => "/editor/new_session");
 	    return Apache2::Const::REDIRECT;
 	} else {
@@ -68,7 +68,7 @@ our %login = (
 	    $s->log_error(sprintf("Created new session for %s with ID %s", $apr_req->param("login_name"), $session_id));
 
 	    my $session_cookie = APR::Request::Cookie->new($apr_req->pool,
-							   name    => "procav_editor_sid",
+							   name    => "composercat_editor_sid",
 							   value   => $session_id,
 							   expires => "+1D",
 							   #domain  => $PROCAV_DOMAIN,
