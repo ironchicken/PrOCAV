@@ -29,7 +29,7 @@ use HTTP::Headers;
 use Array::Utils qw(:all);
 use XML::SAX::Machines qw(Pipeline);
 use XML::Filter::XSLT;
-use ComposerCat::Database qw(session make_dbh);
+use ComposerCat::Database qw(make_dbh session create_session);
 
 sub authorised {
     my ($req, $apr_req, $handler) = @_;
@@ -89,6 +89,43 @@ sub params_present {
     return (!@missing && !@extra && !grep { /^(\s*|undefined|null)$/ } @values);
 }
 
+sub open_session {
+    my ($req, $apr_req, $handler) = @_;
+
+    my $s = $req->server;
+
+    my $in_cookies = $apr_req->jar;
+
+    $s->log_error(sprintf("Received cookies: %s", join ", ", keys %$in_cookies));
+
+    my $sid_name;
+    $sid_name = "composercat_public_sid" if ($handler->{require_session} eq "public");
+
+    $s->log_error(sprintf("Require cookie %s", $sid_name));
+
+    if (not defined $sid_name) {
+	die("No matching session class: " . $handler->{require_session} . "\n");
+    }
+
+    my $session_id = $in_cookies->{$sid_name};
+
+    $s->log_error(sprintf("Found value for : \"%s\"", $sid_name, $session_id));
+
+    if (not session $handler->{require_session}, 0, $session_id) {
+	$session_id = create_session $handler->{require_session};
+
+	$s->log_error(sprintf("Created new public session with ID %s", $session_id));
+
+	my $session_cookie = APR::Request::Cookie->new($apr_req->pool,
+						       name    => $sid_name,
+						       value   => $session_id,
+						       expires => "+1D",
+						       path    => '/');
+
+	$req->err_headers_out->add("Set-Cookie", $session_cookie->as_string);
+    }
+}
+
 sub request_content_type {
     my ($req, $apr_req, $acceptable) = @_;
 
@@ -109,6 +146,7 @@ sub make_api_function {
 
     my $func = {
 	uri_pattern         => $options->{uri_pattern},
+	require_session     => $options->{require_session},
 	required_parameters => $options->{required_parameters} || [],
 	optional_parameters => $options->{optional_parameters} || []};
 
@@ -201,6 +239,9 @@ sub handler {
 	    # information when a params_present test fails.
 	    next if (not params_present $req, $apr_req, $h);
 	    return Apache2::Const::FORBIDDEN if (not authorised $req, $apr_req, $h);
+
+	    # retrieve or create session
+	    open_session $req, $apr_req, $h if (defined $h->{require_session});
 
 	    # call the handler's handle subroutine
 	    my $response = &{$h->{handle}}($req, $apr_req, $dbh, \%+);

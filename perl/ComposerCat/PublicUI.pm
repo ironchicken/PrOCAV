@@ -36,6 +36,7 @@ my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 
 our $home = make_api_function(
     { uri_pattern         => qr/^\/?$/,
+      require_session     => 'public',
       required_parameters => [],
       optional_parameters => [],
       accept_types        => ['text/html'],
@@ -44,6 +45,7 @@ our $home = make_api_function(
 
 our $browse_works_by_scored_for = make_api_function(
     { uri_pattern         => qr/^\/works\/?$/,
+      require_session     => 'public',
       required_parameters => [qw(scored_for)],
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
@@ -67,6 +69,7 @@ our $browse_works_by_scored_for = make_api_function(
 
 our $browse_works_by_genre = make_api_function(
     { uri_pattern         => qr/^\/works\/?$/,
+      require_session     => 'public',
       required_parameters => [qw(genre)],
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
@@ -90,6 +93,7 @@ our $browse_works_by_genre = make_api_function(
 
 our $view_work = make_api_function(
     { uri_pattern         => qr/^\/works\/(?<work_id>[0-9]+)\/?$/,
+      require_session     => 'public',
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type     => 'proc',

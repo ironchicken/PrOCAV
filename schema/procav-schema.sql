@@ -375,5 +375,5 @@ CREATE TABLE editors (
 CREATE TABLE sessions (
   session_id        CHAR(36) UNIQUE NOT NULL,
   session_type      ENUM('editor', 'consumer', 'public') NOT NULL,
-  login_name        VARCHAR(32) NOT NULL,
+  login_name        VARCHAR(32),
   created           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP);

@@ -81,9 +81,11 @@ sub table_info {
 use Data::UUID;
 use Text::Sprintf::Named;
 
-my $get_session_stmt;
+my $get_login_session_stmt;
+my $get_public_session_stmt;
 my $check_editor_credentials_stmt;
-my $create_session_stmt;
+my $create_login_session_stmt;
+my $create_public_session_stmt;
 
 sub prepare_statements {
     my $dbh = shift;
@@ -162,9 +164,11 @@ sub prepare_statements {
 
     # Statements used for the HTTP interface
 
-    $get_session_stmt = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
+    $get_login_session_stmt = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name=? AND session_id=? LIMIT 1/);
+    $get_public_session_stmt = $dbh->prepare_cached(qq/SELECT * FROM sessions WHERE session_type=? AND login_name IS NULL AND session_id=? LIMIT 1/);
     $check_editor_credentials_stmt = $dbh->prepare_cached(qq/SELECT login_name FROM editors WHERE login_name=? AND password=? LIMIT 1/);
-    $create_session_stmt = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
+    $create_login_session_stmt = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type, login_name) VALUES (?,?,?)/);
+    $create_public_session_stmt = $dbh->prepare_cached(qq/INSERT INTO sessions (session_id, session_type) VALUES (?,?)/);
 
     # Call the Schema module's prepare_statements subroutine
 
@@ -174,9 +178,16 @@ sub prepare_statements {
 sub session {
     my ($session_type, $login_name, $session_id) = @_;
 
-    $get_session_stmt->execute($session_type, $login_name, $session_id);
+    my $st;
+    if (not $login_name) {
+	$st = $get_public_session_stmt;
+	$st->execute($session_type, $session_id);
+    } else {
+	$st = $get_login_session_stmt;
+	$st->execute($session_type, $login_name, $session_id);
+    }
 
-    return defined $get_session_stmt->fetchrow_arrayref;
+    return defined $st->fetchrow_arrayref;
 }
 
 sub create_session {
@@ -191,8 +202,16 @@ sub create_session {
 	my $ug = new Data::UUID;
 	my $session_id = $ug->create_str();
 
-	$create_session_stmt->execute($session_id, $session_type, $login_name)
-	    or die("Could not create session: " . $create_session_stmt->errstr);
+	$create_login_session_stmt->execute($session_id, $session_type, $login_name)
+	    or die("Could not create session: " . $create_login_session_stmt->errstr);
+
+	return $session_id;
+    } elsif ($session_type eq "public") {
+	my $ug = new Data::UUID;
+	my $session_id = $ug->create_str();
+
+	$create_public_session_stmt->execute($session_id, $session_type)
+	    or die("Could not create session: " . $create_public_session_stmt->errstr);
 
 	return $session_id;
     } else { die("Session type $session_type not implemented.\n"); }
