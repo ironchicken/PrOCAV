@@ -204,6 +204,7 @@ sub make_api_function {
 	} elsif ($options->{generator}->{type} eq 'file') {
 	    $pipeline->parse_file($options->{generator}->{path});
 	}
+	return Apache2::Const::OK;
     };
 
     return $func;
