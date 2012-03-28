@@ -121,7 +121,7 @@ sub open_session {
 	my $session_cookie = APR::Request::Cookie->new($apr_req->pool,
 						       name    => $sid_name,
 						       value   => $session_id,
-						       expires => "+1D",
+						       expires => "+10Y",
 						       path    => '/');
 
 	$req->err_headers_out->add("Set-Cookie", $session_cookie->as_string);
