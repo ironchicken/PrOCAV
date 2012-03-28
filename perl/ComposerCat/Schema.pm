@@ -2152,7 +2152,7 @@ sub schema_prepare_statments {
 				   resource           => ['MANY', '_resources']};
 
     # works._list_by_scored_for
-    $schema{works}->{_list_by_scored_for} = $dbh->prepare(q|SELECT works.* FROM works
+    $schema{works}->{_list_by_scored_for} = $dbh->prepare(q|SELECT DISTINCT works.* FROM works
     JOIN scored_for ON works.ID=scored_for.work_id
     WHERE scored_for.instrument LIKE ?|);
 
