@@ -161,16 +161,26 @@ sub make_api_function {
 
 	my $pipeline;
 
+	binmode(STDOUT, ':utf8:');
+
+	my %output_opts = (Output         => \*STDOUT,
+			   Escape         => {'&' => '&amp;',
+					      '<' => '&lt;',
+					      '>' => '&gt;'},
+			   QuoteCharacter => '"',
+			   EncodeFrom     => 'UTF-8',
+			   EncodeTo       => 'UTF-8');
+
 	if (defined $options->{transforms} && defined $options->{transforms}->{$content_type}) {
 	    my @p = map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
-	    push @p, XML::SAX::Writer->new( Output => \*STDOUT );
+	    push @p, XML::SAX::Writer->new(%output_opts);
 	    $pipeline = Pipeline(@p);
 	} else {
 	    $req->server->log_error("Creating pipeline with SAX::Writer");
-	    $pipeline = XML::SAX::Writer->new( Output => \*STDOUT );
+	    $pipeline = XML::SAX::Writer->new(%output_opts);
 	}
 
-	$req->content_type($content_type);
+	$req->content_type(($content_type eq 'text/html') ? 'text/html; charset=utf-8' : $content_type);
 	print '<?xml version="1.0" encoding="utf-8" ?>';
 	print '<!DOCTYPE html>' if ($content_type eq 'text/html');
 
