@@ -52,14 +52,14 @@
 	    property="dc:title"
 	    xml:lang="en"><xsl:value-of select="uniform_title" /></span>
       <xsl:text> </xsl:text>
-      <xsl:apply-templates select="//catalogue_numbers[label/text()='Op. '][1]" />
+      <xsl:apply-templates select="//catalogue_number[label/text()='Op. '][1]" />
     </h2>
 
-    <xsl:if test="//titles">
+    <xsl:if test="//work/title">
       <div class="field title">
 	<span class="name">Titles</span>
 	<ul class="content title">
-          <xsl:apply-templates select="//titles" />
+          <xsl:apply-templates select="//work/title" />
 	</ul>
       </div>
     </xsl:if>
@@ -73,16 +73,16 @@
 	    resource="{$ID}">Serge Prokofiev</span>
     </div>
 
-    <xsl:if test="//genres">
+    <xsl:if test="//work/genre">
       <div class="field genre">
 	<span class="name">Genre</span>
 	<ul class="content genre">
-          <xsl:apply-templates select="//genres" />
+          <xsl:apply-templates select="//work/genre" />
 	</ul>
       </div>
     </xsl:if>
 
-    <xsl:if test="//composition">
+    <xsl:if test="//work/composition">
       <div class="field composition-history">
 	<span class="name">Composition history</span>
 	<ul class="content composition-history">
@@ -95,7 +95,7 @@
       </div>
     </xsl:if>
 
-    <xsl:if test="//scored_for">
+    <xsl:if test="//work/scored_for">
       <div class="field instrumentation">
 	<span class="name">Instrumentation</span>
 	<ul class="content instrumentation">
@@ -104,37 +104,37 @@
       </div>
     </xsl:if>
 
-    <xsl:if test="//sub_works">
+    <xsl:if test="//work/sub_work">
       <h3><xsl:call-template name="sub-works-type" /></h3>
-      <xsl:apply-templates select="//sub_works" />
+      <xsl:apply-templates select="//sub_work" />
     </xsl:if>
 
     <xsl:apply-templates select="notes" />
 
-    <xsl:if test="//manuscripts">
+    <xsl:if test="//work/manuscript">
       <h3>Manuscripts</h3>
-      <xsl:apply-templates select="//manuscripts" />
+      <xsl:apply-templates select="//manuscript" />
     </xsl:if>
 
-    <xsl:if test="//publications">
+    <xsl:if test="//work/publication">
       <h3>Publications</h3>
-      <xsl:apply-templates select="//publications" />
+      <xsl:apply-templates select="//publication" />
     </xsl:if>
 
-    <xsl:if test="//performances">
+    <xsl:if test="//work/performance">
       <h3>Performances</h3>
-      <xsl:apply-templates select="//performances" />
+      <xsl:apply-templates select="//performance" />
     </xsl:if>
   </div>
 </xsl:template>
 
-<xsl:template match="catalogue_numbers[label/text()='Op. ']">
+<xsl:template match="work/catalogue_number[label/text()='Op. ']">
   <span class="opus-number"
 	about="{$ID}"
 	property="dc:identifier mo:opus"><xsl:value-of select="label" /> <xsl:value-of select="number" /></span>
 </xsl:template>
 
-<xsl:template match="titles">
+<xsl:template match="work/title">
   <li class="title"
       about="{$ID}_{ID}"
       rev="dc:title"
@@ -147,7 +147,7 @@
   </li>
 </xsl:template>
 
-<xsl:template match="composition">
+<xsl:template match="work/composition">
   <li class="composition"
        about="{$ID}"
        typeof="mo:Composition"
@@ -189,7 +189,7 @@
   </li>
 </xsl:template>
 
-<xsl:template match="scored_for">
+<xsl:template match="work/scored_for">
   <li class="instrument"
       about="{$ID}_{instrument}"
       rev="mo-i:includes_instrument"
@@ -203,7 +203,7 @@
   </li>
 </xsl:template>
 
-<xsl:template match="genres">
+<xsl:template match="work/genre">
   <li class="genre"
       about="{$ID}_{genre}"
       rev="mo:genre"
@@ -214,14 +214,14 @@
   </li>
 </xsl:template>
 
-<xsl:template match="details/notes">
+<xsl:template match="work/details/notes">
   <div class="notes">
   <h4>Notes</h4>
     <p><xsl:apply-templates /></p>
   </div>
 </xsl:template>
 
-<xsl:template match="sub_works">
+<xsl:template match="work/sub_work">
   <div class="work-part"
        id="work{//work/ID}_m{part_position}"
        about="{$ID}_m{part_position}"
@@ -243,7 +243,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts">
+<xsl:template match="work/manuscript">
   <div class="manuscript"
        id="manuscript{ID}"
        about="{$URI_ROOT}/manuscripts/{ID}"
@@ -263,7 +263,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/title">
+<xsl:template match="work/manuscript/title">
   <div class="field manuscript-title">
     <span class="name">Title</span>
     <span class="content manuscript-title"
@@ -272,7 +272,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/purpose">
+<xsl:template match="work/manuscript/purpose">
   <div class="field manuscript-purpose">
     <span class="name">Purpose</span>
     <span class="content manuscript-purpose"
@@ -281,7 +281,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/phsyical_size">
+<xsl:template match="work/manuscript/phsyical_size">
   <div class="field manuscript-phsyical-size">
     <span class="name">Phsyical_Size</span>
     <span class="content manuscript-phsyical-size"
@@ -290,7 +290,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/medium">
+<xsl:template match="work/manuscript/medium">
   <div class="field manuscript-medium">
     <span class="name">Medium</span>
     <span class="content manuscript-medium"
@@ -299,7 +299,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/extent">
+<xsl:template match="work/manuscript/extent">
   <div class="field manuscript-extent">
     <span class="name">Extent</span>
     <span class="content manuscript-extent"
@@ -308,7 +308,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/missing">
+<xsl:template match="work/manuscript/missing">
   <div class="field manuscript-missing">
     <span class="name">Missing</span>
     <span class="content manuscript-missing"
@@ -322,7 +322,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/date_made_year">
+<xsl:template match="work/manuscript/date_made_year">
   <div class="field manuscript-date-made">
     <span class="name">Date</span>
     <span class="content manuscript-date-made"
@@ -342,7 +342,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/location">
+<xsl:template match="work/manuscript/location">
   <div class="field manuscript-location">
     <span class="name">Location</span>
     <span class="content manuscript-location"
@@ -351,7 +351,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="manuscripts/notes">
+<xsl:template match="work/manuscript/notes">
   <div class="field manuscript-notes">
     <span class="name">Notes</span>
     <p class="content manuscript-notes"
@@ -360,7 +360,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications">
+<xsl:template match="work/publication">
   <div class="publication"
        id="publication{ID}"
        about="{$URI_ROOT}/publications/{ID}"
@@ -379,7 +379,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/title">
+<xsl:template match="work/publication/title">
   <div class="field publication-title">
     <span class="name">Title</span>
     <span class="content publication-title"
@@ -388,7 +388,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/publisher">
+<xsl:template match="work/publication/publisher">
   <div class="field publication-publisher">
     <span class="name">Publisher</span>
     <span class="content publication-publisher"
@@ -399,7 +399,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/publication_place">
+<xsl:template match="work/publication/publication_place">
   <div class="field publication-publication-place">
     <span class="name">Publication place</span>
     <span class="content publication-publication-place"
@@ -410,7 +410,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/pub_date_year">
+<xsl:template match="work/publication/pub_date_year">
   <div class="field publication-pub-date">
     <span class="name">Date</span>
     <span class="content publication-pub-date"
@@ -430,7 +430,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/serial_number">
+<xsl:template match="work/publication/serial_number">
   <div class="field publication-serial-number">
     <span class="name">Serial number</span>
     <span class="content publication-serial-number"
@@ -441,7 +441,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/score_type">
+<xsl:template match="work/publication/score_type">
   <div class="field publication-score-type">
     <span class="name">Score type</span>
     <span class="content publication-score-type"
@@ -452,7 +452,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="publications/notes">
+<xsl:template match="work/publication/notes">
   <div class="field publication-notes">
     <span class="name">Notes</span>
     <p class="content publication-notes"
@@ -461,7 +461,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="performances">
+<xsl:template match="work/performance">
   <div class="performance"
        id="performance{ID}"
        about="{$URI_ROOT}/performances/{ID}"
@@ -475,7 +475,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="performances/performed_year">
+<xsl:template match="work/performance/performed_year">
   <div class="field performance-performed">
     <span class="name">Date</span>
     <span class="content performance-performed"
@@ -495,7 +495,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="performances/venue">
+<xsl:template match="work/performance/venue">
   <div class="field performance-performance-type">
     <span class="name">Venue</span>
     <span class="content performance-venue"
@@ -528,7 +528,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="performances/performance_type">
+<xsl:template match="work/performance/performance_type">
   <div class="field performance-performance-type">
     <span class="name">Performance type</span>
     <span class="content performance-performance-type"
@@ -537,7 +537,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="performances/notes">
+<xsl:template match="work/performance/notes">
   <div class="field performance-notes">
     <span class="name">Notes</span>
     <p class="content performance-notes"
@@ -566,8 +566,8 @@
 
 <xsl:template name="sub-works-type">
   <xsl:choose>
-    <xsl:when test="//genres[1]/genre/text()='opera'">Acts</xsl:when>
-    <xsl:when test="//genres[1]/genre/text()='ballet'">Acts</xsl:when>
+    <xsl:when test="//genre[1]/genre/text()='opera'">Acts</xsl:when>
+    <xsl:when test="//genre[1]/genre/text()='ballet'">Acts</xsl:when>
     <xsl:otherwise>Movements</xsl:otherwise>
   </xsl:choose>
 </xsl:template>
