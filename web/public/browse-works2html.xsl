@@ -44,7 +44,10 @@
 
 <xsl:template match="work">
   <li>
-    <a href="{$URI_ROOT}/works/{ID}"><xsl:value-of select="uniform_title" /></a>
+    <a href="{$URI_ROOT}/works/{ID}"><xsl:value-of select="uniform_title" /></a><xsl:text> </xsl:text>
+    <xsl:value-of select="catalogue" />
+    <xsl:value-of select="catalogue_number" />
+    (<xsl:value-of select="year" />)
   </li>
 </xsl:template>
 
