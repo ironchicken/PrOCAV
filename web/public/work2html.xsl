@@ -4,7 +4,8 @@
 
 <xsl:output method="html" />
 
-<xsl:variable name="URI_ROOT">http://localhost</xsl:variable>
+<xsl:include href="globals.xsl" />
+
 <xsl:variable name="ID"><xsl:value-of select="$URI_ROOT" />/works/<xsl:value-of select="/response/content/work/details/ID" /></xsl:variable>
 
 <xsl:template match="/">
@@ -19,24 +20,14 @@
     <meta name="DC.title" lang="en" content="{//details/uniform_title}" />
     <meta name="DC.creator" content="Serge Prokofiev" />
 
-    <script type="text/javascript" src="jquery-1.6.2.js"> //script </script>
-    <script type="text/javascript" src="json2.js"> //script </script>
-    <link href="http://fonts.googleapis.com/css?family=Crimson+Text|Droid+Sans" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="/public/css/composercat.css" />
+    <xsl:call-template name="page-tools" />
   </head>
   <body>
-    <h1>Serge Prokofiev Catalogue</h1>
-    <ul id="catalogue-menu">
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Works</a></li>
-      <li><a href="#">Manuscripts</a></li>
-      <li><a href="#">Letters</a></li>
-      <li><a href="#">Search</a></li>
-    </ul>
-    <xsl:apply-templates select="//details" />
-    <div id="footer">
-
+    <xsl:call-template name="page-header" />
+    <div id="content">
+      <xsl:apply-templates select="//details" />
     </div>
+    <xsl:call-template name="page-footer" />
   </body>    
 </html>
 </xsl:template>
