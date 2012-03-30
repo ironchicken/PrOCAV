@@ -154,36 +154,37 @@ sub make_api_function {
 
     $func->{handle} = $options->{handle} || sub {
 	my ($req, $apr_req, $dbh, $url_args) = @_;
-	
+
+	# find out what content type is requested
 	my $content_type = request_content_type($req, $apr_req, (defined $options->{accept_types}) ?
 						$options->{accept_types} :
 						['text/html', 'text/xml']);
 
-	my $pipeline;
-
 	binmode(STDOUT, ':utf8:');
 
-	my %output_opts = (Output         => \*STDOUT,
-			   Escape         => {'&' => '&amp;',
-					      '<' => '&lt;',
-					      '>' => '&gt;'},
-			   QuoteCharacter => '"',
-			   EncodeFrom     => 'UTF-8',
-			   EncodeTo       => 'UTF-8');
-
+	# construct a SAX processing pipeline
+	my @p = (XML::Filter::BufferText->new);#, ComposerCat::);
+	
 	if (defined $options->{transforms} && defined $options->{transforms}->{$content_type}) {
-	    my @p = map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
-	    push @p, XML::SAX::Writer->new(%output_opts);
-	    $pipeline = Pipeline(@p);
-	} else {
-	    $req->server->log_error("Creating pipeline with SAX::Writer");
-	    $pipeline = XML::SAX::Writer->new(%output_opts);
+	    push @p, map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
 	}
 
+	push @p, XML::SAX::Writer->new(Output         => \*STDOUT,
+				       Escape         => {'&' => '&amp;',
+							  '<' => '&lt;',
+							  '>' => '&gt;'},
+				       QuoteCharacter => '"',
+				       EncodeFrom     => 'UTF-8',
+				       EncodeTo       => 'UTF-8');
+
+	my $pipeline = Pipeline(@p);
+
+	# begin the response
 	$req->content_type(($content_type eq 'text/html') ? 'text/html; charset=utf-8' : $content_type);
 	print '<?xml version="1.0" encoding="utf-8" ?>';
 	print '<!DOCTYPE html>' if ($content_type eq 'text/html');
 
+	# construct an XML generator and execute the SAX pipeline
 	my $generator;
 
 	if ($options->{generator}->{type} eq 'proc') {
