@@ -234,7 +234,8 @@ our %schema = (
 
 	notes           => {access => "rw",
 			    data_type => "string",
-			    cell_width => 80},
+			    cell_width => 80,
+			    allow_markup => 1},
 
 	staff_notes     => {access => "rw",
 			    data_type => "string",

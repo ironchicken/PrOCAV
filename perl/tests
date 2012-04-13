@@ -135,6 +135,14 @@ sub test_schema_statements {
     print Dumper($work) . "\n\n";
 }
 
+sub test_schema_statement {
+    make_dbh;
+
+    my $st_name = shift;
+    my $st = ComposerCat::Database::table_info('works')->{$st_name};
+    $st->execute(@_);
+}
+
 sub test_all_records {
     print Dumper(all_records);
 }
@@ -241,6 +249,11 @@ sub test_sax_machines_xslt {
     print "\n";
 }
 
+sub test_markup_filter {
+    my $filter = ComposerCat::Database::MarkupFilter->new;
+    $filter->parse_markup(q|Hello '''world!''' [http://www.foo.com/ click ''here'']|);
+}
+
 sub main {
     #test_create_workbook;
     #test_ingest_workbook;
@@ -251,7 +264,11 @@ sub main {
     #test_dbpedia_url;
     #test_insert_resource;
     #test_auto_resource_inserter;
-    test_schema_statements;
+    #test_schema_statements;
+    #test_make_api_function;
+    #test_sax_machines_xslt;
+    #test_schema_statement '_list_by_scored_for', 'clarinet';
+    test_markup_filter;
 }
 
 main;
