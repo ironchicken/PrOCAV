@@ -111,7 +111,7 @@ sub open_session {
 
     my $session_id = $in_cookies->{$sid_name};
 
-    $s->log_error(sprintf("Found value for : \"%s\"", $sid_name, $session_id));
+    $s->log_error(sprintf("Found value for %s: \"%s\"", $sid_name, $session_id));
 
     if (not session $handler->{require_session}, 0, $session_id) {
 	$session_id = create_session $handler->{require_session};
