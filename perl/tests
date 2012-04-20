@@ -11,6 +11,7 @@ use HTML::Template;
 use ComposerCat::API qw(handler make_api_function);
 use ComposerCat::Database qw(make_dbh all_records table_info insert_record insert_resource);
 use ComposerCat::Resources qw(dbpedia_uri);
+use ComposerCat::Search qw(process_all_pages);
 use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
@@ -254,6 +255,10 @@ sub test_markup_filter {
     $filter->parse_markup(q|Hello '''world!''' [http://www.foo.com/ click ''here'']|);
 }
 
+sub test_process_all_pages {
+    ComposerCat::Search::process_all_pages(sub { print $_[0] . "\n"; });
+}
+
 sub main {
     #test_create_workbook;
     #test_ingest_workbook;
@@ -268,7 +273,8 @@ sub main {
     #test_make_api_function;
     #test_sax_machines_xslt;
     #test_schema_statement '_list_by_scored_for', 'clarinet';
-    test_markup_filter;
+    #test_markup_filter;
+    test_process_all_pages;
 }
 
 main;
