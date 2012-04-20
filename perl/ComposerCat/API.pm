@@ -14,7 +14,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(request_content_type make_api_function handler init);
+    our @EXPORT_OK = qw(request_content_type make_api_function call_api_function handler init);
 }
 
 use DateTime;
@@ -31,6 +31,8 @@ use HTTP::Headers;
 use Array::Utils qw(:all);
 use XML::SAX::Machines qw(Pipeline);
 use XML::Filter::XSLT;
+use Test::Mock::Apache2;
+use Capture::Tiny qw(capture_stdout);
 use ComposerCat::Database qw(make_dbh session create_session);
 
 sub authorised {
@@ -232,6 +234,21 @@ sub make_api_function {
     };
 
     return $func;
+}
+
+sub call_api_function {
+    my ($handler, $url_args, $dbh) = @_;
+    $dbh = make_dbh if (not defined $dbh);
+
+    my $req = Apache2::RequestUtil->request();
+    my $apr_req = APR::Request::Apache2->handle($req);
+
+    # The request handler functions, as mod_perl handlers, write their
+    # output to STDOUT. So we'll capture STDOUT into a variable and
+    # return its value
+    my $output = capture_stdout(sub { &{ $handler->{handle} }($req, $apr_req, $dbh, $url_args); });
+
+    return $output;
 }
 
 our @DISPATCH_TABLE = ();
