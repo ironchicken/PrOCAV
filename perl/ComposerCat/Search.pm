@@ -29,6 +29,14 @@ our @page_sources = (
      handler_args      => sub { {work_id => $_[0]->{ID}}; } }
     );
 
+=method process_all_pages
+
+For each page source in C<@page_sources>, generate all the matching
+pages and call the supplied procedure passing, as its argument, a hash
+ref containing the path of the page and its text.
+
+=cut
+
 sub process_all_pages {
     my $proc = shift;
 
@@ -39,8 +47,10 @@ sub process_all_pages {
 	$st->execute;
 
 	while (my $doc_details = $st->fetchrow_hashref) {
-	    my $doc = call_api_function($source->{make_page_handler}, &{ $source->{handler_args} }($doc_details), $dbh);
-	    &$proc($doc);
+	    &$proc({
+		url     => sprintf($source->{path_pattern}, &{ $source->{path_subs} }($doc_details)),
+		content => call_api_function($source->{make_page_handler}, &{ $source->{handler_args} }($doc_details), $dbh)
+		   });
 	}
     }
 }

@@ -256,7 +256,7 @@ sub test_markup_filter {
 }
 
 sub test_process_all_pages {
-    ComposerCat::Search::process_all_pages(sub { print $_[0] . "\n"; });
+    ComposerCat::Search::process_all_pages(sub { print $_[0]->{url} . "\n" . $_[0]->{content} . "\n"; });
 }
 
 sub main {
