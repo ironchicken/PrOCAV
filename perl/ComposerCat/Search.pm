@@ -66,7 +66,7 @@ sub process_all_pages {
 sub index_all_pages {
     my $config = SWISH::Prog::Config->new(
 	DefaultContents     => 'HTML*',
-	IndexFile           => '/home/richard/jobs/pocac/procav/index',
+	IndexFile           => $FULLTEXT_INDEX,
 	IndexName           => 'PrOCAV',
 	PropertyNames       => [qw(DC.title DC.creator DC.date DC.description DC.identifier DC.subject DC.type record-type)],
 	MetaNames           => [qw(DC.title DC.creator DC.date DC.description DC.identifier DC.subject DC.type record-type)],
@@ -74,7 +74,7 @@ sub index_all_pages {
 	TranslateCharacters => ':ascii7:');
 
     my $indexer = SWISH::Prog::Native::Indexer->new(
-        invindex    => SWISH::Prog::Native::InvIndex->new(path => '/home/richard/jobs/pocac/procav/index'),
+        invindex    => SWISH::Prog::Native::InvIndex->new(path => $FULLTEXT_INDEX),
         config      => $config,
         count       => 0,
         clobber     => 1,
