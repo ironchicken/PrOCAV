@@ -35,7 +35,7 @@ my $DOCUMENTS_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 
 our $home = make_api_function(
-    { uri_pattern         => qr/^\/?$/,
+    { uri_pattern         => qr|^/?$|,
       require_session     => 'public',
       required_parameters => [],
       optional_parameters => [],
@@ -44,7 +44,7 @@ our $home = make_api_function(
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse_works_by_scored_for = make_api_function(
-    { uri_pattern         => qr/^\/works\/?$/,
+    { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(scored_for)],
       optional_parameters => [qw(accept)],
@@ -68,7 +68,7 @@ our $browse_works_by_scored_for = make_api_function(
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
 
 our $browse_works_by_genre = make_api_function(
-    { uri_pattern         => qr/^\/works\/?$/,
+    { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(genre)],
       optional_parameters => [qw(accept)],
@@ -92,7 +92,7 @@ our $browse_works_by_genre = make_api_function(
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
 
 our $view_work = make_api_function(
-    { uri_pattern         => qr/^\/works\/(?<work_id>[0-9]+)\/?$/,
+    { uri_pattern         => qr|^/works/(?<work_id>[0-9]+)/?$|,
       require_session     => 'public',
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
