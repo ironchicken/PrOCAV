@@ -28,10 +28,11 @@
           <h2>Search for "<xsl:value-of select="$terms" />"</h2>
           <p>
             Your search for "<xsl:value-of select="$terms" />"
-            returned <xsl:value-of select="count(//result)" />
-            result(s).
+            returned <xsl:value-of select="//hits" />
+            result(s). Showing <xsl:value-of select="//count" />
+            results:
 	  </p>
-          <ol>
+          <ol start="{//start}">
             <xsl:apply-templates select="//result" />
 	  </ol>
 	</div>

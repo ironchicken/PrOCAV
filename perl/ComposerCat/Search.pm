@@ -92,7 +92,7 @@ sub index_all_pages {
 }
 
 sub search_fulltext_index {
-    my $terms = shift;
+    my ($terms, $start, $limit) = @_;
 
     # wrap up references to things that look like key signatures in
     # double quotes, making them phrases
@@ -105,8 +105,17 @@ sub search_fulltext_index {
     my $found = $searcher->search($terms);
     my $results = [];
 
-    my $n = 0;
+    # check integrity of supplied start/limit
+    if (defined $start && not defined $limit) { $limit = 10; }
+    if (defined $start && $limit < 1) { $limit = 10; }
+    if (defined $start && $start < 1) { $start = 1; }
+    if (defined $start && $start > $found->hits) { $start = $found->hits; }
+
+    # build an array of results
+    my $n = 0; my $count = 0;
     while (my $r = $found->next) {
+	$n++;
+	next if (defined $start && $n < $start);
 	push @$results, {'dc.title'       => $r->get_property('dc.title'),
 			 'dc.creator'     => $r->get_property('dc.creator'),
 			 'dc.date'        => $r->get_property('dc.date'),
@@ -119,10 +128,20 @@ sub search_fulltext_index {
 			 uri            => $r->uri,
 			 score          => $r->score,
 			 n              => $n};
-	$n++;
+	$count++;
+	last if (defined $limit && $count == $limit);
     }
 
-    return $results;
+    # return a hash contain the number of hits and an array ref of the
+    # results. (This array ref is under the key 'result' [rather than
+    # 'results'] because when it gets turned into XML by the PerlData
+    # SAX Generator, the key name will be used as the element name for
+    # each result.)
+    return {hits   => $found->hits,
+	    start  => $start,
+	    limit  => $limit,
+	    count  => $count,
+	    result => $results};
 }
 
 1;

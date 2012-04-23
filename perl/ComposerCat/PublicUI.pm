@@ -107,16 +107,20 @@ our $view_work = make_api_function(
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'work2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'work2rdf.xsl']} });
 
+our %view_period = ();
+
 our $fulltext_search = make_api_function(
     { uri_pattern         => qr|^/search$|,
       require_session     => 'public',
       required_parameters => [qw(terms)],
-      optional_parameters => [qw(accept)],
+      optional_parameters => [qw(accept start limit)],
       accept_types        => ['text/html', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
 				  my ($req, $apr_req, $dbh, $url_args) = @_;
-				  return ComposerCat::Search::search_fulltext_index($apr_req->param('terms'));
+				  return ComposerCat::Search::search_fulltext_index($apr_req->param('terms'),
+										    $apr_req->param('start'),
+										    $apr_req->param('limit'));
 			      },
 			      rootname   => 'results',
 			      recordname => 'result'},
