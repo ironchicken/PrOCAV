@@ -15,7 +15,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(process_all_pages index_all_pages);
+    our @EXPORT_OK = qw(process_all_pages index_all_pages search_fulltext_index);
 }
 
 use ComposerCat::PublicUI qw($view_work);
@@ -25,6 +25,9 @@ use SWISH::Prog::Indexer;
 use SWISH::Prog::Native::Indexer;
 use SWISH::Prog::Config;
 use SWISH::Prog::Doc;
+use SWISH::Prog::Native::Searcher;
+
+our $FULLTEXT_INDEX = '/home/richard/jobs/pocac/procav/index';
 
 our @page_sources = (
     {path_pattern      => "/works/%d",
@@ -86,6 +89,40 @@ sub index_all_pages {
     	$indexer->process($doc);
     		      });
     $indexer->finish;
+}
+
+sub search_fulltext_index {
+    my $terms = shift;
+
+    # wrap up references to things that look like key signatures in
+    # double quotes, making them phrases
+    $terms =~ s/([A-G])(#|b| sharp| flat|) (major|minor)/"$1$2 $3"/ig;
+
+    my $searcher = SWISH::Prog::Native::Searcher->new(
+	invindex => $FULLTEXT_INDEX,
+	max_hits => 500);
+
+    my $found = $searcher->search($terms);
+    my $results = [];
+
+    my $n = 0;
+    while (my $r = $found->next) {
+	push @$results, {'dc.title'       => $r->get_property('dc.title'),
+			 'dc.creator'     => $r->get_property('dc.creator'),
+			 'dc.date'        => $r->get_property('dc.date'),
+			 'dc.identifier'  => $r->get_property('dc.identifier'),
+			 'dc.description' => $r->get_property('dc.description'),
+			 'dc.subject'     => $r->get_property('dc.subject'),
+			 'dc.type'        => $r->get_property('dc.type'),
+			 record_type    => $r->get_property('record-type'),
+			 title          => $r->title,
+			 uri            => $r->uri,
+			 score          => $r->score,
+			 n              => $n};
+	$n++;
+    }
+
+    return $results;
 }
 
 1;

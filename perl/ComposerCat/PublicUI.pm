@@ -13,7 +13,8 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $view_work $browse_works_by_scored_for $browse_works_by_genre);
+    our @EXPORT_OK = qw($home $view_work $browse_works_by_scored_for $browse_works_by_genre
+                        $fulltext_search);
 }
 
 use Apache2::RequestRec ();
@@ -28,6 +29,7 @@ use XML::SAX::Writer;
 use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
 use ComposerCat::API qw(request_content_type make_api_function);
+use ComposerCat::Search qw(search_fulltext_index);
 
 my $PROCAV_DOMAIN = "fayrfax.doc.gold.ac.uk";
 my $PUBLIC_PATH = "/";
@@ -104,5 +106,20 @@ our $view_work = make_api_function(
 			      rootname => 'work'},
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'work2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'work2rdf.xsl']} });
+
+our $fulltext_search = make_api_function(
+    { uri_pattern         => qr|^/search$|,
+      require_session     => 'public',
+      required_parameters => [qw(terms)],
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'text/xml'],
+      generator           => {type => 'proc',
+			      proc => sub {
+				  my ($req, $apr_req, $dbh, $url_args) = @_;
+				  return ComposerCat::Search::search_fulltext_index($apr_req->param('terms'));
+			      },
+			      rootname   => 'results',
+			      recordname => 'result'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'fulltext-results2html.xsl']} });
 
 1;
