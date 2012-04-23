@@ -139,6 +139,12 @@ sub search_fulltext_index {
     # each result.)
     return {hits   => $found->hits,
 	    start  => $start,
+	    # FIXME prev and next should be part of the more general
+	    # session-based index mechanism; these are a temporary
+	    # kludge
+	    prev   => ($start == 1) ? undef : ($start - $limit > 1) ? $start - $limit : 1,
+	    'next' => ($start + $limit > $found->hits) ? undef : $start + $limit,
+
 	    limit  => $limit,
 	    count  => $count,
 	    result => $results};

@@ -29,8 +29,20 @@
           <p>
             Your search for "<xsl:value-of select="$terms" />"
             returned <xsl:value-of select="//hits" />
-            result(s). Showing <xsl:value-of select="//count" />
-            results:
+            result(s).
+	  </p>
+          <p>
+            <xsl:choose>
+              <xsl:when test="//prev != ''"><a href="/search?terms={$terms}&amp;start={//prev}&amp;limit={//limit}">&lt;&lt;</a></xsl:when>
+              <xsl:otherwise>&lt;&lt;</xsl:otherwise>
+	    </xsl:choose>
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
+            <xsl:text> </xsl:text>
+            <xsl:choose>
+              <xsl:when test="//next != ''"><a href="/search?terms={$terms}&amp;start={//next}&amp;limit={//limit}">&gt;&gt;</a></xsl:when>
+              <xsl:otherwise>&gt;&gt;</xsl:otherwise>
+	    </xsl:choose>
 	  </p>
           <ol start="{//start}">
             <xsl:apply-templates select="//result" />
