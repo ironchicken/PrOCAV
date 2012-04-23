@@ -15,11 +15,16 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(process_all_pages);
+    our @EXPORT_OK = qw(process_all_pages index_all_pages);
 }
 
 use ComposerCat::PublicUI qw($view_work);
 use ComposerCat::API qw(call_api_function);
+
+use SWISH::Prog::Indexer;
+use SWISH::Prog::Native::Indexer;
+use SWISH::Prog::Config;
+use SWISH::Prog::Doc;
 
 our @page_sources = (
     {path_pattern      => "/works/%d",
@@ -53,6 +58,34 @@ sub process_all_pages {
 		   });
 	}
     }
+}
+
+sub index_all_pages {
+    my $config = SWISH::Prog::Config->new(
+	DefaultContents     => 'HTML*',
+	IndexFile           => '/home/richard/jobs/pocac/procav/index',
+	IndexName           => 'PrOCAV',
+	PropertyNames       => [qw(DC.title DC.creator DC.date DC.description DC.identifier DC.subject DC.type record-type)],
+	MetaNames           => [qw(DC.title DC.creator DC.date DC.description DC.identifier DC.subject DC.type record-type)],
+	UndefinedMetaTags   => 'error',
+	TranslateCharacters => ':ascii7:');
+
+    my $indexer = SWISH::Prog::Native::Indexer->new(
+        invindex    => SWISH::Prog::Native::InvIndex->new(path => '/home/richard/jobs/pocac/procav/index'),
+        config      => $config,
+        count       => 0,
+        clobber     => 1,
+        flush       => 10000,
+        started     => time()
+	);
+
+    $indexer->start;
+
+    process_all_pages(sub {
+    	my $doc = SWISH::Prog::Doc->new(url => $_[0]->{url}, type => 'text/html', content => $_[0]->{content});
+    	$indexer->process($doc);
+    		      });
+    $indexer->finish;
 }
 
 1;

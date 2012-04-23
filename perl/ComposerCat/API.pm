@@ -31,7 +31,6 @@ use HTTP::Headers;
 use Array::Utils qw(:all);
 use XML::SAX::Machines qw(Pipeline);
 use XML::Filter::XSLT;
-use Test::Mock::Apache2;
 use ComposerCat::Database qw(make_dbh session create_session);
 
 sub authorised {
@@ -242,6 +241,9 @@ sub call_api_function {
     my ($handler, $url_args, $dbh) = @_;
     $dbh = make_dbh if (not defined $dbh);
 
+    # Callees to this subroutine should arrange to import the
+    # Test::Mock::Apache2 module to replace these two classes with
+    # dummy versions that will work outside of the Apache environment
     my $req = Apache2::RequestUtil->request();
     my $apr_req = APR::Request::Apache2->handle($req);
 
