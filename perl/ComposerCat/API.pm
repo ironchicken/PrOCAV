@@ -32,7 +32,6 @@ use Array::Utils qw(:all);
 use XML::SAX::Machines qw(Pipeline);
 use XML::Filter::XSLT;
 use Test::Mock::Apache2;
-use Capture::Tiny qw(capture_stdout);
 use ComposerCat::Database qw(make_dbh session create_session);
 
 sub authorised {
@@ -155,14 +154,16 @@ sub make_api_function {
 	optional_parameters => $options->{optional_parameters} || []};
 
     $func->{handle} = $options->{handle} || sub {
-	my ($req, $apr_req, $dbh, $url_args) = @_;
+	my ($req, $apr_req, $dbh, $url_args, $dest) = @_;
+
+	$dest = $dest || \*STDOUT;
 
 	# find out what content type is requested
 	my $content_type = request_content_type($req, $apr_req, (defined $options->{accept_types}) ?
 						$options->{accept_types} :
 						['text/html', 'text/xml']);
 
-	binmode(STDOUT, ':utf8:');
+	binmode($dest, ':utf8:');
 
 	# construct a SAX processing pipeline
 	my @p = (XML::Filter::BufferText->new, ComposerCat::Database::MarkupFilter->new);
@@ -171,7 +172,7 @@ sub make_api_function {
 	    push @p, map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
 	}
 
-	push @p, XML::SAX::Writer->new(Output         => \*STDOUT,
+	push @p, XML::SAX::Writer->new(Output         => $dest,
 				       Escape         => {'&' => '&amp;',
 							  '<' => '&lt;',
 							  '>' => '&gt;'},
@@ -183,8 +184,9 @@ sub make_api_function {
 
 	# begin the response
 	$req->content_type(($content_type eq 'text/html') ? 'text/html; charset=utf-8' : $content_type);
-	print '<?xml version="1.0" encoding="utf-8" ?>';
-	print '<!DOCTYPE html>' if ($content_type eq 'text/html');
+
+	print $dest '<?xml version="1.0" encoding="utf-8" ?>';
+	print $dest '<!DOCTYPE html>' if ($content_type eq 'text/html');
 
 	# construct an XML generator and execute the SAX pipeline
 	my $generator;
@@ -243,10 +245,13 @@ sub call_api_function {
     my $req = Apache2::RequestUtil->request();
     my $apr_req = APR::Request::Apache2->handle($req);
 
-    # The request handler functions, as mod_perl handlers, write their
-    # output to STDOUT. So we'll capture STDOUT into a variable and
-    # return its value
-    my $output = capture_stdout(sub { &{ $handler->{handle} }($req, $apr_req, $dbh, $url_args); });
+    # create a filehandle which writes to a scalar as a place to dump
+    # the output from the handler procedure
+    my $output;
+    open my $fh, ">", \$output;
+
+    # call the handler procedure
+    &{ $handler->{handle} }($req, $apr_req, $dbh, $url_args, $fh);
 
     return $output;
 }
