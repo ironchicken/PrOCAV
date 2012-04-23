@@ -37,7 +37,14 @@
               <xsl:otherwise>&lt;&lt;</xsl:otherwise>
 	    </xsl:choose>
             <xsl:text> </xsl:text>
-            <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
+            <xsl:choose>
+              <xsl:when test="//start != ''">
+                <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
+	      </xsl:when>
+              <xsl:otherwise>
+	        1 to <xsl:value-of select="//count" />
+	      </xsl:otherwise>
+	    </xsl:choose>
             <xsl:text> </xsl:text>
             <xsl:choose>
               <xsl:when test="//next != ''"><a href="/search?terms={$terms}&amp;start={//next}&amp;limit={//limit}">&gt;&gt;</a></xsl:when>

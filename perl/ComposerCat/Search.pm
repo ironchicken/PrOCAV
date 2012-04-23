@@ -142,8 +142,8 @@ sub search_fulltext_index {
 	    # FIXME prev and next should be part of the more general
 	    # session-based index mechanism; these are a temporary
 	    # kludge
-	    prev   => ($start == 1) ? undef : ($start - $limit > 1) ? $start - $limit : 1,
-	    'next' => ($start + $limit > $found->hits) ? undef : $start + $limit,
+	    prev   => &{ sub { if (defined $start && defined $limit) { if ($start == 1) { return undef; } else { return ($start - $limit > 1) ? $start - $limit : 1; } } } }(),
+	    'next' => &{ sub { if (defined $start && defined $limit) { return ($start + $limit > $found->hits) ? undef : $start + $limit; } } }(),
 
 	    limit  => $limit,
 	    count  => $count,
