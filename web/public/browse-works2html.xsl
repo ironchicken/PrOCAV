@@ -10,7 +10,7 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>Serge Prokofiev: <xsl:value-of select="//details/uniform_title" /></title>
+    <title>PrOCAV: browse works</title>
 
     <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
     <link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" />
@@ -19,10 +19,17 @@
   </head>
   <body>
     <xsl:call-template name="page-header" />
-    <div id="content">
-      <ol>
-        <xsl:apply-templates select="//work" />
-      </ol>
+    <div id="body">
+      <xsl:call-template name="page-menu" />
+      <div id="container">
+        <div class="main-content">
+          <h2>Browse works</h2>
+          <ol class="main-content">
+            <xsl:apply-templates select="//work" />
+	  </ol>
+          <xsl:call-template name="user-tools" />
+	</div>
+      </div>
     </div>
     <xsl:call-template name="page-footer" />
   </body>    
