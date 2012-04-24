@@ -19,21 +19,36 @@
 
     <meta name="DC.title" lang="en" content="{//details/uniform_title}" />
     <meta name="DC.creator" content="Serge Prokofiev" />
+    <meta name="DC.date" content="{//composition[last()]/end_year}" />
+    <meta name="DC.description" content="The musical work entitled {//details/uniform_title} composed by Serge Prokofiev." />
+    <meta name="DC.identifier" content="{$ID}" />
+    <meta name="DC.subject" content="music" />
+    <meta name="DC.type" content="mo:MusicalWork" />
 
+    <meta name="record-type" content="work" />
+    <xsl:comment> noindex </xsl:comment>
     <xsl:call-template name="page-tools" />
   </head>
   <body>
+    <div id="page">
     <xsl:call-template name="page-header" />
-    <div id="content">
-      <xsl:apply-templates select="//details" />
+    <div id="body">
+      <xsl:call-template name="page-menu" />
+      <div id="container">
+        <xsl:comment> index </xsl:comment>
+        <xsl:apply-templates select="//details" />
+        <xsl:comment> noindex </xsl:comment>
+        <xsl:call-template name="user-tools" />
+      </div>
     </div>
     <xsl:call-template name="page-footer" />
+    </div>
   </body>    
 </html>
 </xsl:template>
 
 <xsl:template match="details">
-  <div class="work"
+  <div class="work main-content"
        id="work{ID}"
        about="{$ID}"
        typeof="mo:MusicalWork">
@@ -46,61 +61,63 @@
       <xsl:apply-templates select="//catalogue_number[label/text()='Op. '][1]" />
     </h2>
 
-    <xsl:if test="//work/title">
-      <div class="field title">
-	<span class="name">Titles</span>
-	<ul class="content title">
-          <xsl:apply-templates select="//work/title" />
-	</ul>
-      </div>
-    </xsl:if>
+    <div class="details">
+      <xsl:if test="//work/title">
+        <div class="field title">
+  	  <span class="name">Titles</span>
+	  <ul class="content title">
+            <xsl:apply-templates select="//work/title" />
+	  </ul>
+        </div>
+      </xsl:if>
 
-    <div class="field composer">
-      <span class="name">Composer</span>
-      <span class="content composer"
-	    about="http://dbpedia.org/page/Sergei_Prokofiev"
-	    typeof="foaf:Agent"
-	    rel="mo:composer"
-	    resource="{$ID}">Serge Prokofiev</span>
+      <div class="field composer">
+        <span class="name">Composer</span>
+        <span class="content composer"
+	      about="http://dbpedia.org/page/Sergei_Prokofiev"
+	      typeof="foaf:Agent"
+	      rel="mo:composer"
+	      resource="{$ID}">Serge Prokofiev</span>
+      </div>
+
+      <xsl:if test="//work/genre">
+        <div class="field genre">
+	  <span class="name">Genre</span>
+	  <ul class="content genre">
+            <xsl:apply-templates select="//work/genre" />
+	  </ul>
+        </div>
+      </xsl:if>
+
+      <xsl:if test="//work/composition">
+        <div class="field composition-history">
+	  <span class="name">Composition history</span>
+	  <ul class="content composition-history">
+          <xsl:apply-templates select="//composition">
+            <xsl:sort select="end_year" data-type="number" order="ascending" />
+            <xsl:sort select="end_month" data-type="number" order="ascending" />
+            <xsl:sort select="end_day" data-type="number" order="ascending" />
+          </xsl:apply-templates>
+	  </ul>
+        </div>
+      </xsl:if>
+
+      <xsl:if test="//work/scored_for">
+        <div class="field instrumentation">
+	  <span class="name">Instrumentation</span>
+	  <ul class="content instrumentation">
+            <xsl:apply-templates select="//scored_for" />
+	  </ul>
+        </div>
+      </xsl:if>
+
+      <xsl:apply-templates select="notes" />
     </div>
-
-    <xsl:if test="//work/genre">
-      <div class="field genre">
-	<span class="name">Genre</span>
-	<ul class="content genre">
-          <xsl:apply-templates select="//work/genre" />
-	</ul>
-      </div>
-    </xsl:if>
-
-    <xsl:if test="//work/composition">
-      <div class="field composition-history">
-	<span class="name">Composition history</span>
-	<ul class="content composition-history">
-        <xsl:apply-templates select="//composition">
-          <xsl:sort select="end_year" data-type="number" order="ascending" />
-          <xsl:sort select="end_month" data-type="number" order="ascending" />
-          <xsl:sort select="end_day" data-type="number" order="ascending" />
-        </xsl:apply-templates>
-	</ul>
-      </div>
-    </xsl:if>
-
-    <xsl:if test="//work/scored_for">
-      <div class="field instrumentation">
-	<span class="name">Instrumentation</span>
-	<ul class="content instrumentation">
-          <xsl:apply-templates select="//scored_for" />
-	</ul>
-      </div>
-    </xsl:if>
 
     <xsl:if test="//work/sub_work">
       <h3><xsl:call-template name="sub-works-type" /></h3>
       <xsl:apply-templates select="//sub_work" />
     </xsl:if>
-
-    <xsl:apply-templates select="notes" />
 
     <xsl:if test="//work/manuscript">
       <h3>Manuscripts</h3>
