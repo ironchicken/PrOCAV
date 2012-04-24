@@ -67,7 +67,7 @@ our $browse_works_by_scored_for = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(scored_for)],
-      optional_parameters => [qw(accept submit)],
+      optional_parameters => [qw(cmp accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
