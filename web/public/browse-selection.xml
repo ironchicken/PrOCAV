@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<document>
+  <head>
+    <title>Browse</title>
+  </head>
+  <body>
+    <div id="document-body">
+
+      <div class="browse-option">
+        <h4>Works by title</h4>
+        <form id="browse-works-by-title" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <select id="cmp" name="cmp">
+              <option value="contains">contains</option>
+	      <option value="equal">equal</option>
+	      <option value="not-equal">not equal</option>
+	    </select>
+            <input type="text" id="title" name="title" />
+            <input type="submit" id="submit" name="submit" value="&gt;&gt;" />
+	  </p>
+	</form>
+        <div class="hint">
+          <a href="#"><span>Find works matching the given title. The
+          <dfn>contains</dfn> option will match against parts of the
+          title. The <dfn>equal</dfn> option will return only exact
+          matches. The <dfn>not equal</dfn> option will return works
+          whose titles do <em>not</em> match.</span>hint</a>
+	</div>
+      </div>
+
+      <div class="browse-option">
+        <h4>Works by genre</h4>
+        <form id="browse-works-by-genre" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <input type="text" id="genre" name="genre" />
+            <input type="submit" id="submit" name="submit" value="&gt;&gt;" />
+	  </p>
+	</form>
+        <div class="hint">
+          <a href="#"><span>Find works matching the given genre; for
+          example, 'symphony', 'ballet', 'opera'.</span>hint</a>
+	</div>
+      </div>
+
+      <div class="browse-option">
+        <h4>Works by instrumentation</h4>
+        <form id="browse-works-by-scored-for" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <select id="cmp" name="cmp">
+              <option value="any">any</option>
+	      <option value="all">all</option>
+	      <option value="only">only</option>
+	      <option value="not-any">not any</option>
+	      <option value="not-all">none of</option>
+	    </select>
+            <input type="text" id="scored_for" name="scored_for" />
+            <input type="submit" id="submit" name="submit" value="&gt;&gt;" />
+	  </p>
+	</form>
+        <div class="hint">
+          <a href="#"><span>Find works matching the given
+          instrumentation. Multiple instruments may be specified. The
+          <dfn>any</dfn> option will match works scored for one or
+          more of the given instruments. The <dfn>all</dfn> option
+          will match only works scored for all of the given
+          instruments. The <dfn>only</dfn> option will match only
+          works scored for just the given instruments. The <dfn>not
+          any</dfn> option will match works whose scoring does not
+          include at least one of the given instruments. The <dfn>none
+          of</dfn> option will match works whose scoring does not
+          include any of the given instruments.</span>hint</a>
+	</div>
+      </div>
+
+      <div class="browse-option">
+        <h4>Works by year</h4>
+        <form id="browse-works-by-year" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <select id="cmp" name="cmp">
+              <option value="equal">equal</option>
+	      <option value="lt">less than</option>
+	      <option value="gt">greater than</option>
+	      <option value="around">around</option>
+	    </select>
+            <input type="text" id="year" name="year" maxlength="4" />
+            <input type="submit" id="submit" name="submit" value="&gt;&gt;" />
+	  </p>
+	</form>
+        <form id="browse-works-grouped-by-year" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <input type="hidden" id="group_by" name="group_by" value="year" />
+            <input type="submit" id="submit" name="submit" value="Grouped by year" />
+	  </p>
+	</form>
+        <div class="hint">
+          <a href="#"><span>Find works completed in the given
+          year. The <dfn>equal</dfn> option will match only the exact
+          year. The <dfn>less than</dfn> option will match any works
+          completed before the given year. The <dfn>greater than</dfn>
+          option will match any works completed afer the given
+          year. The <dfn>around</dfn> option will match any works
+          completed within five years of the given year. The
+          <dfn>grouped by year</dfn> option returns all works order by
+          year of completion and grouped in blocks of five
+          years.</span>hint</a>
+	</div>
+      </div>
+
+      <div class="browse-option">
+        <h4>Works by duration</h4>
+        <form id="browse-works-by-duration" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <select id="cmp" name="cmp">
+              <option value="equal">equal</option>
+	      <option value="lt">less than</option>
+	      <option value="gt">greater than</option>
+	      <option value="around">around</option>
+	    </select>
+            <input type="text" id="duration" name="duration" maxlength="4" /> mins
+            <input type="submit" id="submit" name="submit" value="&gt;&gt;" />
+	  </p>
+	</form>
+        <form id="browse-works-grouped-by-duration" action="{$URI_ROOT}/works" method="GET">
+          <p>
+            <input type="hidden" id="group_by" name="group_by" value="duration" />
+            <input type="submit" id="submit" name="submit" value="Grouped by duration" />
+	  </p>
+	</form>
+        <div class="hint">
+          <a href="#"><span>Find works matching the given duration in
+          minutes. The <dfn>equal</dfn> option will match only the
+          exact duration. The <dfn>less than</dfn> option will match
+          any works shorter than the given duration. The <dfn>greater
+          than</dfn> option will match any works longer than the given
+          duration. The <dfn>around</dfn> option will match any works
+          whose duration is within 10% of the given duration. The
+          <dfn>grouped by duration</dfn> option returns all works in
+          order of duration and grouped in blocks.</span>hint</a>
+	</div>
+      </div>
+
+      <div class="browse-option">
+        <h4>Works by key signature</h4>
+        <form id="browse-works-by-title" action="{$URI_ROOT}/works" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Works by language of text</h4>
+        <form id="browse-works-by-language" action="{$URI_ROOT}/works" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Manuscripts by location</h4>
+        <form id="browse-manuscripts-by-location" action="{$URI_ROOT}/manuscripts" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Manuscripts by date made</h4>
+        <form id="browse-manuscripts-by-date-made" action="{$URI_ROOT}/manuscripts" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Publications by publisher</h4>
+        <form id="browse-publications-by-publisher" action="{$URI_ROOT}/publications" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Publications by date</h4>
+        <form id="browse-publications-by-date" action="{$URI_ROOT}/publications" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Publications by place</h4>
+        <form id="browse-publications-by-place" action="{$URI_ROOT}/publications" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Performances by date</h4>
+        <form id="browse-performances-by-date" action="{$URI_ROOT}/performances" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Performances by venue</h4>
+        <form id="browse-performances-by-venue" action="{$URI_ROOT}/performances" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Performances by type</h4>
+        <form id="browse-performances-by-type" action="{$URI_ROOT}/performances" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Letters by date</h4>
+        <form id="browse-letters-by-date" action="{$URI_ROOT}/letters" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Letters by content</h4>
+        <form id="browse-letters-by-content" action="{$URI_ROOT}/letters" method="GET">
+
+	</form>
+      </div>
+
+      <div class="browse-option">
+        <h4>Letters by addressee/signatory</h4>
+        <form id="browse-letters-by-addressee-signatory" action="{$URI_ROOT}/letters" method="GET">
+
+	</form>
+      </div>
+
+    </div>
+  </body>
+</document>

@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $view_work $browse_works_by_scored_for $browse_works_by_genre
+    our @EXPORT_OK = qw($home $browse $view_work $browse_works_by_scored_for $browse_works_by_genre
                         $fulltext_search);
 }
 
@@ -45,11 +45,20 @@ our $home = make_api_function(
       generator           => {type => 'file', path => $DOCUMENTS_DIR . 'home.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
+our $browse = make_api_function(
+    { uri_pattern         => qr|^/browse?$|,
+      require_session     => 'public',
+      required_parameters => [],
+      optional_parameters => [],
+      accept_types        => ['text/html'],
+      generator           => {type => 'file', path => $DOCUMENTS_DIR . 'browse-selection.xml'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
+
 our $browse_works_by_scored_for = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(scored_for)],
-      optional_parameters => [qw(accept)],
+      optional_parameters => [qw(accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
@@ -73,7 +82,7 @@ our $browse_works_by_genre = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(genre)],
-      optional_parameters => [qw(accept)],
+      optional_parameters => [qw(accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
