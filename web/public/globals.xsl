@@ -4,7 +4,7 @@
 
 <xsl:output method="html" />
 
-<xsl:variable name="URI_ROOT">http://fayrfax.doc.gold.ac.uk</xsl:variable>
+<xsl:variable name="URI_ROOT">http://localhost</xsl:variable>
 
 <xsl:template name="page-tools">
   <script type="text/javascript" src="jquery-1.6.2.js"> //script </script>

@@ -31,7 +31,7 @@ use ComposerCat::Database qw(make_dbh session create_session table_info find_loo
 use ComposerCat::API qw(request_content_type make_api_function);
 use ComposerCat::Search qw(search_fulltext_index);
 
-my $PROCAV_DOMAIN = "fayrfax.doc.gold.ac.uk";
+my $PROCAV_DOMAIN = "localhost";
 my $PUBLIC_PATH = "/";
 my $DOCUMENTS_DIR = "/home/richard/jobs/pocac/procav/web/public/";
 my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
