@@ -44,7 +44,33 @@
 
 <xsl:template name="page-footer">
   <div id="footer">
-    Copyright © 2012 PrOCAV
+    <table style="border:none">
+      <tr>
+        <td colspan="3" style="text-align:center">
+          PrOCAV is supported by the <a
+          href="http://www.sprkfv.net/">Serge Prokofiev
+          Foundation</a>, <a href="http://www.gold.ac.uk/">Goldsmiths,
+          University of London</a>, and <a
+          href="http://www.princeton.edu/">Princeton University</a>
+	</td>
+      </tr>
+      <tr>
+        <td>
+          <a href="http://www.sprkfv.net/"><img src="/public/img/spf.png" alt="Serge Prokofiev Foundation" /></a>
+	</td>
+        <td>
+          <a href="http://www.gold.ac.uk/"><img src="/public/img/goldsmiths.png" alt="Goldsmmiths, University of London" /></a>
+	</td>
+        <td>
+          <a href="http://www.princeton.edu/"><img src="/public/img/princeton.png" alt="Princeton University" /></a>
+	</td>
+      </tr>
+      <tr>
+        <td colspan="3" style="text-align:center">
+          Copyright © 2012 PrOCAV
+	</td>
+      </tr>
+    </table>
   </div>
 </xsl:template>
 
