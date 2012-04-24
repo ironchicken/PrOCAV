@@ -72,9 +72,36 @@ our $browse_works_by_scored_for = make_api_function(
       generator           => {type => 'proc',
 			      proc => sub {
 				  my ($req, $apr_req, $dbh, $url_args) = @_;
-				  
-				  my $st = ComposerCat::Database::table_info('works')->{_list_by_scored_for};
-				  $st->execute($apr_req->param("scored_for"));
+
+				  # split the scored_for argument into
+				  # a list of strings
+				  my @instruments = split /\W+/, $apr_req->param('scored_for');
+
+				  # select a statement to use
+				  # depending on the cardinality of
+				  # the scored_for list and value of
+				  # the 'cmp' argument
+				  my $st_name = (scalar @instruments == 1) ?
+				      '_list_by_scored_for' :
+				      '_list_by_scored_for_' . sub { my $cmp = $apr_req->param('cmp'); $cmp =~ s/-/_/; $cmp; }->();
+
+				  my $st = ComposerCat::Database::table_info('works')->{$st_name} || ComposerCat::Database::table_info('works')->{_list_by_scored_for};
+
+				  # execute the selected statement
+				  # with an appropriately formatted
+				  # argument
+				  if ($st_name eq '_list_by_scored_for') {
+				      $st->execute($apr_req->param('scored_for'));
+				  } else {
+				      if ($apr_req->param('cmp') eq 'any') {
+					  $st->execute('(' . join('|', @instruments) . ')');
+				      } elsif ($apr_req->param('cmp') eq 'all') {
+					  $st->execute($apr_req->param('scored_for'));
+				      }
+				  }
+
+				  # construct an array ref of the
+				  # results
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;

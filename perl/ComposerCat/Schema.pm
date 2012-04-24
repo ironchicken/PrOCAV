@@ -2163,6 +2163,23 @@ sub schema_prepare_statments {
     GROUP BY works.ID
     ORDER BY end.year ASC|);
 
+    # works._list_by_scored_for_any
+    $schema{works}->{_list_by_scored_for_any} = $dbh->prepare(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number FROM works
+    JOIN scored_for ON works.ID=scored_for.work_id
+    JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE scored_for.instrument RLIKE ? AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    GROUP BY works.ID
+    ORDER BY end.year ASC|);
+
+    # works._list_by_scored_for_all
+
+    # works._list_by_scored_for_not_any
+
+    # works._list_by_scored_for_not_all
+
     # works._list_by_genre
     $schema{works}->{_list_by_genre} = $dbh->prepare(q|SELECT works.* FROM works
     JOIN genres ON works.ID=genres.work_id
