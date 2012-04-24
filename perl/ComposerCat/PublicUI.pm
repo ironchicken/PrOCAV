@@ -13,8 +13,8 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $view_work $browse_works_by_scored_for $browse_works_by_genre
-                        $fulltext_search);
+    our @EXPORT_OK = qw($home $browse $about $view_work $browse_works_by_scored_for
+                        $browse_works_by_genre $fulltext_search);
 }
 
 use Apache2::RequestRec ();
@@ -52,6 +52,15 @@ our $browse = make_api_function(
       optional_parameters => [],
       accept_types        => ['text/html'],
       generator           => {type => 'file', path => $DOCUMENTS_DIR . 'browse-selection.xml'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
+
+our $about = make_api_function(
+    { uri_pattern         => qr|^/about?$|,
+      require_session     => 'public',
+      required_parameters => [],
+      optional_parameters => [],
+      accept_types        => ['text/html'],
+      generator           => {type => 'file', path => $DOCUMENTS_DIR . 'about.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse_works_by_scored_for = make_api_function(

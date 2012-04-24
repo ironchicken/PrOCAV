@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<document>
+  <head>
+    <title>About</title>
+    <created>2012-04-17</created>
+    <modified>2011-04-17</modified>
+  </head>
+  <body>
+    <div id="document-body">
+      <h3>Authority Title List</h3>
+      <p>
+        The authority title list draws on a spine catalogue of
+        Prokofiev compositions created for this resource. Combining
+        earlier Prokofiev catalogues with current scholarship, this
+        resource allows users to search for a work in the language
+        (Russian, French, German, or English) of its original
+        manuscript or published title. A uniform title for each work
+        binds variant titles together under one entry.
+      </p>
+      <img src="/public/img/spine.png" alt="PrOCAV works authorities index with related archival content" />
+
+      <h3>Catalogue Entry</h3>
+      <p>
+        Standard catalogue information, such as genre, instrumentation
+        and date of composition, are linked to works that share these
+        components. User may search by each field – genre,
+        instrumentation, date, among others – to collate works that
+        share features. 'Offshoot' works, such as arrangements,
+        adaptations and works rooted in the same material, receive
+        independent entries while representing their relation to other
+        compositions in Prokofiev's output. For a sample catalogue
+        entry click <a href="{$URI_ROOT}/works/58">here</a>.
+      </p>
+      <img src="/public/img/procav-er.png" alt="PrOCAV entity relationship diagram" />
+
+      <h3>Manuscripts</h3>
+      <p>
+        Prokofiev's rigorous methods of composition often allow an
+        archaeological context for works to emerge. The list of
+        manuscripts under each entry represents, usually incompletely,
+        different phases of conception as the work progressed from
+        abstract sketch to complete autograph score. Manuscript types
+        include: sketch of 'germ' themes (melodic and rhythmic);
+        sketches identifiably linked to a work; draft short score;
+        elaborated draft short score; draft score with scoring
+        indicated; autograph score; complete score created by
+        copyist. Letters linked to each entry provided vital testimony
+        to the genesis of compositions.
+      </p>
+      <img src="/public/img/compositional-method.png" alt="Prokofiev's compositional methods" />
+
+      <h3>Digitized Sources</h3>
+      <p>
+        PrOCAV digitally captures crucial sketches, catalogues, scores
+        and letters relating to Prokofiev's compositions that are
+        housed in the Prokofiev Archive. These sources are linked to
+        the relevant work catalogue entries. Attached to each
+        digitized item are transcriptions, translations and
+        information about the item's provenance; this metadata sheds
+        light on how digitized primary sources relate to a work.
+      </p>
+    </div>
+  </body>
+</document>
