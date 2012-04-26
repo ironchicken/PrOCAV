@@ -6,6 +6,29 @@
   </head>
   <body>
     <div id="document-body">
+      <p>
+        The catalogue database comprises over 30 tables, each
+        representing a different entity or concept captured in the
+        schema. From here you can browse the contents of the principal
+        tables either with or without filtering.
+      </p>
+      <div class="browse-option">
+        <h4>General listings</h4>
+        <table id="general-listings">
+          <tr>
+            <td><a href="{$URI_ROOT}/works?order_by=title">Works</a></td>
+            <td><a href="{$URI_ROOT}/publications?order_by=date">Publications</a></td>
+	  </tr>
+          <tr>
+            <td><a href="{$URI_ROOT}/manuscripts?order_by=title">Manuscripts</a></td>
+            <td><a href="{$URI_ROOT}/performances?order_by=date">Performances</a></td>
+	  </tr>
+          <tr>
+            <td><a href="{$URI_ROOT}/letters?order_by=date">Letters</a></td>
+            <td><a href="{$URI_ROOT}/persons?order_by=family_name">Persons</a></td>
+	  </tr>
+	</table>
+      </div>
 
       <div class="browse-option">
         <h4>Works by title</h4>
