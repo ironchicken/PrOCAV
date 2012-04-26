@@ -2186,6 +2186,15 @@ sub schema_prepare_statments {
     };
 
     # works._list_by_scored_for_not_any
+    $schema{works}->{_list_by_scored_for_not_any} = sub {
+	$dbh->prepare(sprintf(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number FROM works
+    JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    ORDER BY end.year ASC;|, join(' OR ', (('UPPER(?) NOT IN (SELECT UPPER(instrument) FROM scored_for WHERE works.ID=scored_for.work_id)') x scalar @_))));
+    };
 
     # works._list_by_scored_for_not_all
     $schema{works}->{_list_by_scored_for_not_all} = sub {
