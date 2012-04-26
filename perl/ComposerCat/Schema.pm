@@ -2211,6 +2211,31 @@ sub schema_prepare_statments {
     $schema{works}->{_list_by_genre} = $dbh->prepare(q|SELECT works.* FROM works
     JOIN genres ON works.ID=genres.work_id
     WHERE genres.genre LIKE ?|);
+
+    # works._list_by_title_equal (also applicable for title_contains
+    # for which the client is responsible for supplying wildcards)
+    $schema{works}->{_list_by_title_equal} =
+	$dbh->prepare(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number FROM works
+    LEFT JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN titles ON works.ID=titles.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE ((titles.title LIKE ?) OR (titles.transliteration LIKE ?) OR (works.uniform_title LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    GROUP BY works.ID
+    ORDER BY uniform_title ASC|);
+
+    # works._list_by_title_not_equal
+    $schema{works}->{_list_by_title_not_equal} =
+	$dbh->prepare(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number FROM works
+    LEFT JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN titles ON works.ID=titles.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE ((titles.title NOT LIKE ?) OR (titles.transliteration NOT LIKE ?) OR (works.uniform_title NOT LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    GROUP BY works.ID
+    ORDER BY uniform_title ASC|);
 }
 
 1;

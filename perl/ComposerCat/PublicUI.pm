@@ -14,7 +14,7 @@ BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
     our @EXPORT_OK = qw($home $browse $about $view_work $browse_works_by_scored_for
-                        $browse_works_by_genre $fulltext_search);
+                        $browse_works_by_genre $browse_works_by_title $fulltext_search);
 }
 
 use Apache2::RequestRec ();
@@ -129,6 +129,48 @@ our $browse_works_by_genre = make_api_function(
 				  
 				  my $st = ComposerCat::Database::table_info('works')->{_list_by_genre};
 				  $st->execute($apr_req->param("genre"));
+				  my $works = [];
+				  while (my $work = $st->fetchrow_hashref) {
+				      push @$works, $work;
+				  }
+				  
+				  return $works;
+			      },
+			      rootname   => 'works',
+			      recordname => 'work'},
+      transforms          => {'text/html'           => [$TEMPLATES_DIR . 'browse-works2html.xsl'],
+			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
+
+our $browse_works_by_title = make_api_function(
+    { uri_pattern         => qr|^/works/?$|,
+      require_session     => 'public',
+      required_parameters => [qw(title)],
+      optional_parameters => [qw(cmp accept submit)],
+      accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      generator           => {type => 'proc',
+			      proc => sub {
+				  my ($req, $apr_req, $dbh, $url_args) = @_;
+
+				  # select a statement to use
+				  # depending on the value of the
+				  # 'cmp' argument;
+				  # _list_by_title_equal will be used
+				  # by default
+				  my $st_name = '_list_by_title_' . sub { my $cmp = $apr_req->param('cmp'); $cmp =~ s/-/_/; $cmp; }->();
+
+				  my $st = ComposerCat::Database::table_info('works')->{$st_name} ||
+				      ComposerCat::Database::table_info('works')->{_list_by_title_equal};
+
+				  if ($apr_req->param('cmp') eq 'contains') {
+				      $st->execute(('%' . $apr_req->param('title') . '%') x 3);
+				  } elsif ($apr_req->param('cmp') eq 'equal') {
+				      $st->execute(($apr_req->param('title')) x 3);
+				  } elsif ($apr_req->param('cmp') eq 'not-equal') {
+				      $st->execute(($apr_req->param('title')) x 3);
+				  }
+
+				  # construct an array ref of the
+				  # results
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
