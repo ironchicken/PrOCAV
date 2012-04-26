@@ -27,7 +27,8 @@
           <p>
             Browsing for works where
             <xsl:value-of select="//params[name != 'submit' and name != 'accept' and name != 'cmp' and name != 'start' and name != 'limit'][1]/name" />
-            is "<xsl:value-of select="//params[name != 'submit' and name != 'accept' and name != 'cmp' and name != 'start' and name != 'limit'][1]/value" />".
+            is <xsl:value-of select="//params[name='cmp']/value" />
+            "<xsl:value-of select="//params[name != 'submit' and name != 'accept' and name != 'cmp' and name != 'start' and name != 'limit'][1]/value" />".
 	  </p>
           <ol class="main-content">
             <xsl:apply-templates select="//work" />
