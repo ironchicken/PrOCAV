@@ -95,7 +95,7 @@ our $browse_works_by_scored_for = make_api_function(
 				  } else {
 				      if ($apr_req->param('cmp') eq 'any') {
 					  $st->execute('(' . join('|', @instruments) . ')');
-				      } elsif ($apr_req->param('cmp') eq 'all') {
+				      } elsif ($apr_req->param('cmp') eq 'all' || $apr_req->param('cmp') eq 'not-all') {
 					  $st = $st->(@instruments);
 					  $st->execute(@instruments);
 				      }
