@@ -81,11 +81,12 @@ our $browse_works_by_scored_for = make_api_function(
 				  # depending on the cardinality of
 				  # the scored_for list and value of
 				  # the 'cmp' argument
-				  my $st_name = (scalar @instruments == 1) ?
+				  my $st_name = ($apr_req->param('cmp') eq 'only' || not defined $apr_req->param('cmp')) ?
 				      '_list_by_scored_for' :
 				      '_list_by_scored_for_' . sub { my $cmp = $apr_req->param('cmp'); $cmp =~ s/-/_/; $cmp; }->();
 
-				  my $st = ComposerCat::Database::table_info('works')->{$st_name} || ComposerCat::Database::table_info('works')->{_list_by_scored_for};
+				  my $st = ComposerCat::Database::table_info('works')->{$st_name} ||
+				      ComposerCat::Database::table_info('works')->{_list_by_scored_for};
 
 				  # execute the selected statement
 				  # with an appropriately formatted
