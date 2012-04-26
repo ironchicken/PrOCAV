@@ -485,7 +485,7 @@ sub AUTOLOAD {
 	}
 
 	#print $st->{Statement} . "\n";
-	#print Dumper($st->{ParamValues});
+	#print Dumper($st->{ParamValues}) . "\n";
 
 	my $rows = [];
 	while (my $row = $st->fetchrow_hashref) {
