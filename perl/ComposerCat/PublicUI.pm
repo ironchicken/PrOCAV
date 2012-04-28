@@ -46,7 +46,7 @@ our $home = make_api_function(
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse = make_api_function(
-    { uri_pattern         => qr|^/browse?$|,
+    { uri_pattern         => qr|^/browse/?$|,
       require_session     => 'public',
       required_parameters => [],
       optional_parameters => [],
@@ -55,7 +55,7 @@ our $browse = make_api_function(
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $about = make_api_function(
-    { uri_pattern         => qr|^/about?$|,
+    { uri_pattern         => qr|^/about/?$|,
       require_session     => 'public',
       required_parameters => [],
       optional_parameters => [],
