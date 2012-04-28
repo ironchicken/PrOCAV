@@ -232,7 +232,6 @@ sub make_api_function {
 	} elsif ($options->{generator}->{type} eq 'file') {
 	    $pipeline->parse_file($options->{generator}->{path});
 	}
-	$req->server->log_error("Handler function returning status " . $func->{error_code});
 	return $func->{error_code};
     };
 
@@ -329,7 +328,6 @@ sub handler {
 	    #$dbh->commit;
 
 	    # return whatever the handler's handle subroutine returned
-	    $s->log_error("About to set status to $status");
 	    $req->status($status);
 	    return Apache2::Const::OK;
 	}
