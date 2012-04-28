@@ -150,7 +150,8 @@ sub make_api_function {
 	uri_pattern         => $options->{uri_pattern},
 	require_session     => $options->{require_session},
 	required_parameters => $options->{required_parameters} || [],
-	optional_parameters => $options->{optional_parameters} || []};
+	optional_parameters => $options->{optional_parameters} || [],
+	error_code          => $options->{error_code} || Apache2::Const::HTTP_OK};
 
     $func->{handle} = $options->{handle} || sub {
 	my ($req, $apr_req, $dbh, $url_args, $dest) = @_;
@@ -231,7 +232,8 @@ sub make_api_function {
 	} elsif ($options->{generator}->{type} eq 'file') {
 	    $pipeline->parse_file($options->{generator}->{path});
 	}
-	return Apache2::Const::OK;
+	$req->server->log_error("Handler function returning status " . $func->{error_code});
+	return $func->{error_code};
     };
 
     return $func;
@@ -261,8 +263,12 @@ sub call_api_function {
 our @DISPATCH_TABLE = ();
 
 sub init {
-    use ComposerCat::PublicUI qw($home $browse $about $view_work $browse_works_by_scored_for $browse_works_by_genre $browse_works_by_title $fulltext_search);
-    use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables %edit_table %table_columns %table_data %table_model %look_up);
+    use ComposerCat::PublicUI qw($home $browse $about $view_work $browse_works_by_scored_for
+                                 $browse_works_by_genre $browse_works_by_title $fulltext_search
+                                 $bad_arguments $not_found);
+
+    use ComposerCat::EditorUI qw(%home %login %new_session %generate_template %submit_tables
+                                 %edit_table %table_columns %table_data %table_model %look_up);
 
     @DISPATCH_TABLE = (
     	$ComposerCat::PublicUI::home,
@@ -292,7 +298,9 @@ sub handler {
 
     my $dbh = make_dbh;
 
-    # iterate over all the URI handlers
+    # iterate over all the URI handlers, storing any error encountered
+    # in $error
+    my @error;
     foreach my $h (@DISPATCH_TABLE) {
 
 	$s->log_error(sprintf("Test %s against %s", $req->uri, $h->{uri_pattern}));
@@ -304,31 +312,43 @@ sub handler {
 	    # check the integrity of the request
 
 	    #return Apache2::Const::HTTP_BAD_REQUEST if (not params_present $req, $apr_req, $h);
+	    if (not params_present $req, $apr_req, $h) {
+		@error = ($ComposerCat::PublicUI::bad_arguments, $h, \%+);
+		next;
+	    }
 
-	    # FIXME Now incorrect parameters will result in 404, not
-	    # 400. But handlers with identical URI patterns will have
-	    # a chance to be matched. Consider saving some state
-	    # information when a params_present test fails.
-	    next if (not params_present $req, $apr_req, $h);
 	    return Apache2::Const::FORBIDDEN if (not authorised $req, $apr_req, $h);
 
 	    # retrieve or create session
 	    open_session $req, $apr_req, $h if (defined $h->{require_session});
 
 	    # call the handler's handle subroutine
-	    my $response = &{$h->{handle}}($req, $apr_req, $dbh, \%+);
+	    my $status = &{$h->{handle}}($req, $apr_req, $dbh, \%+);
 
 	    # ensure that any database transactions are complete
 	    #$dbh->commit;
 
 	    # return whatever the handler's handle subroutine returned
-	    return $response;
+	    $s->log_error("About to set status to $status");
+	    $req->status($status);
+	    return Apache2::Const::OK;
 	}
     }
 
-    # fall through to returning NOT FOUND if no URI handler matched
-    $s->log_error("Fell through to NOT_FOUND");
-    return Apache2::Const::NOT_FOUND;
+    if (@error) {
+	my ($error, $failed_handler, $failed_args) = @error;
+	my $error_response = &{ $error->{handle} }($req, $apr_req, $dbh, $failed_args);
+	$req->status($error->{error_code});
+	return Apache2::Const::OK;
+    } else {
+	# fall through to returning NOT FOUND if no URI handler
+	# matched and no error was signaled while searching the
+	# DISPATCH_TABLE
+	$s->log_error("Fell through to NOT_FOUND for: " . $req->uri);
+	my $error_response = &{ $ComposerCat::PublicUI::not_found->{handle} }($req, $apr_req, $dbh);
+	$req->status($ComposerCat::PublicUI::not_found->{error_code});
+	return Apache2::Const::OK;
+    }
 }
 
 1;

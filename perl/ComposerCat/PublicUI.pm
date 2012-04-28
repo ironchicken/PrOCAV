@@ -14,7 +14,8 @@ BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
     our @EXPORT_OK = qw($home $browse $about $view_work $browse_works_by_scored_for
-                        $browse_works_by_genre $browse_works_by_title $fulltext_search);
+                        $browse_works_by_genre $browse_works_by_title $fulltext_search
+                        $bad_arguments $not_found);
 }
 
 use Apache2::RequestRec ();
@@ -215,5 +216,38 @@ our $fulltext_search = make_api_function(
 			      rootname   => 'results',
 			      recordname => 'result'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'fulltext-results2html.xsl']} });
+
+our $bad_arguments = make_api_function(
+    { accept_types => ['text/html', 'text/xml'],
+      error_code   => Apache2::Const::HTTP_BAD_REQUEST,
+      generator    => {type => 'proc',
+		       proc => sub {
+			   my ($req, $apr_req, $dbh, $url_args) = @_;
+			   #my ($req, $apr_req, $dbh, $url_args, $failed_handler) = @_;
+			   return {error_code => Apache2::Const::HTTP_BAD_REQUEST,
+				   error_desc => 'Bad Request',
+				   reason     => 'Incorrect arguments supplied: ' .
+				       join ', ', $apr_req->param
+				   #reason     => 'This resource requires the arguments: ' .
+				   #    join ', ', (@{ $failed_handler->{required_parameters} }, @{ $failed_handler->{optional_parameters} })
+			   };
+		       },
+		       rootname => 'error'},
+      transforms   => {'text/html' => [$TEMPLATES_DIR . 'error2html.xsl']} });
+
+our $not_found = make_api_function(
+    { accept_types => ['text/html', 'text/xml'],
+      error_code   => Apache2::Const::NOT_FOUND,
+      generator    => {type => 'proc',
+		       proc => sub {
+			   my ($req, $apr_req, $dbh, $url_args) = @_;
+			   #my ($req, $apr_req, $dbh, $url_args, $failed_handler) = @_;
+			   return {error_code => Apache2::Const::NOT_FOUND,
+				   error_desc => 'Not Found',
+				   reason     => 'The path "' . $req->uri . '" does not match any resource.'
+			   };
+		       },
+		       rootname => 'error'},
+      transforms   => {'text/html' => [$TEMPLATES_DIR . 'error2html.xsl']} });
 
 1;
