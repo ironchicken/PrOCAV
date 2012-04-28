@@ -195,7 +195,7 @@ sub make_api_function {
 	    # add some request information to the response data
 	    my @params = $apr_req->param;
 
-	    # session ID is either is the request (if the client sent
+	    # session ID is either in the request (if the client sent
 	    # a cookie) or it's in the response (if a new cookie is
 	    # being sent)
 	    my $session_id;
