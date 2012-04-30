@@ -15,11 +15,11 @@ body {
   padding:0px;
   min-height:100%;
   position:relative;
-  background-color:#000000;
+  background-color:#43525A;
 }
 
 #title-area {
-  background-color:#000000;
+  background-color:#43525A;
   margin:0px;
   padding-top:15px;
   padding-bottom:30px;
@@ -30,8 +30,8 @@ body {
 }
 
 h1 {
-  background-color:#000000;
-  color:#FF0000;
+  background-color:#43525A;
+  color:#80D5ED;
   font-family: 'Dosis', sans-serif;
   font-size:72px;
   text-align:center;
@@ -40,8 +40,8 @@ h1 {
 }
 
 #page-subtitle {
-  background-color:#000000;
-  color:#FF0000;
+  background-color:#43525A;
+  color:#80D5ED;
   font-family: 'Dosis', sans-serif;
   font-size:18px;
   text-align:center;
@@ -52,13 +52,13 @@ h1 {
 #fulltext-search form, #fulltext-search2 form {
   margin:0px;
   padding:0px;
-  background-color:#000000;
+  background-color:#43525A;
 }
 
 #fulltext-search p, #fulltext-search2 p {
   margin:0px;
   padding:0px;
-  color:#FF0000;
+  color:#80D5ED;
   font-family:'Dosis', sans-serif;
   font-size:85%;
 }
@@ -82,7 +82,7 @@ h1 {
 #left-area {
   float:left;
   width:200px;
-  background-color:#000000;
+  background-color:#43525A;
   border-bottom-right-radius: 25px;
   -moz-border-radius-bottomright: 25px;
 }
@@ -166,13 +166,13 @@ h1 {
   font-size:16pt;
   letter-spacing:2px;
   font-variant:small-caps;
-  color:#FF0000;
+  color:#80D5ED;
 }
 
 #catalogue-menu a {
   text-decoration:none;
   font-style:normal;
-  color:#FF0000;
+  color:#80D5ED;
 }
 
 #catalogue-menu a:link {
@@ -305,7 +305,7 @@ table.#general-listings {
   padding-left:15px;
   padding-right:20px;
   border:6px solid #FFFFFF;
-  background:#D38A8A;
+  background:#80D5ED;
   text-align:center;
 }
 
