@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $browse_works_by_scored_for
+    our @EXPORT_OK = qw($home $browse $about $view_work $browse_works_by_scored_for $browse_works
                         $browse_works_by_genre $browse_works_by_title $fulltext_search
                         $bad_arguments $not_found);
 }
@@ -63,6 +63,47 @@ our $about = make_api_function(
       accept_types        => ['text/html'],
       generator           => {type => 'file', path => $DOCUMENTS_DIR . 'about.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
+
+our $browse_works = make_api_function(
+    { uri_pattern         => qr|^/works/?$|,
+      require_session     => 'public',
+      required_parameters => [qw(order_by)],
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'text/xml'],
+      generator           => {type => 'proc',
+			      proc => sub {
+				  my ($req, $apr_req, $dbh, $url_args) = @_;
+
+				  # select the appropriate statement
+				  # based on the order_by argument
+				  my $st;
+				  if ($apr_req->param('order_by') =~ /uniform_title|title/) {
+				      $st = ComposerCat::Database::table_info('works')->{_list_order_by_uniform_title};
+				  } elsif ($apr_req->param('order_by') eq 'opus_number') {
+				      $st = ComposerCat::Database::table_info('works')->{_list_order_by_opus_number};
+				  } elsif ($apr_req->param('order_by') eq 'year') {
+				      $st = ComposerCat::Database::table_info('works')->{_list_order_by_year};
+				  } else {
+				      # FIXME This interface does not
+				      # allow you to return an error
+				      # code from here
+				      return Apache2::Const::HTTP_BAD_REQUEST;
+				  }
+
+				  # execute the statement and return
+				  # the results
+				  $st->execute;
+
+				  my $works = [];
+				  while (my $work = $st->fetchrow_hashref) {
+				      push @$works, $work;
+				  }
+				  
+				  return $works;
+			      },
+			      rootname => 'works',
+			      recordname => 'work'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'browse-works2html.xsl']} });
 
 our $browse_works_by_scored_for = make_api_function(
     { uri_pattern         => qr|^/works/?$|,

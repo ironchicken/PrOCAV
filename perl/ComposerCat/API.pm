@@ -262,7 +262,7 @@ sub call_api_function {
 our @DISPATCH_TABLE = ();
 
 sub init {
-    use ComposerCat::PublicUI qw($home $browse $about $view_work $browse_works_by_scored_for
+    use ComposerCat::PublicUI qw($home $browse $about $view_work $browse_works_by_scored_for $browse_works
                                  $browse_works_by_genre $browse_works_by_title $fulltext_search
                                  $bad_arguments $not_found);
 
@@ -274,6 +274,7 @@ sub init {
     	$ComposerCat::PublicUI::browse,
     	$ComposerCat::PublicUI::about,
     	$ComposerCat::PublicUI::view_work,
+    	$ComposerCat::PublicUI::browse_works,
     	$ComposerCat::PublicUI::browse_works_by_scored_for,
 	$ComposerCat::PublicUI::browse_works_by_genre,
 	$ComposerCat::PublicUI::browse_works_by_title,

@@ -2236,6 +2236,43 @@ sub schema_prepare_statments {
     WHERE ((titles.title NOT LIKE ?) OR (titles.transliteration NOT LIKE ?) OR (works.uniform_title NOT LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY uniform_title ASC|);
+
+    # works._list_order_by_uniform_title
+    $schema{works}->{_list_order_by_uniform_title} =
+	$dbh->prepare(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number, REPLACE(UPPER(uniform_title),"'","") AS uniform_title_sortable FROM works
+    LEFT JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN titles ON works.ID=titles.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE (catalogues.label = "Op." OR catalogues.label IS NULL)
+    GROUP BY works.ID
+    ORDER BY uniform_title_sortable ASC|);
+
+    # works._list_order_by_opus_number
+    $schema{works}->{_list_order_by_opus_number} =
+	$dbh->prepare(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number, REPLACE(UPPER(uniform_title),"'","") AS uniform_title_sortable FROM works
+    LEFT JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN titles ON works.ID=titles.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE catalogues.label = "Op."
+    GROUP BY works.ID
+    ORDER BY catalogue_numbers.number_position ASC|);
+
+    # works._list_order_by_year
+    $schema{works}->{_list_order_by_year} =
+	$dbh->prepare(q|SELECT works.*, end.year AS year, catalogues.label AS catalogue, catalogue_numbers.number AS catalogue_number, REPLACE(UPPER(uniform_title),"'","") AS uniform_title_sortable FROM works
+    JOIN composition ON works.ID=composition.work_id
+    LEFT JOIN titles ON works.ID=titles.work_id
+    LEFT JOIN dates AS end ON composition.period_end=end.ID
+    LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
+    LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
+    WHERE (catalogues.label = "Op." OR catalogues.label IS NULL)
+    GROUP BY works.ID
+    ORDER BY year ASC|);
+    
 }
 
 1;
