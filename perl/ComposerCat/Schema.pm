@@ -1145,7 +1145,7 @@ our %schema = (
 	work_id         => {access => "rw",
 			    data_type => "integer",
 			    foreign_key => "works",
-			    look_up => "mentionable_tables",
+			    look_up => "all_works",
 			    hint => "ID of the work"},
 
 	title           => {access => "rw",
