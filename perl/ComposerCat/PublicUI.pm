@@ -29,7 +29,7 @@ use XML::Filter::XSLT;
 use XML::SAX::Writer;
 use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
-use ComposerCat::API qw(request_content_type make_api_function);
+use ComposerCat::API qw(request_content_type make_api_function make_paged);
 use ComposerCat::Search qw(search_fulltext_index);
 
 my $PROCAV_DOMAIN = "localhost";
@@ -68,7 +68,7 @@ our $browse_works = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(order_by)],
-      optional_parameters => [qw(accept)],
+      optional_parameters => [qw(start limit accept)],
       accept_types        => ['text/html', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
@@ -99,7 +99,7 @@ our $browse_works = make_api_function(
 				      push @$works, $work;
 				  }
 				  
-				  return $works;
+				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
 			      },
 			      rootname => 'works',
 			      recordname => 'work'},
@@ -109,7 +109,7 @@ our $browse_works_by_scored_for = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(scored_for)],
-      optional_parameters => [qw(cmp accept submit)],
+      optional_parameters => [qw(cmp start limit accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
@@ -152,7 +152,7 @@ our $browse_works_by_scored_for = make_api_function(
 				      push @$works, $work;
 				  }
 				  
-				  return $works;
+				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
 			      },
 			      rootname   => 'works',
 			      recordname => 'work'},
@@ -163,7 +163,7 @@ our $browse_works_by_genre = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(genre)],
-      optional_parameters => [qw(accept submit)],
+      optional_parameters => [qw(start limit accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
@@ -171,12 +171,13 @@ our $browse_works_by_genre = make_api_function(
 				  
 				  my $st = ComposerCat::Database::table_info('works')->{_list_by_genre};
 				  $st->execute($apr_req->param("genre"));
+
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
 				  }
 				  
-				  return $works;
+				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
 			      },
 			      rootname   => 'works',
 			      recordname => 'work'},
@@ -187,7 +188,7 @@ our $browse_works_by_title = make_api_function(
     { uri_pattern         => qr|^/works/?$|,
       require_session     => 'public',
       required_parameters => [qw(title)],
-      optional_parameters => [qw(cmp accept submit)],
+      optional_parameters => [qw(cmp start limit accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
@@ -217,8 +218,8 @@ our $browse_works_by_title = make_api_function(
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
 				  }
-				  
-				  return $works;
+
+				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
 			      },
 			      rootname   => 'works',
 			      recordname => 'work'},
