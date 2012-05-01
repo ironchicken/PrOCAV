@@ -29,7 +29,7 @@ our %look_ups = (
     # list of hashes containing `value` and `display` fields. (They
     # are subroutines in order to be polymorphic with the other items
     # in the hash.)
-    parent_relation      => sub { [{value => "movement", display => "Movement"},
+    work_parent_relation => sub { [{value => "movement", display => "Movement"},
 				   {value => "act",      display => "Act"},
 				   {value => "scene",    display => "Scene"},
 				   {value => "number",   display => "Number"}]; },
@@ -215,7 +215,7 @@ our %schema = (
 
 	parent_relation => {access => "rw",
 			    data_type => "look_up",
-			    look_up => "parent_relation",
+			    look_up => "work_parent_relation",
 			    list_mutable => 0,
 			    cell_width => 12},
 
