@@ -14,7 +14,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT = qw(%look_ups @table_order %schema schema_prepare_statments);
+    our @EXPORT = qw(%look_ups @table_order %schema schema_prepare_statments $annotations);
 }
 
 use ComposerCat::Resources qw(dbpedia_uri);
@@ -2293,4 +2293,28 @@ sub schema_prepare_statments {
     
 }
 
+#################################################################################################################
+#### FIELD VALUE ANNOTATIONS
+#################################################################################################################
+
+our $annotations = {
+    manuscripts => {
+	purpose => [{ pattern     => qr|^sketch$|,
+		      description => 'Sketch' },
+		    { pattern     => qr|^contextualised sketch$|,
+		      description => 'Contextualised Sketch' },
+		    { pattern     => qr|^draft short/piano score$|,
+		      description => 'Draft Short/Piano Score' },
+		    { pattern     => qr|^extended draft short score$|,
+		      description => 'Extended Draft Short Score' },
+		    { pattern     => qr|^instrumental annotations$|,
+		      description => 'Instrumental Annotations' },
+		    { pattern     => qr|^draft full score$|,
+		      description => 'Draft Full Score' },
+		    { pattern     => qr|^autograph complete full score$|,
+		      description => 'Autograph Complete Full Score' },
+		    { pattern     => qr|^annotated published score$|,
+		      description => 'Annotated Published Score' }] }
+    };
+    
 1;

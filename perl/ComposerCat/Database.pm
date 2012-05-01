@@ -84,6 +84,46 @@ sub allow_markup {
     return 0;
 }
 
+sub annotations {
+    my ($table, $field, $value) = @_;
+    # FIXME Solve table name pluralisation problem
+    $table .= 's';
+
+    if (defined $value) {
+	if (defined $annotations->{$table}->{$field}) {
+	    foreach my $t (@{ $annotations->{$table}->{$field} }) {
+		return $t->{description} if ($value =~ $t->{pattern});
+	    }
+	}
+    } else {
+	return $annotations->{$table}->{$field};
+    }
+}
+
+sub annotated_table {
+    my ($table) = @_;
+    # FIXME Solve table name pluralisation problem
+    $table .= 's';
+
+    if (defined $annotations->{$table}) {
+	return $annotations->{$table};
+    } else {
+	return 0;
+    }
+}
+
+sub annotated_field {
+    my ($table, $field) = @_;
+    # FIXME Solve table name pluralisation problem
+    $table .= 's';
+
+    if (defined $annotations->{$table} && defined $annotations->{$table}->{$field}) {
+	return $annotations->{$table}->{$field};
+    } else {
+	return 0;
+    }
+}
+
 #################################################################################################################
 #### PREPARED SQL STATEMENTS
 #################################################################################################################
@@ -707,6 +747,100 @@ sub parse_markup {
 	} else {
 	    die "Invalid event type $type.\n";
 	}
+    }
+}
+
+sub _element {
+    my ($name, $end) = @_;
+    return { 
+        Name => $name,
+        LocalName => $name,
+        $end ? () : (Attributes => {}),
+        NamespaceURI => '',
+        Prefix => '',
+    };
+}
+
+sub _add_attrib {
+    my ($el, $name, $value) = @_;
+    
+    $el->{Attributes}{"{}$name"} = {
+	Name => $name,
+	LocalName => $name,
+	Prefix => "",
+	NamespaceURI => "",
+	Value => $value,
+    };
+}
+
+package ComposerCat::Database::ValueAnnotations;
+use strict;
+use XML::SAX::Base;
+our @ISA = qw(XML::SAX::Base);
+
+sub new {
+    my $class = shift;
+    my %options = @_;
+
+    return bless \%options, $class;
+}
+
+sub start_document {
+    my ($self, $document) = @_;
+
+    $self->{element_stack} = [];
+    $self->{annotated_table} = 0;
+    $self->{annotated_field} = 0;
+
+    $self->SUPER::start_document($document);
+}
+
+sub start_element {
+    my ($self, $element) = @_;
+    #my %attrs = %{$element->{Attributes}};
+
+    push @{ $self->{element_stack} }, $element->{Name};
+
+    if (ComposerCat::Database::annotated_table ($element->{Name})) {
+	$self->{annotated_table} = $element->{Name};
+    } elsif (ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
+	$self->{annotated_field} = $element->{Name};
+    } 
+
+    $self->SUPER::start_element($element);
+}
+
+sub end_element {
+    my ($self, $element) = @_;
+
+    push @{ $self->{element_stack} }, $element;
+
+    if (ComposerCat::Database::annotated_table ($element->{Name})) {
+	$self->{annotated_table} = 0;
+    } elsif (ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
+	$self->{annotated_field} = 0;
+    }
+
+    $self->SUPER::end_element($element);
+}
+
+sub characters {
+    my ($self, $chars) = @_;
+
+    if ($self->{annotated_field}) {
+	my $annotation = ComposerCat::Database::annotations ($self->{annotated_table}, $self->{annotated_field}, $chars->{Data});
+
+	if (defined $annotation) {
+	    $self->{Handler}->characters({Data => $chars->{Data}});
+	    my $annot_el = _element('annotation');
+	    $self->SUPER::start_element($annot_el);
+	    $self->{Handler}->characters({Data => $annotation});
+	    $self->SUPER::end_element($annot_el, 1);
+	} else {
+	    $self->{Handler}->characters({Data => $chars->{Data}});
+	}
+    } else {
+	$self->{Handler}->characters({Data => $chars->{Data}});
     }
 }
 
