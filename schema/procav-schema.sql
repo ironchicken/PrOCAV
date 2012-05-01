@@ -207,6 +207,8 @@ CREATE TABLE manuscripts (
                          'extended draft short score', 'instrumental annotations',
                          'draft full score', 'autograph complete full score',
                          'annotated published score'),
+  part_of           INT,
+  parent_relation   ENUM('fonds', 'sub-fonds', 'series', 'sub-series', 'item'),
   physical_size     VARCHAR(32),
   medium            VARCHAR(32),
   extent            INT,

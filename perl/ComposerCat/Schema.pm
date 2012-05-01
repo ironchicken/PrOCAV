@@ -52,6 +52,12 @@ our %look_ups = (
 				   {value => "autograph complete full score", display => "Autograph complete full score"},
 				   {value => "annotated published score",     display => "Annotated published score"}]; },
 
+    manuscript_parent_relation => sub { [{value => "fonds",      display => "Fonds"},
+					 {value => "sub-fonds",  display => "Sub-fonds"},
+					 {value => "series",     display => "Series"},
+					 {value => "sub-series", display => "Sub-series"},
+					 {value => "item",       display => "Item"}]; },
+
     instrument_cardinality => sub { [{value => "solo",   display => "Solo"},
 				     {value => "desk",   display => "Desk"},
 				     {value => "chorus", display => "Chorus"}]; },
@@ -1125,10 +1131,10 @@ our %schema = (
     manuscripts        => {
 	_worksheet => "manuscripts",
 
-	_field_order         => [qw(ID work_id title purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
+	_field_order         => [qw(ID work_id title purpose part_of parent_relation physical_size medium extent missing date_made annotation_of location notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title work_id purpose physical_size medium extent missing date_made annotation_of location notes staff_notes)],
+	_insert_fields       => [qw(title work_id purpose part_of parent_relation physical_size medium extent missing date_made annotation_of location notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -1152,6 +1158,18 @@ our %schema = (
 			    look_up => "work_types",
 			    not_null => 1,
 			    cell_width => 20},
+
+	part_of         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "manuscripts",
+	 		    look_up => "parent_manuscripts",
+			    hint => "ID of parent manuscript"},
+
+	parent_relation => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "manuscript_parent_relation",
+			    list_mutable => 0,
+			    cell_width => 12},
 
 	physical_size   => {access => "rw",
 			    data_type => "string",
