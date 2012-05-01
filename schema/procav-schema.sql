@@ -229,7 +229,7 @@ CREATE TABLE texts (
   `source`          VARCHAR(128), -- e.g. Bible
   citation          VARCHAR(128), -- e.g. Ps 107:23
   original_content  TEXT,
-  english_content    TEXT,
+  english_content   TEXT,
   notes             TEXT,
   staff_notes       TEXT);
 
