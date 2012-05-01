@@ -19,7 +19,7 @@ BEGIN {
 }
 
 use ComposerCat::PublicUI qw($view_work);
-use ComposerCat::API qw(call_api_function);
+use ComposerCat::API qw(call_api_function make_paged);
 
 use SWISH::Prog::Indexer;
 use SWISH::Prog::Native::Indexer;
@@ -112,10 +112,7 @@ sub search_fulltext_index {
     if (defined $start && $start > $found->hits) { $start = $found->hits; }
 
     # build an array of results
-    my $n = 0; my $count = 0;
     while (my $r = $found->next) {
-	$n++;
-	next if (defined $start && $n < $start);
 	push @$results, {'dc.title'       => $r->get_property('dc.title'),
 			 'dc.creator'     => $r->get_property('dc.creator'),
 			 'dc.date'        => $r->get_property('dc.date'),
@@ -123,31 +120,13 @@ sub search_fulltext_index {
 			 'dc.description' => $r->get_property('dc.description'),
 			 'dc.subject'     => $r->get_property('dc.subject'),
 			 'dc.type'        => $r->get_property('dc.type'),
-			 record_type    => $r->get_property('record-type'),
-			 title          => $r->title,
-			 uri            => $r->uri,
-			 score          => $r->score,
-			 n              => $n};
-	$count++;
-	last if (defined $limit && $count == $limit);
+			 record_type      => $r->get_property('record-type'),
+			 title            => $r->title,
+			 uri              => $r->uri,
+			 score            => $r->score};
     }
 
-    # return a hash contain the number of hits and an array ref of the
-    # results. (This array ref is under the key 'result' [rather than
-    # 'results'] because when it gets turned into XML by the PerlData
-    # SAX Generator, the key name will be used as the element name for
-    # each result.)
-    return {hits   => $found->hits,
-	    start  => $start,
-	    # FIXME prev and next should be part of the more general
-	    # session-based index mechanism; these are a temporary
-	    # kludge
-	    prev   => &{ sub { if (defined $start && defined $limit) { if ($start == 1) { return undef; } else { return ($start - $limit > 1) ? $start - $limit : 1; } } } }(),
-	    'next' => &{ sub { if (defined $start && defined $limit) { return ($start + $limit > $found->hits) ? undef : $start + $limit; } } }(),
-
-	    limit  => $limit,
-	    count  => $count,
-	    result => $results};
+    return make_paged $results, $start, $limit, 'result', 'hits', $found->hits;
 }
 
 1;
