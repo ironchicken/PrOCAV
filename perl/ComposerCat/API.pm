@@ -14,7 +14,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw(request_content_type make_api_function call_api_function handler init);
+    our @EXPORT_OK = qw(request_content_type make_api_function call_api_function make_paged handler init);
 }
 
 use DateTime;
@@ -257,6 +257,35 @@ sub call_api_function {
     &{ $handler->{handle} }($req, $apr_req, $dbh, $url_args, $fh);
 
     return $output;
+}
+
+sub make_paged {
+    my ($records, $start, $limit, $record_name, $total_name, $total) = @_;
+    $record_name ||= 'record';
+    $total_name  ||= 'total';
+    $total       ||= scalar @{ $records };
+
+    my $this_page = []; my $n = 0; my $count = 0;
+    foreach my $r (@$records) {
+	$n++;
+	next if (defined $start && $n < $start);
+	$r->{n} = $n;
+	push @$this_page, $r;
+	$count++;
+	last if (defined $limit && $count == $limit);
+    }
+
+    return {$total_name  => $total,
+	    start        => $start,
+	    # FIXME prev and next should be part of the more general
+	    # session-based index mechanism; these are a temporary
+	    # kludge
+	    prev         => &{ sub { if (defined $start && defined $limit) { if ($start == 1) { return undef; } else { return ($start - $limit > 1) ? $start - $limit : 1; } } } }(),
+	    'next'       => &{ sub { if (defined $start && defined $limit) { return ($start + $limit > $total) ? undef : $start + $limit; } } }(),
+
+	    limit        => $limit,
+	    count        => $count,
+	    $record_name => $this_page};
 }
 
 our @DISPATCH_TABLE = ();
