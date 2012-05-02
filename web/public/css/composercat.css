@@ -308,7 +308,7 @@ ul.instrumentation {
   display:block;
 }
 
-table.#general-listings {
+table#general-listings {
   border-collapse:collapse;
   border:10px solid #FFFFFF;
 }
@@ -319,7 +319,7 @@ table.#general-listings {
   padding-bottom:8px;
   padding-left:15px;
   padding-right:20px;
-  border:6px solid #FFFFFF;
+  border:10px solid #FFFFFF;
   background:#80D5ED;
   text-align:center;
 }
