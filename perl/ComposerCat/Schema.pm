@@ -113,6 +113,12 @@ our %look_ups = (
 				   {value => "media_items", display => "media_items"},
 				   {value => "remote_media_items", display => "remote_media_items"}]; },
 
+    media_content_types  => sub { [{value => "audio",    display => "Audio"},
+				   {value => "notation", display => "Notation"},
+				   {value => "text",     display => "Text"},
+				   {value => "analysis", display => "Analysis"},
+				   {value => "data",     display => "Data"}]; },
+
     media_relations      => sub { [{value => "digitisation", display => "Digitisation"},
 				   {value => "transcription", display => "Transcription"},
 				   {value => "features", display => "Features"}]; },
@@ -1608,10 +1614,10 @@ our %schema = (
     media_items        => {
 	_worksheet => "media_items",
 
-	_field_order         => [qw(ID mime_type path extent resolution date_made date_acquired copyright public staff_notes)],
+	_field_order         => [qw(ID mime_type path content_type extent resolution date_made date_acquired copyright public staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(mime_type path extent resolution date_made date_acquired copyright public staff_notes)],
+	_insert_fields       => [qw(mime_type path content_type extent resolution date_made date_acquired copyright public staff_notes)],
 	_order_fields        => [qw(path)],
 	_default_order       => "ASC",
 
@@ -1631,6 +1637,12 @@ our %schema = (
 			    not_null => 1,
 			    width => 255,
 			    cell_width => 30},
+
+	content_type    => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "media_content_types",
+			    not_null => 1,
+			    cell_width => 12},
 
 	extent          => {access => "rw",
 			    data_type => "string",
@@ -1670,10 +1682,10 @@ our %schema = (
     remote_media_items  => {
 	_worksheet => "remote_media_items",
 
-	_field_order         => [qw(ID mime_type uri extent resolution date_made date_linked copyright public staff_notes)],
+	_field_order         => [qw(ID mime_type uri content_type extent resolution date_made date_linked copyright public staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(mime_type uri extent resolution date_made date_linked copyright public staff_notes)],
+	_insert_fields       => [qw(mime_type uri content_type extent resolution date_made date_linked copyright public staff_notes)],
 	_order_fields        => [qw(uri)],
 	_default_order       => "ASC",
 
@@ -1693,6 +1705,12 @@ our %schema = (
 			    not_null => 1,
 			    width => 255,
 			    cell_width => 30},
+
+	content_type    => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "media_content_types",
+			    not_null => 1,
+			    cell_width => 12},
 
 	extent          => {access => "rw",
 			    data_type => "string",
@@ -2098,16 +2116,17 @@ sub schema_prepare_statments {
 
     # works._local_media_items
     $schema{works}->{_local_media_items} = $dbh->prepare_cached(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
-    media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired, media_items.copyright,
-    media_items.public, representation_of.relation
+    media_items.content_type, media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired,
+    media_items.copyright, media_items.public, representation_of.relation
     FROM media_items
     JOIN representation_of ON representation_of.media_id = media_items.ID
     WHERE representation_of.source = "local" AND representation_of.related_table = "works" AND related_id=?|);
 
     # works._remote_media_items
     $schema{works}->{_remote_media_items} = $dbh->prepare_cached(q|SELECT remote_media_items.ID, remote_media_items.mime_type,
-    remote_media_items.uri, remote_media_items.extent, remote_media_items.resolution, remote_media_items.date_made,
-    remote_media_items.date_linked, remote_media_items.copyright, remote_media_items.public, representation_of.relation
+    remote_media_items.uri, remote_media_items.content_type, remote_media_items.extent, remote_media_items.resolution,
+    remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright, remote_media_items.public,
+    representation_of.relation
     FROM remote_media_items
     JOIN representation_of ON representation_of.media_id = remote_media_items.ID
     WHERE representation_of.source = "remote" AND representation_of.related_table = "works" AND representation_of.related_id=?|);
