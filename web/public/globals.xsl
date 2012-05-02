@@ -7,9 +7,10 @@
 <xsl:variable name="URI_ROOT">http://localhost</xsl:variable>
 
 <xsl:template name="page-tools">
-  <link href="http://fonts.googleapis.com/css?family=Crimson+Text|Droid+Sans|Dosis:400,500" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="/public/js/jquery-1.7.2.min.js"> //script </script>
+  <link href="http://fonts.googleapis.com/css?family=Crimson+Text|Droid+Sans|Dosis:400,500|Oxygen" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" type="text/css" href="/public/css/composercat.css" />
+  <script type="text/javascript" src="/public/js/composercat.js"> //script </script>
 </xsl:template>
 
 <xsl:template name="page-header">
@@ -72,6 +73,10 @@
       </tr>
     </table>
   </div>
+</xsl:template>
+
+<xsl:template match="annotation" priority="-1">
+  <span class="annot-toggle" onclick="composerCat.showPopup(event, composerCat.nextAnnotation(event))">?</span><span class="annotation"><xsl:apply-templates /></span>
 </xsl:template>
 
 </xsl:stylesheet>

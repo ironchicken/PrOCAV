@@ -400,3 +400,31 @@ div.browse-option {
 .hint a:hover span {
   display:inline;
 }
+
+.annotation {
+  display:none;
+  margin:2px;
+  border:3px solid #A5995D;
+  border-radius:6px;
+  -moz-border-radius:6px;
+  padding:7px;
+  background-color:#FCEA8E;
+  font-family: 'Oxygen', sans-serif;
+  font-size:85%;
+}
+
+.annot-toggle {
+  font-size:80%;
+  font-weight:bold;
+  font-family: 'Oxygen', sans-serif;
+  margin-left:3px;
+  padding-left:5px;
+  padding-right:5px;
+  padding-top:1px;
+  padding-bottom:1px;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
+  cursor:pointer;
+  background-color:#0857D7;
+  color:#FFFFFF;
+}
