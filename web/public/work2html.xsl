@@ -316,17 +316,14 @@
   </div>
 </xsl:template>
 
-<xsl:template match="work/manuscript/missing">
+<xsl:template match="work/manuscript/missing[text()='0']" />
+
+<xsl:template match="work/manuscript/missing[text()='1']">
   <div class="field manuscript-missing">
     <span class="name">Missing</span>
     <span class="content manuscript-missing"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="composercat:missing">
-      <xsl:choose>
-        <xsl:when test="./text()='0'">No</xsl:when>
-        <xsl:when test="./text()='1'">Yes</xsl:when>
-      </xsl:choose>
-    </span>
+	  property="composercat:missing">Yes</span>
   </div>
 </xsl:template>
 
