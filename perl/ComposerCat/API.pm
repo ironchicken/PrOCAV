@@ -128,6 +128,21 @@ sub open_session {
     }
 }
 
+sub session_id {
+    my ($req, $apr_req) = @_;
+
+    # session ID is either in the request (if the client sent a
+    # cookie) or it's in the response (if a new cookie is being sent)
+
+    my $session_id;
+    if (defined $apr_req->jar) {
+	$session_id = $apr_req->jar->{composercat_public_sid};
+    } else {
+	my $cookies_out = CGI::Cookie->parse($req->err_headers_out->get('Set-Cookie'));
+	$session_id = $cookies_out->{composercat_public_sid};
+    }
+}
+
 sub request_content_type {
     my ($req, $apr_req, $acceptable) = @_;
 
@@ -197,21 +212,10 @@ sub make_api_function {
 	    # add some request information to the response data
 	    my @params = $apr_req->param;
 
-	    # session ID is either in the request (if the client sent
-	    # a cookie) or it's in the response (if a new cookie is
-	    # being sent)
-	    my $session_id;
-	    if (defined $apr_req->jar) {
-		$session_id = $apr_req->jar->{composercat_public_sid};
-	    } else {
-	    	my $cookies_out = CGI::Cookie->parse($req->err_headers_out->get('Set-Cookie'));
-	    	$session_id = $cookies_out->{composercat_public_sid};
-	    }
-
 	    my $response = {request => {retrieved  => sprintf("%s", DateTime->now(time_zone => 'local')),
 	    				path       => $req->uri,
 	    				params     => [map { {name => $_, value => $apr_req->param($_) }; } @params],
-	    				session_id => $session_id}};
+	    				session_id => session_id $req, $apr_req}};
 
 	    # execute the handler procedure
 	    my $data = &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args);
