@@ -149,8 +149,8 @@
       resource="{$ID}"
       xml:lang="{language}">
     <xsl:value-of select="title" />
-    <xsl:if test="transliteration"> (<xsl:value-of select="transliteration" />)</xsl:if>
-    <xsl:if test="language"> [<xsl:value-of select="language" />]</xsl:if>
+    <xsl:if test="transliteration"> (<xsl:apply-templates select="transliteration" />)</xsl:if>
+    <xsl:if test="language"> [<xsl:apply-templates select="language" />]</xsl:if>
     <xsl:if test="notes"><span class="value-notes hidden"><xsl:apply-templates select="notes" /></span></xsl:if>
   </li>
 </xsl:template>

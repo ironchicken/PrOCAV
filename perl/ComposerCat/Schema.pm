@@ -2333,7 +2333,15 @@ our $annotations = {
 		    { pattern     => qr|^autograph complete full score$|,
 		      description => 'Autograph Complete Full Score' },
 		    { pattern     => qr|^annotated published score$|,
-		      description => 'Annotated Published Score' }] }
+		      description => 'Annotated Published Score' }] },
+
+    titles => {
+	language => [{ pattern     => qr|^en$|,
+		       description => 'English' },
+		     { pattern     => qr|^fr$|,
+		       description => 'French' },
+		     { pattern     => qr|^ru$|,
+		       description => 'Russian' }] }
     };
     
 1;
