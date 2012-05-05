@@ -592,8 +592,7 @@ sub AUTOLOAD {
 package ComposerCat::Database::MarkupFilter;
 use strict;
 use XML::SAX::Base;
-use Text::WikiFormat::SAX;
-our @ISA = qw(XML::SAX::Base); # FIXME Perhaps try extending Text::WikiFormat::SAX instead?
+use base qw(XML::SAX::Base); # FIXME Perhaps try extending Text::WikiFormat::SAX instead?
 
 sub new {
     my $class = shift;
@@ -656,13 +655,7 @@ sub start_element {
     my ($self, $element) = @_;
     #my %attrs = %{$element->{Attributes}};
 
-    push @{ $self->{element_stack} }, $element->{Name};
-
-    if (ComposerCat::Database::allow_markup ($element->{Name})) {
-	$self->{parsing_markup} = 1;
-    } else {
-	$self->{parsing_markup} = 0;
-    }
+    $self->{parsing_markup} = ComposerCat::Database::allow_markup ($element->{Name});
 
     $self->SUPER::start_element($element);
 }
@@ -670,7 +663,6 @@ sub start_element {
 sub end_element {
     my ($self, $element) = @_;
 
-    push @{ $self->{element_stack} }, $element;
     $self->{parsing_markup} = 0;
 
     $self->SUPER::end_element($element);
@@ -682,7 +674,7 @@ sub characters {
     if ($self->{parsing_markup}) {
 	$self->parse_markup($chars->{Data});
     } else {
-	$self->{Handler}->characters({Data => $chars->{Data}});
+	$self->SUPER::characters({Data => $chars->{Data}});
     }
 }
 
@@ -707,10 +699,23 @@ sub parse_markup {
 			   attrs       => \%attrs
 	    };
 
-	    push @events, ['skip', $element->{match_start}, $element->{match_start} + $element->{skip_before}] unless ($element->{skip_before} == 0);
-	    push @events, ['start_element', $element->{match_start} + $element->{skip_before}, $element];
-	    push @events, ['end_element', $element->{match_end} - $element->{skip_after}, $element];
-	    push @events, ['skip', $element->{match_end} - $element->{skip_after}, $element->{match_end}] unless ($element->{skip_after} == 0);
+	    push @events, ['skip',
+			   $element->{match_start},
+			   $element->{match_start} + $element->{skip_before}]
+			       unless ($element->{skip_before} == 0);
+
+	    push @events, ['start_element',
+			   $element->{match_start} + $element->{skip_before},
+			   $element];
+
+	    push @events, ['end_element',
+			   $element->{match_end} - $element->{skip_after},
+			   $element];
+
+	    push @events, ['skip',
+			   $element->{match_end} - $element->{skip_after},
+			   $element->{match_end}]
+			       unless ($element->{skip_after} == 0);
 	}
     }
 
@@ -718,30 +723,44 @@ sub parse_markup {
     # of the field value string
     my $chars_ptr = 0;
 
-    sub consume_chars {
-	my $upto = shift;
-	$self->SUPER::characters({Data => substr $chars, $chars_ptr, $upto - $chars_ptr})
-	    unless ($upto - $chars_ptr <= 0);
-	$chars_ptr = $upto;
-    }
-
     foreach my $event (sort { $a->[1] <=> $b->[1] } @events ) {
 	my $type = shift $event;
+
 	if ($type eq 'skip') {
 	    my ($from, $to) = @$event;
-	    consume_chars($from);
+
+	    # consume any characters up to the beginning of the skip
+	    $self->SUPER::characters({Data => substr $chars, $chars_ptr, $from - $chars_ptr});
+
+	    # then advance the pointer to the end of the skip
 	    $chars_ptr = $to;
+
 	} elsif ($type eq 'start_element') {
 	    my ($at, $element) = @$event;
-	    consume_chars($at);
+
+	    # consume any characters up to the beginning of the
+	    # element start tag
+	    $self->SUPER::characters({Data => substr $chars, $chars_ptr, $at - $chars_ptr});
+	    $chars_ptr += ($at - $chars_ptr);
+
+	    # create the element start tag
 	    my $el = _element($element->{tag});
 	    foreach my $name (keys %{ $element->{attrs} }) {
 		_add_attrib($el, $name, $element->{attrs}->{$name});
 	    }
+
+	    # and emit it
 	    $self->SUPER::start_element($el);
+
 	} elsif ($type eq 'end_element') {
 	    my ($at, $element) = @$event;
-	    consume_chars($at);
+
+	    # consume any characters up to the beginning of the
+	    # element end tag
+	    $self->SUPER::characters({Data => substr $chars, $chars_ptr, $at - $chars_ptr});
+	    $chars_ptr += ($at - $chars_ptr);
+
+	    # create the element end tag and emit it
 	    my $el = _element($element->{tag}, 1);
 	    $self->SUPER::end_element($el);
 	} else {
@@ -788,7 +807,7 @@ sub new {
 sub start_document {
     my ($self, $document) = @_;
 
-    $self->{element_stack} = [];
+    #$self->{element_stack} = [];
     $self->{annotated_table} = 0;
     $self->{annotated_field} = 0;
 
@@ -799,7 +818,7 @@ sub start_element {
     my ($self, $element) = @_;
     #my %attrs = %{$element->{Attributes}};
 
-    push @{ $self->{element_stack} }, $element->{Name};
+    #push @{ $self->{element_stack} }, $element->{Name};
 
     if (ComposerCat::Database::annotated_table ($element->{Name})) {
 	$self->{annotated_table} = $element->{Name};
@@ -813,7 +832,7 @@ sub start_element {
 sub end_element {
     my ($self, $element) = @_;
 
-    push @{ $self->{element_stack} }, $element;
+    #push @{ $self->{element_stack} }, $element;
 
     if (ComposerCat::Database::annotated_table ($element->{Name})) {
 	$self->{annotated_table} = 0;
