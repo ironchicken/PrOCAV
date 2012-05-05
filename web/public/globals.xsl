@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+		xmlns:str="http://exslt.org/strings"
+		extension-element-prefixes="str"
+		version="1.0">
+
+<xsl:import href="str.replace.xsl" />
 
 <xsl:output method="html" />
 
@@ -77,6 +82,15 @@
 
 <xsl:template match="annotation" priority="-1">
   <span class="annot-toggle" onclick="composerCat.showPopup(event, composerCat.nextAnnotation(event))">?</span><span class="annotation"><xsl:apply-templates /></span>
+</xsl:template>
+
+<xsl:template match="p|div|span|a">
+  <xsl:element name="{name()}">
+    <xsl:for-each select="@*">
+      <xsl:attribute name="{name()}"><xsl:value-of select="str:replace(string(.), '{$URI_ROOT}', string($URI_ROOT))" /></xsl:attribute>
+    </xsl:for-each>
+    <xsl:apply-templates />
+  </xsl:element>
 </xsl:template>
 
 </xsl:stylesheet>
