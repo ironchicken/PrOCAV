@@ -681,6 +681,10 @@ sub characters {
 sub parse_markup {
     my ($self, $chars) = @_;
 
+    # This is a two-pass operation. The first pass identifies
+    # occurrences of the syntax regexes and generates a list of
+    # 'skip', 'start_element', and 'end_element' events
+
     my @events = ();
     foreach my $element_type (@{ $self->{syntax} }) {
 	while ($chars =~ /$element_type->{pattern}/g) {
@@ -718,6 +722,10 @@ sub parse_markup {
 			       unless ($element->{skip_after} == 0);
 	}
     }
+
+    # The second pass takes each of those events in order of their
+    # position in the source characters and emits the required
+    # elements and characters.
 
     # this will be a pointer to the current position in the characters
     # of the field value string
