@@ -645,7 +645,13 @@ sub new {
 	{pattern  => qr|\[(http:\S+)\s+([^\]]+)\]|m,
 	 element  => ['a', {href => sub { $_[0]; }}],
 	 get_text => sub { $_[1]; },
-	 padding  => [sub { 2 + length $_[0]; }, sub { 1; }]}
+	 padding  => [sub { 2 + length $_[0]; }, sub { 1; }]},
+
+	# [table-name.id link text] link
+	{pattern  => qr{\[(works|manuscripts|editions|publications|venues|letters|persons)[/.]([0-9]+)\s+([^\]]+)\]}m,
+	 element  => ['a', {href => sub { sprintf "/%s/%s", $_[0], $_[1]; }}],
+	 get_text => sub { $_[2]; },
+	 padding  => [sub { 2 + length $_[0] . $_[1]; }, sub { 1; }]}
 	];
 
     return bless \%options, $class;
