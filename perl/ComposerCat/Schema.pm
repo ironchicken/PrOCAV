@@ -2319,29 +2319,45 @@ sub schema_prepare_statments {
 our $annotations = {
     manuscripts => {
 	purpose => [{ pattern     => qr|^sketch$|,
-		      description => 'Sketch' },
+		      description => 'Sketch',
+		      position    => 'end' },
 		    { pattern     => qr|^contextualised sketch$|,
-		      description => 'Contextualised Sketch' },
+		      description => 'Contextualised Sketch',
+		      position    => 'end' },
 		    { pattern     => qr|^draft short/piano score$|,
-		      description => 'Draft Short/Piano Score' },
+		      description => 'Draft Short/Piano Score',
+		      position    => 'end' },
 		    { pattern     => qr|^extended draft short score$|,
-		      description => 'Extended Draft Short Score' },
+		      description => 'Extended Draft Short Score',
+		      position    => 'end' },
 		    { pattern     => qr|^instrumental annotations$|,
-		      description => 'Instrumental Annotations' },
+		      description => 'Instrumental Annotations',
+		      position    => 'end' },
 		    { pattern     => qr|^draft full score$|,
-		      description => 'Draft Full Score' },
+		      description => 'Draft Full Score',
+		      position    => 'end' },
 		    { pattern     => qr|^autograph complete full score$|,
-		      description => 'Autograph Complete Full Score' },
+		      description => 'Autograph Complete Full Score',
+		      position    => 'end' },
 		    { pattern     => qr|^annotated published score$|,
-		      description => 'Annotated Published Score' }] },
+		      description => 'Annotated Published Score',
+		      position    => 'end' }] },
 
     titles => {
 	language => [{ pattern     => qr|^en$|,
-		       description => 'English' },
+		       description => 'English',
+		       position    => 'end' },
 		     { pattern     => qr|^fr$|,
-		       description => 'French' },
+		       description => 'French',
+		       position    => 'end' },
 		     { pattern     => qr|^ru$|,
-		       description => 'Russian' }] }
+		       description => 'Russian',
+		       position    => 'end' }] },
+
+    publications => {
+	title => [{ pattern => qr|and|,
+		    description => 'This is a conjunctive',
+		    position => 'inline' }] }
     };
     
 1;

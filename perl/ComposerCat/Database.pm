@@ -92,7 +92,9 @@ sub annotations {
     if (defined $value) {
 	if (defined $annotations->{$table}->{$field}) {
 	    foreach my $t (@{ $annotations->{$table}->{$field} }) {
-		return $t->{description} if ($value =~ $t->{pattern});
+		if ($value =~ $t->{pattern}) {
+		    return ($t->{description}, $t->{position}, ($t->{position} eq 'inline') ? @+[0] : undef)
+		}
 	    }
 	}
     } else {
@@ -589,7 +591,7 @@ sub AUTOLOAD {
 #### DATA PROCESSING UTILITIES
 #################################################################################################################
 
-package ComposerCat::Database::MarkupFilter;
+package ComposerCat::Database::ElementStacking;
 use strict;
 use XML::SAX::Base;
 use base qw(XML::SAX::Base); # FIXME Perhaps try extending Text::WikiFormat::SAX instead?
@@ -598,7 +600,51 @@ sub new {
     my $class = shift;
     my %options = @_;
 
-    $options{syntax} = [
+    $options{level} = ['document', 'response', 'content', 'record', 'table', 'field'];
+
+    return bless \%options, $class;
+}
+
+sub start_document {
+    my ($self, $document) = @_;
+
+    $self->{element_stack} = [];
+
+    $self->SUPER::start_document($document);
+}
+
+sub current_level {
+    my ($self) = @_;
+
+    return $self->{level}->[scalar @{ $self->{element_stack} }];
+}
+
+sub start_element {
+    my ($self, $element) = @_;
+
+    push @{ $self->{element_stack} }, $element->{Name};
+
+    $self->SUPER::start_element($element);
+}
+
+sub end_element {
+    my ($self, $element) = @_;
+
+    my $leaving = pop @{ $self->{element_stack} };
+
+    $self->SUPER::end_element($element);
+}
+
+package ComposerCat::Database::MarkupFilter;
+use strict;
+use XML::SAX::Base;
+use base qw(ComposerCat::Database::ElementStacking); # FIXME Perhaps try extending Text::WikiFormat::SAX instead?
+
+sub new {
+    my $class = shift;
+    my $self = $class->SUPER::new();
+
+    $self->{syntax} = [
 	## level 4 heading
 	{pattern  => qr|^(?<!=)={4}([^=]+?)={4}(?!=)$|m,
 	 element  => ['h6'],
@@ -654,7 +700,7 @@ sub new {
 	 padding  => [sub { 2 + length $_[0] . $_[1]; }, sub { 1; }]}
 	];
 
-    return bless \%options, $class;
+    return bless $self, $class;
 }
 
 sub start_element {
@@ -809,19 +855,18 @@ sub _add_attrib {
 package ComposerCat::Database::ValueAnnotations;
 use strict;
 use XML::SAX::Base;
-our @ISA = qw(XML::SAX::Base);
+use base qw(ComposerCat::Database::ElementStacking);
 
 sub new {
     my $class = shift;
-    my %options = @_;
+    my $self = $class->SUPER::new();
 
-    return bless \%options, $class;
+    return bless $self, $class;
 }
 
 sub start_document {
     my ($self, $document) = @_;
 
-    #$self->{element_stack} = [];
     $self->{annotated_table} = 0;
     $self->{annotated_field} = 0;
 
@@ -832,28 +877,28 @@ sub start_element {
     my ($self, $element) = @_;
     #my %attrs = %{$element->{Attributes}};
 
-    #push @{ $self->{element_stack} }, $element->{Name};
+    # Ensure that ElementStacking's start_element is called *first* so
+    # that we are at the right level
+    $self->SUPER::start_element($element);
 
-    if (ComposerCat::Database::annotated_table ($element->{Name})) {
+    if ($self->current_level eq 'table' && ComposerCat::Database::annotated_table ($element->{Name})) {
 	$self->{annotated_table} = $element->{Name};
-    } elsif (ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
+    } elsif ($self->current_level eq 'field' && ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
 	$self->{annotated_field} = $element->{Name};
     } 
-
-    $self->SUPER::start_element($element);
 }
 
 sub end_element {
     my ($self, $element) = @_;
 
-    #push @{ $self->{element_stack} }, $element;
-
-    if (ComposerCat::Database::annotated_table ($element->{Name})) {
+    if ($self->current_level eq 'table' && ComposerCat::Database::annotated_table ($element->{Name})) {
 	$self->{annotated_table} = 0;
-    } elsif (ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
+    } elsif ($self->current_level eq 'field' && ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
 	$self->{annotated_field} = 0;
     }
 
+    # Ensure that ElementStacking's start_element is called *last* so
+    # that we are at the right level
     $self->SUPER::end_element($element);
 }
 
@@ -861,14 +906,36 @@ sub characters {
     my ($self, $chars) = @_;
 
     if ($self->{annotated_field}) {
-	my $annotation = ComposerCat::Database::annotations ($self->{annotated_table}, $self->{annotated_field}, $chars->{Data});
+	my ($annotation, $location, $position) =
+	    ComposerCat::Database::annotations ($self->{annotated_table}, $self->{annotated_field}, $chars->{Data});
 
 	if (defined $annotation) {
-	    $self->{Handler}->characters({Data => $chars->{Data}});
-	    my $annot_el = _element('annotation');
-	    $self->SUPER::start_element($annot_el);
-	    $self->{Handler}->characters({Data => $annotation});
-	    $self->SUPER::end_element($annot_el, 1);
+	    if ($location eq 'start') {
+		my $annot_el = _element('annotation');
+		$self->SUPER::start_element($annot_el);
+		$self->{Handler}->characters({Data => $annotation});
+		$self->SUPER::end_element($annot_el, 1);
+
+		$self->{Handler}->characters({Data => $chars->{Data}});
+
+	    } elsif ($location eq 'end') {
+		$self->{Handler}->characters({Data => $chars->{Data}});
+
+		my $annot_el = _element('annotation');
+		$self->SUPER::start_element($annot_el);
+		$self->{Handler}->characters({Data => $annotation});
+		$self->SUPER::end_element($annot_el, 1);
+
+	    } elsif ($location eq 'inline') {
+		$self->{Handler}->characters({Data => substr($chars->{Data}, 0, $position)});
+
+		my $annot_el = _element('annotation');
+		$self->SUPER::start_element($annot_el);
+		$self->{Handler}->characters({Data => $annotation});
+		$self->SUPER::end_element($annot_el, 1);
+
+		$self->{Handler}->characters({Data => substr($chars->{Data}, $position + 1)});
+	    }
 	} else {
 	    $self->{Handler}->characters({Data => $chars->{Data}});
 	}
