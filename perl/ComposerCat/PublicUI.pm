@@ -18,18 +18,9 @@ BEGIN {
                         $bad_arguments $not_found);
 }
 
-use Apache2::RequestRec ();
-use APR::Table;
-use APR::Request::Cookie;
 use Apache2::Const -compile => qw(:common);
-use XML::Generator::PerlData;
-use XML::Filter::XSLT;
-#use XML::Filter::SAX1toSAX2;
-#use XML::Handler::HTMLWriter;
-use XML::SAX::Writer;
-use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
-use ComposerCat::API qw(request_content_type make_api_function make_paged);
+use ComposerCat::API qw(make_api_function make_paged);
 use ComposerCat::Search qw(search_fulltext_index);
 
 my $PROCAV_DOMAIN = "localhost";

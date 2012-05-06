@@ -18,19 +18,21 @@ BEGIN {
 }
 
 use DateTime;
-use APR::Request::Apache2;
 use Apache2::RequestRec ();
+use APR::Request::Apache2;
 use Apache2::Const -compile => qw(:common :log :http);
+use APR::Table;
 use APR::Request::Cookie;
 use CGI::Cookie;
 use Apache2::Log;
 use APR::Const -compile => qw(:error SUCCESS);
 use HTTP::Headers;
-#use Apache2::Ajax;
-#use JSON;
 use Array::Utils qw(:all);
 use XML::SAX::Machines qw(Pipeline);
+use XML::Generator::PerlData;
+use XML::Filter::BufferText;
 use XML::Filter::XSLT;
+use XML::SAX::Writer;
 use ComposerCat::Database qw(make_dbh session create_session);
 
 sub authorised {
