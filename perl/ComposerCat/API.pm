@@ -170,7 +170,7 @@ sub make_api_function {
 	error_code          => $options->{error_code} || Apache2::Const::HTTP_OK};
 
     $func->{handle} = $options->{handle} || sub {
-	my ($req, $apr_req, $dbh, $url_args, $dest) = @_;
+	my ($req, $apr_req, $dbh, $url_args, $dest, $req_data) = @_;
 
 	$dest = $dest || \*STDOUT;
 
@@ -212,6 +212,7 @@ sub make_api_function {
 	if ($options->{generator}->{type} eq 'proc') {
 	    # add some request information to the response data
 	    my @params = $apr_req->param;
+	    my @cookies = $apr_req->jar;
 
 	    my $response = {request => {retrieved  => sprintf("%s", DateTime->now(time_zone => 'local')),
 	    				path       => $req->uri,
@@ -219,7 +220,12 @@ sub make_api_function {
 	    				session_id => cookie 'composercat_public_sid', $req, $apr_req}};
 
 	    # execute the handler procedure
-	    my $data = &{ $options->{generator}->{proc} }($req, $apr_req, $dbh, $url_args);
+	    my $req_data ||= { uri      => $req->uri,
+			       params   => {map { $_ => $apr_req->param($_); } @params},
+			       cookies  => {map { $_ => $apr_req->jar($_); } @cookies},
+			       url_args => $url_args };
+
+	    my $data = &{ $options->{generator}->{proc} }($req_data, $dbh);
 
 	    # set up an XML generator
 	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => 'response');
@@ -359,7 +365,7 @@ sub handler {
 	    open_session $req, $apr_req, $h if (defined $h->{require_session});
 
 	    # call the handler's handle subroutine
-	    my $status = &{$h->{handle}}($req, $apr_req, $dbh, \%+);
+	    my $status = &{ $h->{handle} }($req, $apr_req, $dbh, \%+);
 
 	    # ensure that any database transactions are complete
 	    #$dbh->commit;

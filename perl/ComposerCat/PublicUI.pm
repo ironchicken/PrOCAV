@@ -63,16 +63,16 @@ our $browse_works = make_api_function(
       accept_types        => ['text/html', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req, $apr_req, $dbh, $url_args) = @_;
+				  my ($req_data, $dbh) = @_;
 
 				  # select the appropriate statement
 				  # based on the order_by argument
 				  my $st;
-				  if ($apr_req->param('order_by') =~ /uniform_title|title/) {
+				  if ($req_data->{params}->{order_by} =~ /uniform_title|title/) {
 				      $st = ComposerCat::Database::table_info('works')->{_list_order_by_uniform_title};
-				  } elsif ($apr_req->param('order_by') eq 'opus_number') {
+				  } elsif ($req_data->{params}->{order_by} eq 'opus_number') {
 				      $st = ComposerCat::Database::table_info('works')->{_list_order_by_opus_number};
-				  } elsif ($apr_req->param('order_by') eq 'year') {
+				  } elsif ($req_data->{params}->{order_by} eq 'year') {
 				      $st = ComposerCat::Database::table_info('works')->{_list_order_by_year};
 				  } else {
 				      # FIXME This interface does not
@@ -90,7 +90,7 @@ our $browse_works = make_api_function(
 				      push @$works, $work;
 				  }
 				  
-				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
+				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname => 'works',
 			      recordname => 'work'},
@@ -104,19 +104,19 @@ our $browse_works_by_scored_for = make_api_function(
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req, $apr_req, $dbh, $url_args) = @_;
+				  my ($req_data, $dbh) = @_;
 
 				  # split the scored_for argument into
 				  # a list of strings
-				  my @instruments = split /\W+/, $apr_req->param('scored_for');
+				  my @instruments = split /\W+/, $req_data->{params}->{scored_for};
 
 				  # select a statement to use
 				  # depending on the value of the
 				  # 'cmp' argument
-				  my $st_name = ($apr_req->param('cmp') eq 'only' || not defined $apr_req->param('cmp')) ?
+				  my $st_name = ($req_data->{params}->{cmp} eq 'only' || not defined $req_data->{params}->{cmp}) ?
 				      '_list_by_scored_for' :
-				      '_list_by_scored_for_' . sub { my $cmp = $apr_req->param('cmp'); $cmp =~ s/-/_/; $cmp; }->();
-				  #my $st_name = '_list_by_scored_for_' . sub { my $cmp = $apr_req->param('cmp'); $cmp =~ s/-/_/; $cmp; }->();
+				      '_list_by_scored_for_' . sub { my $cmp = $req_data->{params}->{cmp}; $cmp =~ s/-/_/; $cmp; }->();
+				  #my $st_name = '_list_by_scored_for_' . sub { my $cmp = $req_data->{params}->{cmp}; $cmp =~ s/-/_/; $cmp; }->();
 
 				  my $st = ComposerCat::Database::table_info('works')->{$st_name} ||
 				      ComposerCat::Database::table_info('works')->{_list_by_scored_for};
@@ -125,12 +125,12 @@ our $browse_works_by_scored_for = make_api_function(
 				  # with an appropriately formatted
 				  # argument
 				  if ($st_name eq '_list_by_scored_for') {
-				      $st->execute($apr_req->param('scored_for'));
+				      $st->execute($req_data->{params}->{scored_for});
 				  } else {
-				      if ($apr_req->param('cmp') eq 'any') {
+				      if ($req_data->{params}->{cmp} eq 'any') {
 					  $st->execute('(' . join('|', @instruments) . ')');
-				      } elsif ($apr_req->param('cmp') eq 'all' || $apr_req->param('cmp') eq 'not-all'
-					       || $apr_req->param('cmp') eq 'not-any') {
+				      } elsif ($req_data->{params}->{cmp} eq 'all' || $req_data->{params}->{cmp} eq 'not-all'
+					       || $req_data->{params}->{cmp} eq 'not-any') {
 					  $st = $st->(@instruments);
 					  $st->execute(@instruments);
 				      }
@@ -143,7 +143,7 @@ our $browse_works_by_scored_for = make_api_function(
 				      push @$works, $work;
 				  }
 				  
-				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
+				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname   => 'works',
 			      recordname => 'work'},
@@ -158,17 +158,17 @@ our $browse_works_by_genre = make_api_function(
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req, $apr_req, $dbh, $url_args) = @_;
+				  my ($req_data, $dbh) = @_;
 				  
 				  my $st = ComposerCat::Database::table_info('works')->{_list_by_genre};
-				  $st->execute($apr_req->param("genre"));
+				  $st->execute($req_data->{params}->{genre});
 
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
 				  }
 				  
-				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
+				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname   => 'works',
 			      recordname => 'work'},
@@ -183,24 +183,24 @@ our $browse_works_by_title = make_api_function(
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req, $apr_req, $dbh, $url_args) = @_;
+				  my ($req_data, $dbh) = @_;
 
 				  # select a statement to use
 				  # depending on the value of the
 				  # 'cmp' argument;
 				  # _list_by_title_equal will be used
 				  # by default
-				  my $st_name = '_list_by_title_' . sub { my $cmp = $apr_req->param('cmp'); $cmp =~ s/-/_/; $cmp; }->();
+				  my $st_name = '_list_by_title_' . sub { my $cmp = $req_data->{params}->{cmp}; $cmp =~ s/-/_/; $cmp; }->();
 
 				  my $st = ComposerCat::Database::table_info('works')->{$st_name} ||
 				      ComposerCat::Database::table_info('works')->{_list_by_title_equal};
 
-				  if ($apr_req->param('cmp') eq 'contains') {
-				      $st->execute(('%' . $apr_req->param('title') . '%') x 3);
-				  } elsif ($apr_req->param('cmp') eq 'equal') {
-				      $st->execute(($apr_req->param('title')) x 3);
-				  } elsif ($apr_req->param('cmp') eq 'not-equal') {
-				      $st->execute(($apr_req->param('title')) x 3);
+				  if ($req_data->{params}->{cmp} eq 'contains') {
+				      $st->execute(('%' . $req_data->{params}->{title} . '%') x 3);
+				  } elsif ($req_data->{params}->{cmp} eq 'equal') {
+				      $st->execute(($req_data->{params}->{title}) x 3);
+				  } elsif ($req_data->{params}->{cmp} eq 'not-equal') {
+				      $st->execute(($req_data->{params}->{title}) x 3);
 				  }
 
 				  # construct an array ref of the
@@ -210,7 +210,7 @@ our $browse_works_by_title = make_api_function(
 				      push @$works, $work;
 				  }
 
-				  return make_paged $works, $apr_req->param('start') || 1, $apr_req->param('limit') || 25, 'work';
+				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname   => 'works',
 			      recordname => 'work'},
@@ -224,8 +224,8 @@ our $view_work = make_api_function(
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
       generator           => {type     => 'proc',
 			      proc     => sub {
-				  my ($req, $apr_req, $dbh, $url_args) = @_;
-				  return ComposerCat::Database::complete_work(int($url_args->{work_id}));
+				  my ($req_data, $dbh) = @_;
+				  return ComposerCat::Database::complete_work(int($req_data->{url_args}->{work_id}));
 			      },
 			      rootname => 'work'},
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'work2html.xsl'],
@@ -241,10 +241,10 @@ our $fulltext_search = make_api_function(
       accept_types        => ['text/html', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req, $apr_req, $dbh, $url_args) = @_;
-				  return ComposerCat::Search::search_fulltext_index($apr_req->param('terms'),
-										    $apr_req->param('start'),
-										    $apr_req->param('limit'));
+				  my ($req_data, $dbh) = @_;
+				  return ComposerCat::Search::search_fulltext_index($req_data->{params}->{terms},
+										    $req_data->{params}->{start},
+										    $req_data->{params}->{limit});
 			      },
 			      rootname   => 'results',
 			      recordname => 'result'},
@@ -255,12 +255,12 @@ our $bad_arguments = make_api_function(
       error_code   => Apache2::Const::HTTP_BAD_REQUEST,
       generator    => {type => 'proc',
 		       proc => sub {
-			   my ($req, $apr_req, $dbh, $url_args) = @_;
-			   #my ($req, $apr_req, $dbh, $url_args, $failed_handler) = @_;
+			   my ($req_data, $dbh) = @_;
+			   #my ($req_data, $dbh, $failed_handler) = @_;
 			   return {error_code => Apache2::Const::HTTP_BAD_REQUEST,
 				   error_desc => 'Bad Request',
 				   reason     => 'Incorrect arguments supplied: ' .
-				       join ', ', $apr_req->param
+				       join ', ', keys %{ $req_data->{params} }
 				   #reason     => 'This resource requires the arguments: ' .
 				   #    join ', ', (@{ $failed_handler->{required_parameters} }, @{ $failed_handler->{optional_parameters} })
 			   };
@@ -273,11 +273,11 @@ our $not_found = make_api_function(
       error_code   => Apache2::Const::NOT_FOUND,
       generator    => {type => 'proc',
 		       proc => sub {
-			   my ($req, $apr_req, $dbh, $url_args) = @_;
-			   #my ($req, $apr_req, $dbh, $url_args, $failed_handler) = @_;
+			   my ($req_data, $dbh) = @_;
+			   #my ($req_data, $dbh, $failed_handler) = @_;
 			   return {error_code => Apache2::Const::NOT_FOUND,
 				   error_desc => 'Not Found',
-				   reason     => 'The path "' . $req->uri . '" does not match any resource.'
+				   reason     => 'The path "' . $req_data->{uri} . '" does not match any resource.'
 			   };
 		       },
 		       rootname => 'error'},
