@@ -43,7 +43,7 @@
 </xsl:template>
 
 <xsl:template name="browsing-index">
-  <xsl:apply-templates select="/response/index" />
+  <xsl:apply-templates select="/response/index[prev_record/ID or next_record/ID]" />
 </xsl:template>
 
 <xsl:template match="index">
