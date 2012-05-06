@@ -61,6 +61,8 @@ our $browse_works = make_api_function(
       required_parameters => [qw(order_by)],
       optional_parameters => [qw(start limit accept)],
       accept_types        => ['text/html', 'text/xml'],
+      browse_index        => { index_function => 'works',
+			       index_args     => [qw(order_by)] },
       generator           => {type => 'proc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
@@ -220,11 +222,16 @@ our $browse_works_by_title = make_api_function(
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'browse-works2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
 
+our %browse_manuscripts = ();
+our %browse_publications = ();
+our %browse_performances = ();
+
 our $view_work = make_api_function(
     { uri_pattern         => qr|^/works/(?<work_id>[0-9]+)/?$|,
       require_session     => 'public',
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      respect_browse_idx  => 1,
       generator           => {type     => 'proc',
 			      proc     => sub {
 				  my ($req_data, $dbh) = @_;

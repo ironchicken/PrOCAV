@@ -34,6 +34,8 @@ use XML::Filter::BufferText;
 use XML::Filter::XSLT;
 use XML::SAX::Writer;
 use ComposerCat::Database qw(make_dbh session create_session);
+use Data::Dumper;
+$Data::Dumper::Indent = 0;
 
 our %INDEXES = ();
 
@@ -138,19 +140,29 @@ sub cookie {
     # the cookie is either in the request (if the client sent a
     # cookie) or it's in the response (if a new cookie is being sent)
 
-    if (defined $apr_req->jar) {
-	$apr_req->jar->{$name};
-    } else {
-	my $cookies_out = CGI::Cookie->parse($req->err_headers_out->get('Set-Cookie'));
-	$cookies_out->{$name};
-    }
+    my $cookies_in = CGI::Cookie->fetch($req);
+    my $cookies_out = CGI::Cookie->parse($req->err_headers_out->get('Set-Cookie'));
+
+    return $cookies_in->{$name}->{value} || $cookies_out->{$name}->{value};
 }
 
 sub get_index {
     my ($req, $apr_req, $dbh, $record) = @_;
 
-    my $function = cookie('index_function', $req, $apr_req) || 'works';
-    my $args     = cookie('index_args', $req, $apr_req)     || {order_by => 'title'};
+    #my $function = cookie('index_function', $req, $apr_req) || 'works';
+    #my $args     = cookie('index_args', $req, $apr_req)     || {order_by => 'title'};
+    my $function = cookie 'index_function', $req, $apr_req;
+    my $args     = cookie 'index_args', $req, $apr_req;
+
+    return if (not defined $function);
+
+    # CGI::Cookie serialises hash refs into a representation which it
+    # then de-serialises into array refs. So we need to convert $args
+    # from an array ref into a hash ref.
+    $function = $function->[0];
+    $args     = {@$args};
+
+    return if ($function eq '');
 
     my $idx_req = { uri      => '/' . $function,
 		    params   => $args,
@@ -171,15 +183,15 @@ sub send_index_cookies {
     my ($index, $req, $apr_req) = @_;
 
     my $fc = CGI::Cookie->new(-name    => 'index_function',
-			      -value   => $index->{index_function},
-			      -expires => '+1D',
+			      -value   => $index->{index_function} || '',
+			      -expires => (defined $index->{index_function}) ? '+1D' : '-1D',
 			      -path    => '/');
 
     $req->err_headers_out->add("Set-Cookie", $fc);
 
     my $ac = CGI::Cookie->new(-name    => 'index_args',
-			      -value   => $index->{index_args},
-			      -expires => '+1D',
+			      -value   => $index->{index_args} || '',
+			      -expires => (defined $index->{index_args}) ? '+1D' : '-1D',
 			      -path    => '/');
 
     $req->err_headers_out->add("Set-Cookie", $ac);
@@ -270,8 +282,26 @@ sub make_api_function {
 	    my $data = &{ $options->{generator}->{proc} }($req_data, $dbh);
 
 	    # generate index browsing information
-	    $response->{index} = get_index($req, $apr_req, $dbh, $data) || undef;
-	    send_index_cookies($response->{index}, $req, $apr_req) if ($response->{index});
+	    if (defined $options->{browse_index}) {
+		# if this API method is indexable then send
+		# information about the index
+		$req->server->log_error("Sending index information: " .
+					Dumper({ index_function => $options->{browse_index}->{index_function},
+						 index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} }));
+		send_index_cookies({ index_function => $options->{browse_index}->{index_function},
+				     index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} },
+				   $req, $apr_req);
+	    } elsif ($options->{respect_browse_idx}) {
+		# if this API method makes use of indexes, then send
+		# the next/prev record information
+		$response->{index} = get_index($req, $apr_req, $dbh, $data) || undef;
+		$req->server->log_error("Received index information: " . Dumper($response->{index}));
+		send_index_cookies($response->{index}, $req, $apr_req) if ($response->{index});
+	    } else {
+		# otherwise, remove any existing index information
+		$req->server->log_error("Removing index information");
+		send_index_cookies({ index_function => undef, index_args => undef }, $req, $apr_req);
+	    }
 
 	    # set up an XML generator
 	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => 'response');
