@@ -42,6 +42,20 @@
   </div>
 </xsl:template>
 
+<xsl:template name="browsing-index">
+  <xsl:apply-templates select="/response/index" />
+</xsl:template>
+
+<xsl:template match="index">
+  <xsl:variable name="results-list"><xsl:value-of select="$URI_ROOT" />/<xsl:value-of select="index_function" />?<xsl:for-each select="index_args/*"><xsl:value-of select="name()" />=<xsl:value-of select="." />&amp;</xsl:for-each>start=<xsl:value-of select="position" /></xsl:variable>
+
+  <ul id="navigation">
+    <xsl:apply-templates select="prev_record" />
+    <li><a href="{$results-list}">results list</a></li>
+    <xsl:apply-templates select="next_record" />
+  </ul>
+</xsl:template>
+
 <xsl:template name="user-tools">
   <div id="right-area">
     <!--<span style="color:#FFFFFF">User tools</span>-->

@@ -35,6 +35,7 @@
     <div id="body">
       <xsl:call-template name="page-menu" />
       <div id="container">
+        <xsl:call-template name="browsing-index" />
         <xsl:comment> index </xsl:comment>
         <xsl:apply-templates select="//details" />
         <xsl:comment> noindex </xsl:comment>
@@ -45,6 +46,22 @@
     </div>
   </body>    
 </html>
+</xsl:template>
+
+<xsl:template match="prev_record[ID]">
+  <li>
+    &lt;&lt; <a href="{$URI_ROOT}/works/{ID}"><xsl:value-of select="uniform_title" /><xsl:text> </xsl:text>
+    <xsl:value-of select="catalogue" />
+    <xsl:value-of select="catalogue_number" /></a>
+  </li>
+</xsl:template>
+
+<xsl:template match="next_record[ID]">
+  <li>
+    <a href="{$URI_ROOT}/works/{ID}"><xsl:value-of select="uniform_title" /><xsl:text> </xsl:text>
+    <xsl:value-of select="catalogue" />
+    <xsl:value-of select="catalogue_number" /></a> &gt;&gt;
+  </li>
 </xsl:template>
 
 <xsl:template match="details">

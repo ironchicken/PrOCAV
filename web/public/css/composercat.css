@@ -183,6 +183,33 @@ h1 {
   font-style:normal;
 }
 
+#navigation {
+  font-size:75%;
+  list-style:none;
+}
+
+#navigation li {
+  display:inline;
+  margin:0px;
+  padding-left:10px;
+  padding-right:0px;
+}
+
+#navigation a {
+  text-decoration:underline;
+  color:#000000;
+}
+
+#navigation a:link {
+  text-decoration:underline;
+  color:#000000;
+}
+
+#navigation a:hover {
+  text-decoration:underline;
+  color:#000000;
+}
+
 canvas {
   float:right;
   margin:5px;
