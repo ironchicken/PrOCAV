@@ -35,6 +35,8 @@ use XML::Filter::XSLT;
 use XML::SAX::Writer;
 use ComposerCat::Database qw(make_dbh session create_session);
 
+our %INDEXES = ();
+
 sub authorised {
     my ($req, $apr_req, $handler) = @_;
 
@@ -144,6 +146,45 @@ sub cookie {
     }
 }
 
+sub get_index {
+    my ($req, $apr_req, $dbh, $record) = @_;
+
+    my $function = cookie('index_function', $req, $apr_req) || 'works';
+    my $args     = cookie('index_args', $req, $apr_req)     || {order_by => 'title'};
+
+    my $idx_req = { uri      => '/' . $function,
+		    params   => $args,
+		    cookies  => {},
+		    url_args => $args };
+
+    my $surrounding_records = ($INDEXES{$function}->{generator}->{type} eq 'proc') ?
+	&{ $INDEXES{$function}->{generator}->{proc} }($idx_req, $dbh, $record) : undef;
+	
+    return {
+	index_function => $function,
+	index_args     => $args,
+	next_record    => $surrounding_records->{next_record},
+	prev_record    => $surrounding_records->{prev_record} };
+}
+
+sub send_index_cookies {
+    my ($index, $req, $apr_req) = @_;
+
+    my $fc = CGI::Cookie->new(-name    => 'index_function',
+			      -value   => $index->{index_function},
+			      -expires => '+1D',
+			      -path    => '/');
+
+    $req->err_headers_out->add("Set-Cookie", $fc);
+
+    my $ac = CGI::Cookie->new(-name    => 'index_args',
+			      -value   => $index->{index_args},
+			      -expires => '+1D',
+			      -path    => '/');
+
+    $req->err_headers_out->add("Set-Cookie", $ac);
+}
+
 sub request_content_type {
     my ($req, $apr_req, $acceptable) = @_;
 
@@ -167,6 +208,7 @@ sub make_api_function {
 	require_session     => $options->{require_session},
 	required_parameters => $options->{required_parameters} || [],
 	optional_parameters => $options->{optional_parameters} || [],
+	generator           => $options->{generator},
 	error_code          => $options->{error_code} || Apache2::Const::HTTP_OK};
 
     $func->{handle} = $options->{handle} || sub {
@@ -226,6 +268,10 @@ sub make_api_function {
 			       url_args => $url_args };
 
 	    my $data = &{ $options->{generator}->{proc} }($req_data, $dbh);
+
+	    # generate index browsing information
+	    $response->{index} = get_index($req, $apr_req, $dbh, $data) || undef;
+	    send_index_cookies($response->{index}, $req, $apr_req) if ($response->{index});
 
 	    # set up an XML generator
 	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => 'response');
@@ -330,6 +376,14 @@ sub init {
     	\%ComposerCat::EditorUI::table_model,
     	\%ComposerCat::EditorUI::look_up
     	);
+
+    %INDEXES = (
+	works                 => $ComposerCat::PublicUI::browse_works,
+	works_by_scored_for   => $ComposerCat::PublicUI::browse_works_by_scored_for,
+	browse_works_by_genre => $ComposerCat::PublicUI::browse_works_by_genre,
+	browse_works_by_title => $ComposerCat::PublicUI::browse_works_by_title,
+	fulltext_search       => $ComposerCat::PublicUI::fulltext_search
+	);
 }
 
 sub handler {
