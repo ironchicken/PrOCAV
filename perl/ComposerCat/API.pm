@@ -176,7 +176,8 @@ sub get_index {
 	index_function => $function,
 	index_args     => $args,
 	next_record    => $surrounding_records->{next_record},
-	prev_record    => $surrounding_records->{prev_record} };
+	prev_record    => $surrounding_records->{prev_record},
+	position       => $surrounding_records->{position} };
 }
 
 sub send_index_cookies {

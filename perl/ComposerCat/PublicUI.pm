@@ -91,10 +91,16 @@ our $browse_works = make_api_function(
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
 				      if ($surrounding && scalar @$works >= 2 && $works->[-2]->{ID} eq $surrounding->{details}->{ID}) {
-					  return {prev_record => $works->[-3] || undef, next_record => $works->[-1]};
+					  return { prev_record => $works->[-3] || undef,
+						   next_record => $works->[-1],
+						   # position is *not* the offset, and we want the
+                                                   # position of the penultimate element
+						   position    => $#$works };
 				      }
 				  }
 				  
+				  if ($surrounding) { return { prev_record => $works->[-2], next_record => undef, position => $#$works + 1 }; }
+
 				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname => 'works',
