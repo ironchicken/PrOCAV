@@ -63,7 +63,7 @@ our $browse_works = make_api_function(
       accept_types        => ['text/html', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req_data, $dbh) = @_;
+				  my ($req_data, $dbh, $surrounding) = @_;
 
 				  # select the appropriate statement
 				  # based on the order_by argument
@@ -88,6 +88,9 @@ our $browse_works = make_api_function(
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
+				      if ($surrounding && scalar @$works >= 2 && $works->[-2]->{ID} eq $surrounding->{details}->{ID}) {
+					  return {prev_record => $works->[-3] || undef, next_record => $works->[-1]};
+				      }
 				  }
 				  
 				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
