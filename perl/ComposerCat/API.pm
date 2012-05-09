@@ -140,10 +140,13 @@ sub cookie {
     # the cookie is either in the request (if the client sent a
     # cookie) or it's in the response (if a new cookie is being sent)
 
-    my $cookies_in = CGI::Cookie->fetch($req);
-    my $cookies_out = CGI::Cookie->parse($req->err_headers_out->get('Set-Cookie'));
+    eval {
+	my $cookies_in = CGI::Cookie->fetch($req);
+	my $cookies_out = CGI::Cookie->parse($req->err_headers_out->get('Set-Cookie'));
 
-    return $cookies_in->{$name}->{value} || $cookies_out->{$name}->{value};
+	return $cookies_in->{$name}->{value} || $cookies_out->{$name}->{value};
+	1;
+    } or undef;
 }
 
 sub get_index {
