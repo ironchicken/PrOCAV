@@ -114,9 +114,12 @@ our $browse_works_by_scored_for = make_api_function(
       required_parameters => [qw(scored_for)],
       optional_parameters => [qw(cmp start limit accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      browse_index        => { index_function => 'works_by_scored_for',
+			       list_path      => 'works',
+			       index_args     => [qw(scored_for cmp)] },
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req_data, $dbh) = @_;
+				  my ($req_data, $dbh, $surrounding) = @_;
 
 				  # split the scored_for argument into
 				  # a list of strings
@@ -153,8 +156,17 @@ our $browse_works_by_scored_for = make_api_function(
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
+				      if ($surrounding && scalar @$works >= 2 && $works->[-2]->{ID} eq $surrounding->{details}->{ID}) {
+					  return { prev_record => $works->[-3] || undef,
+						   next_record => $works->[-1],
+						   # position is *not* the offset, and we want the
+                                                   # position of the penultimate element
+						   position    => $#$works };
+				      }
 				  }
 				  
+				  if ($surrounding) { return { prev_record => $works->[-2], next_record => undef, position => $#$works + 1 }; }
+
 				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname   => 'works',
@@ -168,9 +180,12 @@ our $browse_works_by_genre = make_api_function(
       required_parameters => [qw(genre)],
       optional_parameters => [qw(start limit accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      browse_index        => { index_function => 'works_by_genre',
+			       list_path      => 'works',
+			       index_args     => [qw(genre)] },
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req_data, $dbh) = @_;
+				  my ($req_data, $dbh, $surrounding) = @_;
 				  
 				  my $st = ComposerCat::Database::table_info('works')->{_list_by_genre};
 				  $st->execute($req_data->{params}->{genre});
@@ -178,8 +193,17 @@ our $browse_works_by_genre = make_api_function(
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
+				      if ($surrounding && scalar @$works >= 2 && $works->[-2]->{ID} eq $surrounding->{details}->{ID}) {
+					  return { prev_record => $works->[-3] || undef,
+						   next_record => $works->[-1],
+						   # position is *not* the offset, and we want the
+                                                   # position of the penultimate element
+						   position    => $#$works };
+				      }
 				  }
 				  
+				  if ($surrounding) { return { prev_record => $works->[-2], next_record => undef, position => $#$works + 1 }; }
+
 				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
 			      rootname   => 'works',
@@ -193,9 +217,12 @@ our $browse_works_by_title = make_api_function(
       required_parameters => [qw(title)],
       optional_parameters => [qw(cmp start limit accept submit)],
       accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      browse_index        => { index_function => 'works_by_title',
+			       list_path      => 'works',
+			       index_args     => [qw(title cmp)] },
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req_data, $dbh) = @_;
+				  my ($req_data, $dbh, $surrounding) = @_;
 
 				  # select a statement to use
 				  # depending on the value of the
@@ -220,7 +247,16 @@ our $browse_works_by_title = make_api_function(
 				  my $works = [];
 				  while (my $work = $st->fetchrow_hashref) {
 				      push @$works, $work;
+				      if ($surrounding && scalar @$works >= 2 && $works->[-2]->{ID} eq $surrounding->{details}->{ID}) {
+					  return { prev_record => $works->[-3] || undef,
+						   next_record => $works->[-1],
+						   # position is *not* the offset, and we want the
+                                                   # position of the penultimate element
+						   position    => $#$works };
+				      }
 				  }
+				  
+				  if ($surrounding) { return { prev_record => $works->[-2], next_record => undef, position => $#$works + 1 }; }
 
 				  return make_paged $works, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'work';
 			      },
@@ -258,7 +294,7 @@ our $fulltext_search = make_api_function(
       accept_types        => ['text/html', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
-				  my ($req_data, $dbh) = @_;
+				  my ($req_data, $dbh, $surrounding) = @_;
 				  return ComposerCat::Search::search_fulltext_index($req_data->{params}->{terms},
 										    $req_data->{params}->{start},
 										    $req_data->{params}->{limit});

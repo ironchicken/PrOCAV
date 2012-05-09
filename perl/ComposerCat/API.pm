@@ -428,11 +428,11 @@ sub init {
     	);
 
     %INDEXES = (
-	works                 => $ComposerCat::PublicUI::browse_works,
-	works_by_scored_for   => $ComposerCat::PublicUI::browse_works_by_scored_for,
-	browse_works_by_genre => $ComposerCat::PublicUI::browse_works_by_genre,
-	browse_works_by_title => $ComposerCat::PublicUI::browse_works_by_title,
-	fulltext_search       => $ComposerCat::PublicUI::fulltext_search
+	works               => $ComposerCat::PublicUI::browse_works,
+	works_by_scored_for => $ComposerCat::PublicUI::browse_works_by_scored_for,
+	works_by_genre      => $ComposerCat::PublicUI::browse_works_by_genre,
+	works_by_title      => $ComposerCat::PublicUI::browse_works_by_title,
+	fulltext_search     => $ComposerCat::PublicUI::fulltext_search
 	);
 }
 
