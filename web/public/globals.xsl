@@ -47,7 +47,7 @@
 </xsl:template>
 
 <xsl:template match="index">
-  <xsl:variable name="results-list"><xsl:value-of select="$URI_ROOT" />/<xsl:value-of select="index_function" />?<xsl:for-each select="index_args/*"><xsl:value-of select="name()" />=<xsl:value-of select="." />&amp;</xsl:for-each>start=<xsl:value-of select="position" /></xsl:variable>
+  <xsl:variable name="results-list"><xsl:value-of select="$URI_ROOT" />/<xsl:value-of select="list_path" />?<xsl:for-each select="index_args/*"><xsl:value-of select="name()" />=<xsl:value-of select="." />&amp;</xsl:for-each>start=<xsl:value-of select="position" /></xsl:variable>
 
   <ul id="navigation">
     <xsl:apply-templates select="prev_record" />

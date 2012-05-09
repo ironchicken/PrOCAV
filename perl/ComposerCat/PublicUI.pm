@@ -62,6 +62,7 @@ our $browse_works = make_api_function(
       optional_parameters => [qw(start limit accept)],
       accept_types        => ['text/html', 'text/xml'],
       browse_index        => { index_function => 'works',
+			       list_path      => 'works',
 			       index_args     => [qw(order_by)] },
       generator           => {type => 'proc',
 			      proc => sub {

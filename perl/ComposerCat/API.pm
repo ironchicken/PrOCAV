@@ -155,6 +155,7 @@ sub get_index {
     #my $function = cookie('index_function', $req, $apr_req) || 'works';
     #my $args     = cookie('index_args', $req, $apr_req)     || {order_by => 'title'};
     my $function = cookie 'index_function', $req, $apr_req;
+    my $path     = cookie 'list_path', $req, $apr_req;
     my $args     = cookie 'index_args', $req, $apr_req;
 
     return if (not defined $function);
@@ -163,7 +164,12 @@ sub get_index {
     # then de-serialises into array refs. So we need to convert $args
     # from an array ref into a hash ref.
     $function = $function->[0];
+    $path     = $path->[0];
     $args     = {@$args};
+
+    # now delete any empty arguments
+    my @empties = grep { $args->{$_} eq ''; } keys %$args;
+    delete @$args{@empties};
 
     return if ($function eq '');
 
@@ -174,9 +180,10 @@ sub get_index {
 
     my $surrounding_records = ($INDEXES{$function}->{generator}->{type} eq 'proc') ?
 	&{ $INDEXES{$function}->{generator}->{proc} }($idx_req, $dbh, $record) : undef;
-	
+
     return {
 	index_function => $function,
+	list_path      => $path,
 	index_args     => $args,
 	next_record    => $surrounding_records->{next_record},
 	prev_record    => $surrounding_records->{prev_record},
@@ -189,6 +196,13 @@ sub send_index_cookies {
     my $fc = CGI::Cookie->new(-name    => 'index_function',
 			      -value   => $index->{index_function} || '',
 			      -expires => (defined $index->{index_function}) ? '+1D' : '-1D',
+			      -path    => '/');
+
+    $req->err_headers_out->add("Set-Cookie", $fc);
+
+    my $fc = CGI::Cookie->new(-name    => 'list_path',
+			      -value   => $index->{list_path} || '',
+			      -expires => (defined $index->{list_path}) ? '+1D' : '-1D',
 			      -path    => '/');
 
     $req->err_headers_out->add("Set-Cookie", $fc);
@@ -291,8 +305,10 @@ sub make_api_function {
 		# information about the index
 		$req->server->log_error("Sending index information: " .
 					Dumper({ index_function => $options->{browse_index}->{index_function},
+						 list_path      => $options->{browse_index}->{list_path},
 						 index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} }));
 		send_index_cookies({ index_function => $options->{browse_index}->{index_function},
+				     list_path      => $options->{browse_index}->{list_path},
 				     index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} },
 				   $req, $apr_req);
 	    } elsif ($options->{respect_browse_idx}) {
@@ -304,7 +320,7 @@ sub make_api_function {
 	    } else {
 		# otherwise, remove any existing index information
 		$req->server->log_error("Removing index information");
-		send_index_cookies({ index_function => undef, index_args => undef }, $req, $apr_req);
+		send_index_cookies({ index_function => undef, list_path => undef, index_args => undef }, $req, $apr_req);
 	    }
 
 	    # set up an XML generator
