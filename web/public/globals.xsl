@@ -56,6 +56,8 @@
   </ul>
 </xsl:template>
 
+<xsl:template match="index_args/*" />
+
 <xsl:template name="user-tools">
   <div id="right-area">
     <!--<span style="color:#FFFFFF">User tools</span>-->
