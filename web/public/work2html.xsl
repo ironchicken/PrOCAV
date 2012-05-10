@@ -221,6 +221,10 @@
       resource="{$ID}"
       typeof="mo:Instrument"
       content="http://purl.org/ontology/taxonomy-a/mita#{instrument}">
+    <xsl:if test="cardinality='solo'">
+      <xsl:value-of select="cardinality" />
+      <xsl:text> </xsl:text>
+    </xsl:if>
     <xsl:value-of select="role" />
     <xsl:text> </xsl:text>
     <a href="{$URI_ROOT}/works?scored_for={instrument}"><xsl:value-of select="instrument" /></a>
