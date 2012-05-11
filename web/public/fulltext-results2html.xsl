@@ -12,7 +12,7 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>PrOCAV: Search: <xsl:value-of select="$terms" /></title>
+    <title>Prokofiev Catalogue and Digital Archive: Search: <xsl:value-of select="$terms" /></title>
 
     <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
     <link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" />

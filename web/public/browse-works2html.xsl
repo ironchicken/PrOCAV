@@ -20,7 +20,7 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>PrOCAV: browse works</title>
+    <title>Prokofiev Catalogue and Digital Archive: browse works</title>
 
     <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
     <link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" />

@@ -18,7 +18,7 @@
         manuscript or published title. A uniform title for each work
         binds variant titles together under one entry.
       </p>
-      <img src="/public/img/spine.png" alt="PrOCAV works authorities index with related archival content" />
+      <img src="/public/img/spine.png" alt="PCDA works authorities index with related archival content" />
 
       <h3>Catalogue Entry</h3>
       <p>
@@ -32,7 +32,7 @@
         compositions in Prokofiev's output. For a sample catalogue
         entry click <a href="{$URI_ROOT}/works/58">here</a>.
       </p>
-      <img src="/public/img/procav-er.png" alt="PrOCAV entity relationship diagram" />
+      <img src="/public/img/pcda-er.png" alt="PCDA entity relationship diagram" />
 
       <h3>Manuscripts</h3>
       <p>
@@ -52,13 +52,14 @@
 
       <h3>Digitized Sources</h3>
       <p>
-        PrOCAV digitally captures crucial sketches, catalogues, scores
-        and letters relating to Prokofiev's compositions that are
-        housed in the Prokofiev Archive. These sources are linked to
-        the relevant work catalogue entries. Attached to each
-        digitized item are transcriptions, translations and
-        information about the item's provenance; this metadata sheds
-        light on how digitized primary sources relate to a work.
+        The Prokofiev Catalogue and Digital Archive digitally captures
+        crucial sketches, catalogues, scores and letters relating to
+        Prokofiev's compositions that are housed in the Prokofiev
+        Archive. These sources are linked to the relevant work
+        catalogue entries. Attached to each digitized item are
+        transcriptions, translations and information about the item's
+        provenance; this metadata sheds light on how digitized primary
+        sources relate to a work.
       </p>
     </div>
   </body>

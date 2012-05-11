@@ -15,7 +15,7 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>PrOCAV: <xsl:value-of select="/document/head/title" /></title>
+    <title>Prokofiev Catalogue and Digital Archive: <xsl:value-of select="/document/head/title" /></title>
     <meta name="created" value="{/document/head/created}" />
     <meta name="modified" value="{/document/head/modified}" />
 

@@ -20,8 +20,8 @@
 
 <xsl:template name="page-header">
   <div id="title-area">
-    <h1>PrOCAV</h1>
-    <div id="page-subtitle">Prokofiev Online Catalogue Archive and Visualization</div>
+    <h1>PCDA</h1>
+    <div id="page-subtitle">Prokofiev Catalogue and Digital Archive</div>
   </div>
 </xsl:template>
 
@@ -69,8 +69,8 @@
     <table style="border:none">
       <tr>
         <td colspan="3" style="text-align:center">
-          PrOCAV is supported by the <a
-          href="http://www.sprkfv.net/">Serge Prokofiev
+          The Prokofiev Catalogue and Digital Archive is supported by
+          the <a href="http://www.sprkfv.net/">Serge Prokofiev
           Foundation</a>, <a href="http://www.gold.ac.uk/">Goldsmiths,
           University of London</a>, and <a
           href="http://www.princeton.edu/">Princeton University</a>
@@ -89,7 +89,7 @@
       </tr>
       <tr>
         <td colspan="3" style="text-align:center">
-          Copyright © 2012 PrOCAV
+          Copyright © 2012 The Prokofiev Catalogue and Digital Archive
 	</td>
       </tr>
     </table>

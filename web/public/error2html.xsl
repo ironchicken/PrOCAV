@@ -10,7 +10,7 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>PrOCAV: <xsl:value-of select="//error_code" /></title>
+    <title>Prokofiev Catalogue and Digital Archive: <xsl:value-of select="//error_code" /></title>
 
     <xsl:call-template name="page-tools" />
   </head>
