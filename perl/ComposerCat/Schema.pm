@@ -172,7 +172,7 @@ our %look_ups = (
 
     performances         => sub { @_[0]->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
 
-    letters              => sub { @_[0]->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters JOIN persons AS s ON letters.signatory = s.ID JOIN persons AS a ON letters.addressee = a.ID JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
+    letters              => sub { @_[0]->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters LEFT JOIN persons AS s ON letters.signatory = s.ID LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
 
     catalogues           => sub { @_[0]->prepare(qq(SELECT ID AS value, label AS display FROM catalogues ORDER BY label)); },
 
