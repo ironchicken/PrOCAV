@@ -664,7 +664,7 @@ our %schema = (
 			    foreign_key => "dates",
 	 		    look_up => "dates",
 			    hint => "ID of the date this period started"},
-			    value_parser => sub { },
+			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
@@ -744,7 +744,7 @@ our %schema = (
 			    foreign_key => "dates",
 	 		    look_up => "dates",
 			    hint => "ID of the date this edition was made"},
-			    value_parser => sub { },
+			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
@@ -803,7 +803,7 @@ our %schema = (
 			    foreign_key => "dates",
 	 		    look_up => "dates",
 			    hint => "ID of the date the publication was issued"},
-			    value_parser => sub { },
+			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
@@ -901,7 +901,7 @@ our %schema = (
 			    foreign_key => "dates",
 	 		    look_up => "dates",
 			    hint => "ID of the date of the performance"},
-			    value_parser => sub { },
+			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
@@ -1202,7 +1202,7 @@ our %schema = (
 			    foreign_key => "dates",
 			    look_up => "dates",
 			    hint => "ID of the date this manuscript was made"},
-			    value_parser => sub { },
+			    #value_parser => sub { },
 			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
 			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
