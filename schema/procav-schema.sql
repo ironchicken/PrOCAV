@@ -215,7 +215,21 @@ CREATE TABLE manuscripts (
   missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
   date_made         INT,
   annotation_of     INT,
-  location          VARCHAR(128),
+  location          INT,
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- an archive of documents or other materials
+CREATE TABLE archives (
+  ID                INT PRIMARY KEY auto_increment,
+  title             VARCHAR(128),
+  abbreviation      VARCHAR(16),
+  date_established  INT,
+  date_disbanded    INT,
+  city              VARCHAR(128),
+  location          VARCHAR(255),
+  country           CHAR(2),
+  uri               VARCHAR(255),
   notes             TEXT,
   staff_notes       TEXT);
 
