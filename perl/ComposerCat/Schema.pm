@@ -187,7 +187,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts editions publications published_in performances venues performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts archives editions publications published_in performances venues performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1218,9 +1218,79 @@ our %schema = (
 			    hint => "ID of an edition of which this manuscript is an annotation"},
 
 	location        => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "archives",
+	 		    look_up => "archives",
+			    hint => "ID of an archive in which this manuscript is kept"},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    archives           => {
+	_worksheet => "archives",
+
+	_field_order         => [qw(ID title abbreviation date_established date_disbanded location city country uri notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(ID title abbreviation date_established date_disbanded location city country uri notes staff_notes)],
+	_order_fields        => [qw(abbreviation)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 20},
+
+	abbreviation    => {access => "rw",
+			    data_type => "string",
+			    width => 16,
+			    cell_width => 8},
+
+	abbreviation    => {access => "rw",
+			    data_type => "string",
+			    width => 16,
+			    cell_width => 8},
+
+	date_established => {access => "rw",
+			     data_type => "integer",
+			     foreign_key => "dates",
+			     look_up => "dates",
+			     hint => "ID of the date this archive was established"},
+
+	date_disbanded  => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the date this archive was disbanded"},
+
+	location        => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 15},
+
+	city            => {access => "rw",
 			    data_type => "string",
 			    width => 128,
 			    cell_width => 12},
+
+	country         => {access => "rw",
+			    data_type => "string",
+			    width => 2,
+			    cell_width => 8},
+
+	uri             => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 15},
 
 	notes           => {access => "rw",
 			    data_type => "string",
