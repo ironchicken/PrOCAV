@@ -2422,12 +2422,8 @@ our $annotations = {
 		       position    => 'end' },
 		     { pattern     => qr|^ru$|,
 		       description => 'Russian',
-		       position    => 'end' }] },
+		       position    => 'end' }] }
 
-    publications => {
-	title => [{ pattern => qr|and|,
-		    description => 'This is a conjunctive',
-		    position => 'inline' }] }
     };
     
 1;
