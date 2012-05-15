@@ -2183,7 +2183,7 @@ sub schema_prepare_statments {
     ORDER BY derivation_relation, precursor_work|);
 
     # works._composition
-    $schema{works}->{_composition} = $dbh->prepare_cached(q|SELECT manuscripts.title AS manuscript_title, | . date_selector("start") . ', ' . date_selector("end") . q|, composition.work_type
+    $schema{works}->{_composition} = $dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("start") . ', ' . date_selector("end") . q|, composition.work_type
     FROM composition
     LEFT JOIN dates AS start ON composition.period_start = start.ID
     LEFT JOIN dates AS end ON composition.period_end = end.ID
@@ -2221,7 +2221,7 @@ sub schema_prepare_statments {
     ORDER BY performed.year, performed.month, performed.day|);
 
     # works._letters
-    $schema{works}->{_letters} = $dbh->prepare_cached(q|SELECT | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    $schema{works}->{_letters} = $dbh->prepare_cached(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
     addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, letter_mentions.letter_ragne,
     letter_mentions.mentioned_extent AS work_extent, letter_mentions.notes
@@ -2235,7 +2235,7 @@ sub schema_prepare_statments {
     ORDER BY composed.year, composed.month, composed.day|);
 
     #works._manuscripts
-    $schema{works}->{_manuscripts} = $dbh->prepare_cached(q|SELECT manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    $schema{works}->{_manuscripts} = $dbh->prepare_cached(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
     manuscripts.notes, archives.ID AS archive_id, archives.abbreviation AS archive_abbr, archives.title AS archive
     FROM manuscripts
@@ -2244,10 +2244,10 @@ sub schema_prepare_statments {
     LEFT JOIN in_archive ON in_archive.entity_id = manuscripts.ID
     LEFT JOIN archives ON in_archive.archive_id = archives.ID
     WHERE manuscripts.work_id=? AND (in_archive.entity_type = "manuscripts" OR in_archive.entity_type IS NULL)
-    ORDER BY made.year, made.month, made.day|);
+    ORDER BY made.year, made.month, made.day, manuscripts.purpose|);
 
     # works._texts
-    $schema{works}->{_texts} = $dbh->prepare_cached(q|SELECT texts.title, author.given_name AS author_given_name,
+    $schema{works}->{_texts} = $dbh->prepare_cached(q|SELECT texts.ID, texts.title, author.given_name AS author_given_name,
     author.family_name AS author_family_name, texts.no_author, texts.text_type, texts.original, texts.language, texts.source,
     texts.citation, texts.original_content, texts.english_content, texts.notes
     FROM texts
@@ -2256,7 +2256,7 @@ sub schema_prepare_statments {
     WHERE work_sets_text.work_id=?|);
 
     # works._dedicated_to
-    $schema{works}->{_dedicated_to} = $dbh->prepare_cached(q|SELECT dedicatee.given_name AS dedicatee_given_name,
+    $schema{works}->{_dedicated_to} = $dbh->prepare_cached(q|SELECT dedicatee.ID, dedicatee.given_name AS dedicatee_given_name,
     dedicatee.family_name AS dedicatee_family_name, manuscripts.title AS manuscript_title, edition_date.year AS edition,
     dedicated_to.dedication_text, | . date_selector('made') . q|
     FROM dedicated_to
@@ -2269,7 +2269,7 @@ sub schema_prepare_statments {
     ORDER BY made.year, made.month, made.day|);
 
     # works._commissioned_by
-    $schema{works}->{_commissioned_by} = $dbh->prepare_cached(q|SELECT commissioner.given_name AS commissioner_given_name,
+    $schema{works}->{_commissioned_by} = $dbh->prepare_cached(q|SELECT commissioner.ID, commissioner.given_name AS commissioner_given_name,
     commissioner.family_name AS commissioner_family_name, commissioned_by.commission_text, | . date_selector('made') . q|
     FROM commissioned_by
     JOIN persons AS commissioner ON commissioned_by.person_id = commissioner.ID
