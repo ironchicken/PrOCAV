@@ -126,22 +126,53 @@ sub test_database_autoloader {
 sub test_schema_statements {
     make_dbh;
 
+    print "============================================\n";
+    print "works #55:\n";
     my $work = ComposerCat::Database::complete_work(55);
     print Dumper($work) . "\n\n";
+    print "============================================\n";
 
+    print "============================================\n";
+    print "works #56:\n";
     my $work = ComposerCat::Database::complete_work(56);
     print Dumper($work) . "\n\n";
+    print "============================================\n";
 
+    print "============================================\n";
+    print "works #57:\n";
     my $work = ComposerCat::Database::complete_work(57);
     print Dumper($work) . "\n\n";
+    print "============================================\n";
+
+    print "============================================\n";
+    print "archives #1:\n";
+    my $work = ComposerCat::Database::complete_archive(1);
+    print Dumper($work) . "\n\n";
+    print "============================================\n";
+
+    print "============================================\n";
+    print "archives #2:\n";
+    my $work = ComposerCat::Database::complete_archive(2);
+    print Dumper($work) . "\n\n";
+    print "============================================\n";
+
+    print "============================================\n";
+    print "archives #3:\n";
+    my $work = ComposerCat::Database::complete_archive(3);
+    print Dumper($work) . "\n\n";
+    print "============================================\n";
 }
 
 sub test_schema_statement {
     make_dbh;
 
-    my $st_name = shift;
-    my $st = ComposerCat::Database::table_info('works')->{$st_name};
+    my ($table, $st_name) = (shift, shift);
+    print "============================================\n";
+    print "$table.$st_name:\n";
+    my $st = ComposerCat::Database::table_info($table)->{$st_name};
     $st->execute(@_);
+    print Dumper($st->fetchall_arrayref);
+    print "============================================\n";
 }
 
 sub test_all_records {
@@ -269,12 +300,17 @@ sub main {
     #test_dbpedia_url;
     #test_insert_resource;
     #test_auto_resource_inserter;
-    #test_schema_statements;
+    test_schema_statements;
     #test_make_api_function;
     #test_sax_machines_xslt;
-    #test_schema_statement '_list_by_scored_for', 'clarinet';
+    #test_schema_statement 'works', '_list_by_scored_for', 'clarinet';
     #test_markup_filter;
-    test_process_all_pages;
+    #test_process_all_pages;
+
+    test_schema_statement 'archives', '_manuscripts', '1';
+    test_schema_statement 'archives', '_manuscripts', '2';
+    test_schema_statement 'archives', '_manuscripts', '3';
+
 }
 
 main;

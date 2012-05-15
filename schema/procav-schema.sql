@@ -215,7 +215,6 @@ CREATE TABLE manuscripts (
   missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
   date_made         INT,
   annotation_of     INT,
-  location          INT,
   notes             TEXT,
   staff_notes       TEXT);
 
@@ -230,6 +229,24 @@ CREATE TABLE archives (
   location          VARCHAR(255),
   country           CHAR(2),
   uri               VARCHAR(255),
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- asserts that an archivalable entity is in an archive optionally
+-- with an identifier from that archive; use a resources record to
+-- associate an external URI
+CREATE TABLE in_archive (
+  entity_type       ENUM('manuscripts', 'letters') NOT NULL,
+  entity_id         INT NOT NULL,
+  archive_id        INT NOT NULL,
+  archival_ref_str  VARCHAR(64),
+  archival_ref_num  INT,
+  date_acquired     INT,
+  date_released     INT,
+  access            ENUM('public', 'private'),
+  item_status       ENUM('original', 'copy') NOT NULL DEFAULT 'original',
+  copy_type         VARCHAR(32), -- e.g. photocopy, microfilm, scan
+  copyright         VARCHAR(255),
   notes             TEXT,
   staff_notes       TEXT);
 
@@ -376,8 +393,9 @@ CREATE TABLE resource_about (
   resource_id       INT NOT NULL,
   related_table     ENUM('works', 'titles', 'genres', 'instruments', 'composition',
                          'editions', 'publications', 'performances', 'letters',
-                         'letter_mentions', 'manuscripts', 'texts', 'persons',
-                         'dedicated_to', 'commissioned_by', 'remote_media_items') NOT NULL,
+                         'letter_mentions', 'manuscripts', 'archives', 'in_archive',
+			 'texts', 'persons', 'dedicated_to', 'commissioned_by',
+			 'remote_media_items') NOT NULL,
   related_id        INT NOT NULL,
   relation          VARCHAR(128));
 

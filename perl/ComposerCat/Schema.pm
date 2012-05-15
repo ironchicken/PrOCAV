@@ -58,6 +58,15 @@ our %look_ups = (
 					 {value => "sub-series", display => "Sub-series"},
 					 {value => "item",       display => "Item"}]; },
 
+    archivable_entities  => sub { [{value => "manuscripts", display => "Manuscripts"},
+				   {value => "letters",     display => "Letters"}]; },
+
+    archival_access       => sub { [{value => "private", display => "Private"},
+				    {value => "public",  display => "Public"}]; },
+
+    archival_item_status  => sub { [{value => "original", display => "Original"},
+				    {value => "copy",     display => "Copy"}]; },
+
     instrument_cardinality => sub { [{value => "solo",   display => "Solo"},
 				     {value => "desk",   display => "Desk"},
 				     {value => "chorus", display => "Chorus"}]; },
@@ -134,6 +143,8 @@ our %look_ups = (
 				   {value => "letters", display => "Letters"},
 				   {value => "letter_mentions", display => "Letter mentions"},
 				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "archives", display => "Archives"},
+				   {value => "in_archive", display => "Item in archive"},
 				   {value => "persons", display => "Persons"},
 				   {value => "texts", display => "Texts"},
 				   {value => "dedicated_to", display => "Dedicated_to"},
@@ -162,6 +173,8 @@ our %look_ups = (
 
     manuscripts          => sub { @_[0]->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
 
+    archives             => sub { @_[0]->prepare(qq(SELECT archives.ID AS value, IFNULL(abbreviation, title) AS display FROM archives ORDER BY display)); },
+
     editions             => sub { @_[0]->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
 
     publications         => sub { @_[0]->prepare(qq(SELECT publications.ID AS value, title AS display FROM publications ORDER BY title)); },
@@ -187,7 +200,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts archives editions publications published_in performances venues performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts archives in_archive editions publications published_in performances venues performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1137,10 +1150,10 @@ our %schema = (
     manuscripts        => {
 	_worksheet => "manuscripts",
 
-	_field_order         => [qw(ID work_id title purpose part_of parent_relation physical_size medium extent missing date_made annotation_of location notes staff_notes)],
+	_field_order         => [qw(ID work_id title purpose part_of parent_relation physical_size medium extent missing date_made annotation_of notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(title work_id purpose part_of parent_relation physical_size medium extent missing date_made annotation_of location notes staff_notes)],
+	_insert_fields       => [qw(title work_id purpose part_of parent_relation physical_size medium extent missing date_made annotation_of notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
@@ -1217,12 +1230,6 @@ our %schema = (
 	 		    look_up => "editions",
 			    hint => "ID of an edition of which this manuscript is an annotation"},
 
-	location        => {access => "rw",
-			    data_type => "integer",
-			    foreign_key => "archives",
-	 		    look_up => "archives",
-			    hint => "ID of an archive in which this manuscript is kept"},
-
 	notes           => {access => "rw",
 			    data_type => "string",
 			    cell_width => 80},
@@ -1288,6 +1295,86 @@ our %schema = (
 			    cell_width => 8},
 
 	uri             => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 15},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    in_archive         => {
+	_worksheet => "in_archive",
+
+	_field_order         => [qw(entity_type entity_id archive_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
+	_unique_fields       => [qw(entity_type entity_id archive_id)],
+	_single_select_field => "entity_id",
+	_insert_fields       => [qw(entity_type entity_id archive_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
+	_order_fields        => [qw(archive_id archival_ref_num archival_ref_str entity_type entity_id)],
+	_default_order       => "ASC",
+
+	entity_type     => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "archivable_entities",
+			    not_null => 1,
+			    cell_width => 8},
+
+	entity_id       => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8,
+			    hint => "ID of the item"},
+
+	archive_id      => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "archives",
+			    look_up => "archives",
+			    not_null => 1,
+			    cell_width => 12,
+			    hint => "ID of the archive in which the item is housed"},
+
+	archival_ref_str => {access => "rw",
+			     data_type => "string",
+			     cell_width => 12},
+
+	archival_ref_num => {access => "rw",
+			     data_type => "integer",
+			     cell_width => 12},
+			    
+	date_acquired   => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the date this item was acquired by the archive"},
+
+	date_released   => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the date this item was released from the archive"},
+
+	access          => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "archival_access",
+			    cell_width => 8},
+
+	item_status     => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "archival_item_status",
+			    not_null => 1,
+			    default => 'original',
+			    cell_width => 8},
+
+	copy_type       => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 12},
+
+	copyright       => {access => "rw",
 			    data_type => "string",
 			    width => 255,
 			    cell_width => 15},
@@ -2009,6 +2096,10 @@ sub schema_prepare_statments {
 	    "$name.date_text AS $name\_date_text ";
     }
 
+    ######################################################################################################
+    ### WORKS TABLE STATEMENTS
+    ######################################################################################################
+
     # works._full retrieves a single WORKS with its MUSICAL_INFORMATION
     $schema{works}->{_full} = $dbh->prepare_cached(q|SELECT works.ID, works.uniform_title, works.sub_title,
     works.part_of, works.parent_relation, works.duration, works.notes,
@@ -2146,11 +2237,13 @@ sub schema_prepare_statments {
     #works._manuscripts
     $schema{works}->{_manuscripts} = $dbh->prepare_cached(q|SELECT manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
-    manuscripts.location, manuscripts.notes
+    manuscripts.notes, archives.ID AS archive_id, archives.abbreviation AS archive_abbr, archives.title AS archive
     FROM manuscripts
     LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
     -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
-    WHERE manuscripts.work_id=?
+    LEFT JOIN in_archive ON in_archive.entity_id = manuscripts.ID
+    LEFT JOIN archives ON in_archive.archive_id = archives.ID
+    WHERE manuscripts.work_id=? AND (in_archive.entity_type = "manuscripts" OR in_archive.entity_type IS NULL)
     ORDER BY made.year, made.month, made.day|);
 
     # works._texts
@@ -2380,6 +2473,49 @@ sub schema_prepare_statments {
     GROUP BY works.ID
     ORDER BY year ASC|);
     
+    ######################################################################################################
+    ### ARCHIVES TABLE STATEMENTS
+    ######################################################################################################
+
+    # archives._full
+    $schema{archives}->{_full} =
+	$dbh->prepare(q|SELECT archives.ID, archives.title, archives.abbreviation, | . date_selector('established') . q|,
+    | . date_selector('disbanded') . q|, archives.city, archives.location, archives.country, archives.uri, archives.notes
+    FROM archives
+    LEFT JOIN dates AS established ON archives.date_established = established.ID
+    LEFT JOIN dates AS disbanded ON archives.date_disbanded = disbanded.ID
+    WHERE archives.ID=?|);
+
+    $schema{archives}->{_letters} =
+	$dbh->prepare(q|SELECT | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
+    addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM letters
+    JOIN in_archive ON in_archive.entity_id = letters.ID
+    LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
+    LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
+    LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
+    LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
+    WHERE in_archive.entity_type = "letters" AND in_archive.archive_id=?
+    ORDER BY in_archive.archival_ref_num, in_archive.archival_ref_str, composed.year, composed.month, composed.day|);
+
+    $schema{archives}->{_manuscripts} =
+	$dbh->prepare_cached(q|SELECT manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM manuscripts
+    JOIN in_archive ON in_archive.entity_id = manuscripts.ID
+    LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
+    -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
+    WHERE in_archive.entity_type = "manuscripts" AND in_archive.archive_id=?
+    ORDER BY in_archive.archival_ref_num, in_archive.archival_ref_str, made.year, made.month, made.day, manuscripts.title, manuscripts.purpose|);
+
+    $schema{archives}->{_complete} = {details            => ['ONE', '_full'],
+				      letter             => ['MANY', '_letters'],
+				      manuscript         => ['MANY', '_manuscripts']};
 }
 
 #################################################################################################################
