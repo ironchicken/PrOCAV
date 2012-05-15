@@ -287,7 +287,7 @@
     <xsl:apply-templates select="missing" />
     <xsl:apply-templates select="date_made_year" />
     <!-- <xsl:apply-templates select="annotation_of" /> -->
-    <xsl:apply-templates select="location" />
+    <xsl:apply-templates select="archive|archive_abbr" />
     <xsl:apply-templates select="notes" />
   </div>
 </xsl:template>
@@ -368,12 +368,21 @@
   </div>
 </xsl:template>
 
-<xsl:template match="work/manuscript/location">
+<xsl:template match="work/manuscript/archive">
   <div class="field manuscript-location">
     <span class="name">Location</span>
     <span class="content manuscript-location"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="composercat:location"><xsl:apply-templates /></span>
+	  property="composercat:location"><a href="{$URI_ROOT}/archives/{../archive_id}"><xsl:apply-templates /></a></span>
+  </div>
+</xsl:template>
+
+<xsl:template match="work/manuscript/archive_abbr[not(../archive)]">
+  <div class="field manuscript-location">
+    <span class="name">Location</span>
+    <span class="content manuscript-location"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
+	  property="composercat:location"><a href="{$URI_ROOT}/archives/{../archive_id}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
