@@ -297,7 +297,7 @@
     <span class="name">Title</span>
     <span class="content manuscript-title"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="dc:title"><xsl:apply-templates /></span>
+	  property="dc:title"><a href="{$URI_ROOT}/manuscripts/{../ID}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
@@ -410,7 +410,7 @@
     <span class="name">Title</span>
     <span class="content publication-title"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="dc:title"><xsl:apply-templates /></span>
+	  property="dc:title"><a href="{$URI_ROOT}/publications/{../ID}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
@@ -559,7 +559,7 @@
     <span class="name">Performance type</span>
     <span class="content performance-performance-type"
 	  about="{$URI_ROOT}/performances/{../ID}"
-	  property="composercat:performance_type"><xsl:apply-templates /></span>
+	  property="composercat:performance_type"><a href="{$URI_ROOT}/performances/{../ID}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
