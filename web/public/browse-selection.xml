@@ -185,8 +185,8 @@
       </div>
 
       <div class="browse-option">
-        <h4>Manuscripts by date made</h4>
-        <form id="browse-manuscripts-by-date-made" action="{$URI_ROOT}/manuscripts" method="GET">
+        <h4>Manuscripts by date</h4>
+        <form id="browse-manuscripts-by-date" action="{$URI_ROOT}/manuscripts" method="GET">
 
 	</form>
       </div>
