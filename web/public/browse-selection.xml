@@ -165,7 +165,7 @@
 
       <div class="browse-option">
         <h4>Works by key signature</h4>
-        <form id="browse-works-by-title" action="{$URI_ROOT}/works" method="GET">
+        <form id="browse-works-by-key" action="{$URI_ROOT}/works" method="GET">
 
 	</form>
       </div>
