@@ -254,6 +254,13 @@
 	</form>
       </div>
 
+      <div class="browse-option">
+        <h4>Archive items by reference number</h4>
+        <form id="browse-archive-items-by-reference-number" action="{$URI_ROOT}/archives" method="GET">
+
+	</form>
+      </div>
+
     </div>
   </body>
 </document>
