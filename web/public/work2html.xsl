@@ -203,7 +203,7 @@
       </xsl:if>
       <xsl:if test="end_year"><a href="{$URI_ROOT}/year/{end_year}"><xsl:value-of select="end_year" /></a></xsl:if>
 
-      <xsl:if test="work_type">; <xsl:value-of select="work_type" /></xsl:if>
+      <xsl:if test="work_type">; <xsl:apply-templates select="work_type" /></xsl:if>
 
       <xsl:if test="notes"><span class="value-notes hidden"><xsl:apply-templates select="notes" /></span></xsl:if>
     </span>

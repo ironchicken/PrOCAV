@@ -2561,5 +2561,7 @@ our $annotations = {
 		       position    => 'end' }] }
 
     };
+
+$annotations->{composition} = { work_type => $annotations->{manuscripts}->{purpose} };
     
 1;
