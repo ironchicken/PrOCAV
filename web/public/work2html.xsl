@@ -382,6 +382,8 @@
   </div>
 </xsl:template>
 
+<xsl:template match="work/manuscript/archive_abbr[../archive]" />
+
 <xsl:template match="work/manuscript/notes">
   <div class="field manuscript-notes">
     <span class="name">Notes</span>
