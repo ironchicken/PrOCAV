@@ -229,6 +229,10 @@ CREATE TABLE archives (
   location          VARCHAR(255),
   country           CHAR(2),
   uri               VARCHAR(255),
+  telephone         VARCHAR(32),
+  email             VARCHAR(255),
+  latitude	    DECIMAL(18,12),
+  longitude	    DECIMAL(18,12),
   notes             TEXT,
   staff_notes       TEXT);
 

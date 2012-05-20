@@ -1241,10 +1241,10 @@ our %schema = (
     archives           => {
 	_worksheet => "archives",
 
-	_field_order         => [qw(ID title abbreviation date_established date_disbanded location city country uri notes staff_notes)],
+	_field_order         => [qw(ID title abbreviation date_established date_disbanded location city country uri telephone email latitude longitude notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(ID title abbreviation date_established date_disbanded location city country uri notes staff_notes)],
+	_insert_fields       => [qw(ID title abbreviation date_established date_disbanded location city country uri telephone email latitude longitude notes staff_notes)],
 	_order_fields        => [qw(abbreviation)],
 	_default_order       => "ASC",
 
@@ -1298,6 +1298,23 @@ our %schema = (
 			    data_type => "string",
 			    width => 255,
 			    cell_width => 15},
+
+	telephone       => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 15},
+
+	email           => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 15},
+	latitude        => {access => "rw",
+			    data_type => "decimal",
+			    cell_width => 8},
+
+	longitude       => {access => "rw",
+			    data_type => "decimal",
+			    cell_width => 8},
 
 	notes           => {access => "rw",
 			    data_type => "string",
