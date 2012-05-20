@@ -60,7 +60,7 @@ our $browse_works = make_api_function(
       require_session     => 'public',
       required_parameters => [qw(order_by)],
       optional_parameters => [qw(start limit accept)],
-      accept_types        => ['text/html', 'text/xml'],
+      accept_types        => ['text/html', 'application/xml', 'text/xml'],
       browse_index        => { index_function => 'works',
 			       list_path      => 'works',
 			       index_args     => [qw(order_by)] },
@@ -113,7 +113,7 @@ our $browse_works_by_scored_for = make_api_function(
       require_session     => 'public',
       required_parameters => [qw(scored_for)],
       optional_parameters => [qw(cmp start limit accept submit)],
-      accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       browse_index        => { index_function => 'works_by_scored_for',
 			       list_path      => 'works',
 			       index_args     => [qw(scored_for cmp)] },
@@ -179,7 +179,7 @@ our $browse_works_by_genre = make_api_function(
       require_session     => 'public',
       required_parameters => [qw(genre)],
       optional_parameters => [qw(start limit accept submit)],
-      accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       browse_index        => { index_function => 'works_by_genre',
 			       list_path      => 'works',
 			       index_args     => [qw(genre)] },
@@ -216,7 +216,7 @@ our $browse_works_by_title = make_api_function(
       require_session     => 'public',
       required_parameters => [qw(title)],
       optional_parameters => [qw(cmp start limit accept submit)],
-      accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       browse_index        => { index_function => 'works_by_title',
 			       list_path      => 'works',
 			       index_args     => [qw(title cmp)] },
@@ -273,7 +273,7 @@ our $view_work = make_api_function(
     { uri_pattern         => qr|^/works/(?<work_id>[0-9]+)/?$|,
       require_session     => 'public',
       optional_parameters => [qw(accept)],
-      accept_types        => ['text/html', 'text/xml', 'application/rdf+xml'],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       respect_browse_idx  => 1,
       generator           => {type     => 'proc',
 			      proc     => sub {
@@ -291,7 +291,7 @@ our $fulltext_search = make_api_function(
       require_session     => 'public',
       required_parameters => [qw(terms)],
       optional_parameters => [qw(accept start limit)],
-      accept_types        => ['text/html', 'text/xml'],
+      accept_types        => ['text/html', 'application/xml', 'text/xml'],
       generator           => {type => 'proc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
@@ -304,7 +304,7 @@ our $fulltext_search = make_api_function(
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'fulltext-results2html.xsl']} });
 
 our $bad_arguments = make_api_function(
-    { accept_types => ['text/html', 'text/xml'],
+    { accept_types => ['text/html', 'application/xml', 'text/xml'],
       error_code   => Apache2::Const::HTTP_BAD_REQUEST,
       generator    => {type => 'proc',
 		       proc => sub {
@@ -322,7 +322,7 @@ our $bad_arguments = make_api_function(
       transforms   => {'text/html' => [$TEMPLATES_DIR . 'error2html.xsl']} });
 
 our $not_found = make_api_function(
-    { accept_types => ['text/html', 'text/xml'],
+    { accept_types => ['text/html', 'application/xml', 'text/xml'],
       error_code   => Apache2::Const::NOT_FOUND,
       generator    => {type => 'proc',
 		       proc => sub {

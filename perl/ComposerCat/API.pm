@@ -249,7 +249,7 @@ sub make_api_function {
 	# find out what content type is requested
 	my $content_type = request_content_type($req, $apr_req, (defined $options->{accept_types}) ?
 						$options->{accept_types} :
-						['text/html', 'text/xml']);
+						['text/html', 'application/xml', 'text/xml']);
 
 	binmode($dest, ':utf8:');
 
