@@ -255,8 +255,8 @@ sub make_api_function {
 
 	# construct a SAX processing pipeline
 	my @p = (XML::Filter::BufferText->new,
-		 ComposerCat::Database::MarkupFilter->new,
-		 ComposerCat::Database::ValueAnnotations->new);
+		 ComposerCat::Database::ValueAnnotations->new,
+		 ComposerCat::Database::MarkupFilter->new);
 	
 	if (defined $options->{transforms} && defined $options->{transforms}->{$content_type}) {
 	    push @p, map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
