@@ -74,6 +74,14 @@ sub table_info {
     $schema{$table_name};
 }
 
+sub table_name {
+    my $name = shift;
+
+    return $name if (defined $schema{$name});
+    return $name . 's' if (defined $schema{$name . 's'});
+    return 0;
+}
+
 sub allow_markup {
     my ($element_name) = @_;
 
@@ -86,8 +94,7 @@ sub allow_markup {
 
 sub annotations {
     my ($table, $field, $value) = @_;
-    # FIXME Solve table name pluralisation problem
-    $table .= 's';
+    $table = table_name($table);
 
     if (defined $value) {
 	if (defined $annotations->{$table}->{$field}) {
@@ -104,8 +111,7 @@ sub annotations {
 
 sub annotated_table {
     my ($table) = @_;
-    # FIXME Solve table name pluralisation problem
-    $table .= 's';
+    $table = table_name($table);
 
     if (defined $annotations->{$table}) {
 	return $annotations->{$table};
@@ -116,8 +122,7 @@ sub annotated_table {
 
 sub annotated_field {
     my ($table, $field) = @_;
-    # FIXME Solve table name pluralisation problem
-    $table .= 's';
+    $table = table_name($table);
 
     if (defined $annotations->{$table} && defined $annotations->{$table}->{$field}) {
 	return $annotations->{$table}->{$field};
