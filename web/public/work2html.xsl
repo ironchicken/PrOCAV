@@ -110,11 +110,7 @@
         <div class="field composition-history">
 	  <span class="name">Composition history</span>
 	  <ul class="content composition-history">
-          <xsl:apply-templates select="//composition">
-            <xsl:sort select="end_year" data-type="number" order="ascending" />
-            <xsl:sort select="end_month" data-type="number" order="ascending" />
-            <xsl:sort select="end_day" data-type="number" order="ascending" />
-          </xsl:apply-templates>
+          <xsl:apply-templates select="//composition" />
 	  </ul>
         </div>
       </xsl:if>
