@@ -9,7 +9,15 @@
 <xsl:variable name="ID"><xsl:value-of select="$URI_ROOT" />/works/<xsl:value-of select="/response/content/work/details/ID" /></xsl:variable>
 
 <xsl:template match="/">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:mei="http://www.music-encoding.org/ns/mei"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:mo="http://purl.org/ontology/mo/"
+      xmlns:mo-i="http://purl.org/ontology/mo-imaginary/"
+      xmlns:event="http://purl.org/NET/c4dm/event.owl"
+      version="HTML+RDFa 1.0" xml:lang="en">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title>Serge Prokofiev: <xsl:value-of select="//details/uniform_title" /></title>
