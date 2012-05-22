@@ -2523,9 +2523,10 @@ sub schema_prepare_statments {
 	$dbh->prepare_cached(q|SELECT manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
     in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
-    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, manuscripts.work_id
     FROM manuscripts
     JOIN in_archive ON in_archive.entity_id = manuscripts.ID
+    LEFT JOIN works ON manuscripts.work_id = works.ID
     LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
     -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
     WHERE in_archive.entity_type = "manuscripts" AND in_archive.archive_id=?
