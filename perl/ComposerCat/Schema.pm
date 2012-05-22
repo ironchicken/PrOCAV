@@ -2497,7 +2497,8 @@ sub schema_prepare_statments {
     # archives._full
     $schema{archives}->{_full} =
 	$dbh->prepare(q|SELECT archives.ID, archives.title, archives.abbreviation, | . date_selector('established') . q|,
-    | . date_selector('disbanded') . q|, archives.city, archives.location, archives.country, archives.uri, archives.notes
+    | . date_selector('disbanded') . q|, archives.city, archives.location, archives.country, archives.uri, archives.telephone,
+    archives.email, archives.latitude, archives.longitude, archives.notes
     FROM archives
     LEFT JOIN dates AS established ON archives.date_established = established.ID
     LEFT JOIN dates AS disbanded ON archives.date_disbanded = disbanded.ID
