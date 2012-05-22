@@ -13,8 +13,8 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $browse_works_by_scored_for $browse_works
-                        $browse_works_by_genre $browse_works_by_title $fulltext_search
+    our @EXPORT_OK = qw($home $browse $about $view_work $view_work $browse_works_by_scored_for
+                        $browse_works $browse_works_by_genre $browse_works_by_title $fulltext_search
                         $bad_arguments $not_found);
 }
 
@@ -283,6 +283,21 @@ our $view_work = make_api_function(
 			      rootname => 'work'},
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'work2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'work2rdf.xsl']} });
+
+our $view_archive = make_api_function(
+    { uri_pattern         => qr|^/archives/(?<archive_id>[0-9]+)/?$|,
+      require_session     => 'public',
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
+      respect_browse_idx  => 0,
+      generator           => {type     => 'proc',
+			      proc     => sub {
+				  my ($req_data, $dbh) = @_;
+				  return ComposerCat::Database::complete_archive(int($req_data->{url_args}->{archive_id}));
+			      },
+			      rootname => 'archive'},
+      transforms          => {'text/html'           => [$TEMPLATES_DIR . 'archive2html.xsl'],
+			      'application/rdf+xml' => [$TEMPLATES_DIR . 'archive2rdf.xsl']} });
 
 our %view_period = ();
 
