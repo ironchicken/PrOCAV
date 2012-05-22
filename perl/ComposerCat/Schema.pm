@@ -2505,7 +2505,7 @@ sub schema_prepare_statments {
     WHERE archives.ID=?|);
 
     $schema{archives}->{_letters} =
-	$dbh->prepare(q|SELECT | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+	$dbh->prepare(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
     addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text,
     in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
@@ -2520,7 +2520,7 @@ sub schema_prepare_statments {
     ORDER BY in_archive.archival_ref_num, in_archive.archival_ref_str, composed.year, composed.month, composed.day|);
 
     $schema{archives}->{_manuscripts} =
-	$dbh->prepare_cached(q|SELECT manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+	$dbh->prepare_cached(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
     in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
     in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, manuscripts.work_id
