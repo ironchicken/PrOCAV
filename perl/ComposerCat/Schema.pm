@@ -2541,7 +2541,7 @@ sub schema_prepare_statments {
     ######################################################################################################
 
     $schema{period}->{_composition_start} =
-	$dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("start") . q|, composition.work_type, works.uniform_title
+	$dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("start") . q|, composition.work_type, works.uniform_title, works.sub_title, composition.work_id
     FROM composition
     JOIN works ON composition.work_id = works.ID
     LEFT JOIN dates AS start ON composition.period_start = start.ID
@@ -2550,7 +2550,7 @@ sub schema_prepare_statments {
     ORDER BY start.year, start.month, start.day, composition.work_type|);
 
     $schema{period}->{_composition_end} =
-	$dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("end") . q|, composition.work_type, works.uniform_title
+	$dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("end") . q|, composition.work_type, works.uniform_title, works.sub_title, composition.work_id
     FROM composition
     JOIN works ON composition.work_id = works.ID
     LEFT JOIN dates AS end ON composition.period_end = end.ID
