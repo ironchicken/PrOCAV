@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $view_archive $browse_works_by_scored_for
+    our @EXPORT_OK = qw($home $browse $about $view_work $view_archive $view_period $browse_works_by_scored_for
                         $browse_works $browse_works_by_genre $browse_works_by_title $fulltext_search
                         $bad_arguments $not_found);
 }
@@ -299,7 +299,20 @@ our $view_archive = make_api_function(
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'archive2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'archive2rdf.xsl']} });
 
-our %view_period = ();
+our $view_period = make_api_function(
+    { uri_pattern         => qr|^/year/(?<year>[1-2][0-9]{3})/?$|,
+      require_session     => 'public',
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
+      respect_browse_idx  => 0,
+      generator           => {type     => 'proc',
+			      proc     => sub {
+				  my ($req_data, $dbh) = @_;
+				  return ComposerCat::Database::complete_period(int($req_data->{url_args}->{year}));
+			      },
+			      rootname => 'period'},
+      transforms          => {'text/html'           => [$TEMPLATES_DIR . 'period2html.xsl'],
+			      'application/rdf+xml' => [$TEMPLATES_DIR . 'period2rdf.xsl']} });
 
 our $fulltext_search = make_api_function(
     { uri_pattern         => qr|^/search$|,
