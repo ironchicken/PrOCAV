@@ -2535,6 +2535,83 @@ sub schema_prepare_statments {
     $schema{archives}->{_complete} = {details            => ['ONE', '_full'],
 				      letter             => ['MANY', '_letters'],
 				      manuscript         => ['MANY', '_manuscripts']};
+
+    ######################################################################################################
+    ### PERIOD STATEMENTS
+    ######################################################################################################
+
+    $schema{period}->{_composition_start} =
+	$dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("start") . q|, composition.work_type, works.uniform_title
+    FROM composition
+    JOIN works ON composition.work_id = works.ID
+    LEFT JOIN dates AS start ON composition.period_start = start.ID
+    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.ID
+    WHERE start.year = ?
+    ORDER BY start.year, start.month, start.day, composition.work_type|);
+
+    $schema{period}->{_composition_end} =
+	$dbh->prepare_cached(q|SELECT composition.ID, manuscripts.title AS manuscript_title, | . date_selector("end") . q|, composition.work_type, works.uniform_title
+    FROM composition
+    JOIN works ON composition.work_id = works.ID
+    LEFT JOIN dates AS end ON composition.period_end = end.ID
+    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.ID
+    WHERE end.year = ?
+    ORDER BY end.year, end.month, end.day, composition.work_type|);
+
+    $schema{period}->{_manuscripts} =
+	$dbh->prepare_cached(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    manuscripts.notes, archives.ID AS archive_id, archives.abbreviation AS archive_abbr, archives.title AS archive
+    FROM manuscripts
+    JOIN dates AS made ON manuscripts.date_made = made.ID
+    LEFT JOIN in_archive ON in_archive.entity_id = manuscripts.ID
+    LEFT JOIN archives ON in_archive.archive_id = archives.ID
+    WHERE made.year = ? AND (in_archive.entity_type = "manuscripts" OR in_archive.entity_type IS NULL)
+    ORDER BY made.year, made.month, made.day, manuscripts.purpose|);
+
+    # FIXME Find a good abstraction for binding a single argument to
+    # multiple placeholders. The is called from Database::AUTOLOAD.
+    $schema{period}->{_letters} =
+	$dbh->prepare_cached(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
+    addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, letter_mentions.letter_ragne,
+    letter_mentions.mentioned_extent AS work_extent, letter_mentions.notes
+    FROM letters
+    LEFT JOIN letter_mentions ON letter_mentions.letter_id = letters.ID
+    LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
+    LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
+    LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
+    LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
+    -- WHERE composed.year = ? OR sent.year = ?
+    WHERE composed.year = ?
+    ORDER BY composed.year, composed.month, composed.day|);
+
+    $schema{period}->{_performances} =
+	$dbh->prepare_cached(q|SELECT performances.ID, | . date_selector('performed') . q|, venues.name AS venue, venues.city,
+    venues.country, venues.venue_type, performances.performance_type, performances.notes
+    FROM performances
+    JOIN dates AS performed ON performances.date_performed = performed.ID
+    LEFT JOIN venues ON performances.venue_id = venues.ID
+    WHERE performed.year = ?
+    ORDER BY performed.year, performed.month, performed.day|);
+
+    $schema{period}->{_publications} =
+	$dbh->prepare_cached(q|SELECT publications.ID, publications.title, publications.publisher,
+    publications.publication_place, | . date_selector('pub_date') . q|, publications.serial_number, publications.score_type,
+    publications.notes, published_in.edition_extent, published_in.publication_range
+    FROM publications
+    JOIN published_in ON published_in.publication_id = publications.ID
+    JOIN editions ON published_in.edition_id = editions.ID
+    JOIN dates AS pub_date ON publications.date_published = pub_date.ID
+    WHERE pub_date.year = ?
+    ORDER BY pub_date.year, pub_date.month, pub_date.day|);
+
+    $schema{period}->{_complete} = { composition_start => ['MANY', '_composition_start'],
+				     composition_end   => ['MANY', '_composition_end'],
+				     manuscript        => ['MANY', '_manuscripts'],
+				     letter            => ['MANY', '_letters'],
+				     performance       => ['MANY', '_performances'],
+				     publication       => ['MANY', '_publications'] };
 }
 
 #################################################################################################################

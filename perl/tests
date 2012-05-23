@@ -161,6 +161,24 @@ sub test_schema_statements {
     my $work = ComposerCat::Database::complete_archive(3);
     print Dumper($work) . "\n\n";
     print "============================================\n";
+
+    print "============================================\n";
+    print "period 1925:\n";
+    my $period = ComposerCat::Database::complete_period(1925);
+    print Dumper($period) . "\n\n";
+    print "============================================\n";
+
+    print "============================================\n";
+    print "period 1928:\n";
+    my $period = ComposerCat::Database::complete_period(1928);
+    print Dumper($period) . "\n\n";
+    print "============================================\n";
+
+    print "============================================\n";
+    print "period 1931:\n";
+    my $period = ComposerCat::Database::complete_period(1931);
+    print Dumper($period) . "\n\n";
+    print "============================================\n";
 }
 
 sub test_schema_statement {
