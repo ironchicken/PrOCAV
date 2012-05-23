@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $view_work $browse_works_by_scored_for
+    our @EXPORT_OK = qw($home $browse $about $view_work $view_archive $browse_works_by_scored_for
                         $browse_works $browse_works_by_genre $browse_works_by_title $fulltext_search
                         $bad_arguments $not_found);
 }
