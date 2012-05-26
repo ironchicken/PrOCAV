@@ -4,7 +4,7 @@
 
 <xsl:import href="globals.xsl" />
 
-<xsl:output method="html" />
+<xsl:output method="html" omit-xml-declaration="yes" />
 
 <xsl:variable name="terms" select="//request/params[name='terms']/value" />
 

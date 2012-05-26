@@ -7,8 +7,6 @@
 
 <xsl:import href="str.replace.xsl" />
 
-<xsl:output method="html" />
-
 <xsl:variable name="URI_ROOT">http://localhost</xsl:variable>
 
 <xsl:template name="page-tools">

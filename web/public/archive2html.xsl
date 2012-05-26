@@ -2,22 +2,21 @@
 
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-<xsl:output method="html" />
+<xsl:output method="html" omit-xml-declaration="yes" />
 
 <xsl:include href="globals.xsl" />
 
 <xsl:variable name="ID"><xsl:value-of select="$URI_ROOT" />/archives/<xsl:value-of select="/response/content/archive/details/ID" /></xsl:variable>
 
 <xsl:template match="/">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:mei="http://www.music-encoding.org/ns/mei"
+<html xmlns:mei="http://www.music-encoding.org/ns/mei"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:mo="http://purl.org/ontology/mo/"
       xmlns:mo-i="http://purl.org/ontology/mo-imaginary/"
       xmlns:event="http://purl.org/NET/c4dm/event.owl"
-      version="HTML+RDFa 1.0" xml:lang="en">
+      version="HTML+RDFa 1.0" lang="en">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title>Serge Prokofiev: <xsl:value-of select="//details/title" /></title>

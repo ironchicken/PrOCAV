@@ -9,7 +9,7 @@
 <xsl:import href="str.replace.xsl" />
 <xsl:import href="globals.xsl" />
 
-<xsl:output method="html" />
+<xsl:output method="html" omit-xml-declaration="yes" />
 
 <xsl:template match="/">
 <html>

@@ -275,7 +275,7 @@ sub make_api_function {
 	# begin the response
 	$req->content_type(($content_type eq 'text/html') ? 'text/html; charset=utf-8' : $content_type);
 
-	print $dest '<?xml version="1.0" encoding="utf-8" ?>';
+	print $dest '<?xml version="1.0" encoding="utf-8" ?>'  if ($content_type eq 'application/xml' || $content_type eq 'text/xml');
 	print $dest '<!DOCTYPE html>' if ($content_type eq 'text/html');
 
 	# construct an XML generator and execute the SAX pipeline
