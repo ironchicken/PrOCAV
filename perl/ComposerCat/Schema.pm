@@ -2572,12 +2572,10 @@ sub schema_prepare_statments {
     # FIXME Find a good abstraction for binding a single argument to
     # multiple placeholders. The is called from Database::AUTOLOAD.
     $schema{period}->{_letters} =
-	$dbh->prepare_cached(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
-    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
-    addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, letter_mentions.letter_ragne,
-    letter_mentions.mentioned_extent AS work_extent, letter_mentions.notes
+	$dbh->prepare_cached(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|, addressee.ID AS addressee_id,
+    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.ID AS signatory_id,
+    signatory.given_name AS signatory_given_name, signatory.family_name AS signatory_family_name
     FROM letters
-    LEFT JOIN letter_mentions ON letter_mentions.letter_id = letters.ID
     LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
     LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
     LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
@@ -2588,9 +2586,10 @@ sub schema_prepare_statments {
 
     $schema{period}->{_performances} =
 	$dbh->prepare_cached(q|SELECT performances.ID, | . date_selector('performed') . q|, venues.name AS venue, venues.city,
-    venues.country, venues.venue_type, performances.performance_type, performances.notes
+    venues.country, venues.venue_type, performances.performance_type, performances.notes, works.uniform_title, works.ID AS work_id
     FROM performances
     JOIN dates AS performed ON performances.date_performed = performed.ID
+    JOIN works ON performances.work_id = works.ID
     LEFT JOIN venues ON performances.venue_id = venues.ID
     WHERE performed.year = ?
     ORDER BY performed.year, performed.month, performed.day|);
@@ -2598,10 +2597,11 @@ sub schema_prepare_statments {
     $schema{period}->{_publications} =
 	$dbh->prepare_cached(q|SELECT publications.ID, publications.title, publications.publisher,
     publications.publication_place, | . date_selector('pub_date') . q|, publications.serial_number, publications.score_type,
-    publications.notes, published_in.edition_extent, published_in.publication_range
+    publications.notes, published_in.edition_extent, published_in.publication_range, works.ID AS work_id, works.uniform_title
     FROM publications
     JOIN published_in ON published_in.publication_id = publications.ID
     JOIN editions ON published_in.edition_id = editions.ID
+    JOIN works ON editions.work_id = works.ID
     JOIN dates AS pub_date ON publications.date_published = pub_date.ID
     WHERE pub_date.year = ?
     ORDER BY pub_date.year, pub_date.month, pub_date.day|);
