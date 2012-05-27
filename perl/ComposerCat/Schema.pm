@@ -2229,7 +2229,7 @@ sub schema_prepare_statments {
     ORDER BY pub_date.year, pub_date.month, pub_date.day|);
 
     # works._performanes
-    $schema{works}->{_performances} = $dbh->prepare_cached(q|SELECT performances.ID, | . date_selector('performed') . q|, venues.name AS venue, venues.city,
+    $schema{works}->{_performances} = $dbh->prepare_cached(q|SELECT performances.ID, | . date_selector('performed') . q|, venue_id, venues.name AS venue, venues.city,
     venues.country, venues.venue_type, performances.performance_type, performances.notes
     FROM performances
     LEFT JOIN dates AS performed ON performances.date_performed = performed.ID
