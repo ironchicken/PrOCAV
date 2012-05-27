@@ -428,8 +428,8 @@ div.browse-option {
   display:inline;
 }
 
-.explanation {
-  display:none;
+.popup {
+  display:inline;
   margin:2px;
   border:3px solid #A5995D;
   border-radius:6px;
@@ -438,6 +438,8 @@ div.browse-option {
   background-color:#FCEA8E;
   font-family: 'Oxygen', sans-serif;
   font-size:85%;
+  font-weight:normal;
+  color:#000000;
 }
 
 .explanation-toggle {

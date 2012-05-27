@@ -624,20 +624,69 @@ sub current_level {
     return $self->{level}->[scalar @{ $self->{element_stack} }];
 }
 
+sub push_element {
+    my ($self, $element) = @_;
+
+    push @{ $self->{element_stack} }, $element;
+
+    return $element;
+}
+
+sub replace_element {
+    my ($self, $new_element) = @_;
+
+    my $replaced_element = pop @{ $self->{element_stack} };
+
+    return $self->push_element($new_element);
+}
+
 sub start_element {
     my ($self, $element) = @_;
 
-    push @{ $self->{element_stack} }, $element->{Name};
+    if (defined $element) {
+	$self->push_element($element);
+    }
 
-    $self->SUPER::start_element($element);
+    $self->SUPER::start_element($self->{element_stack}->[-1]);
+}
+
+sub peek_element {
+    $_[0]->{element_stack}->[-1];
+}
+
+sub pop_element {
+    return pop @{ $_[0]->{element_stack} };
 }
 
 sub end_element {
     my ($self, $element) = @_;
 
-    my $leaving = pop @{ $self->{element_stack} };
+    my $leaving = $self->pop_element;
 
-    $self->SUPER::end_element($element);
+    $self->SUPER::end_element($element || _element($leaving->{Name}, 1));
+}
+
+sub _element {
+    my ($name, $end) = @_;
+    return { 
+        Name => $name,
+        LocalName => $name,
+        $end ? () : (Attributes => {}),
+        NamespaceURI => '',
+        Prefix => '',
+    };
+}
+
+sub _add_attrib {
+    my ($el, $name, $value) = @_;
+    
+    $el->{Attributes}{"{}$name"} = {
+	Name => $name,
+	LocalName => $name,
+	Prefix => "",
+	NamespaceURI => "",
+	Value => $value,
+    };
 }
 
 package ComposerCat::Database::MarkupFilter;
@@ -825,9 +874,8 @@ sub parse_markup {
 	    $self->SUPER::characters({Data => substr $chars, $chars_ptr, $at - $chars_ptr});
 	    $chars_ptr += ($at - $chars_ptr);
 
-	    # create the element end tag and emit it
-	    my $el = _element($element->{tag}, 1);
-	    $self->SUPER::end_element($el);
+	    # emit end tag
+	    $self->SUPER::end_element;
 	} else {
 	    die "Invalid event type $type.\n";
 	}
@@ -882,15 +930,24 @@ sub start_element {
     my ($self, $element) = @_;
     #my %attrs = %{$element->{Attributes}};
 
-    # Ensure that ElementStacking's start_element is called *first* so
-    # that we are at the right level
-    $self->SUPER::start_element($element);
+    # Ensure that ElementStacking's push_element is called *first* so
+    # that we are at the right level. But don't call start_element yet
+    # as, if an explanation needs to be included, it will be appended
+    # as an attribute to the element
+    $self->SUPER::push_element($element);
 
     if ($self->current_level eq 'table' && ComposerCat::Database::table_has_explanations ($element->{Name})) {
 	$self->{explained_table} = $element->{Name};
+	# start_element now because ValueExplanations::characters may
+	# not be called
+	$self->SUPER::start_element;
     } elsif ($self->current_level eq 'field' && ComposerCat::Database::field_has_explanations ($self->{explained_table}, $element->{Name})) {
 	$self->{explained_field} = $element->{Name};
-    } 
+    } else {
+	# start_element now because ValueExplanations::characters may
+	# not be called
+	$self->SUPER::start_element;
+    }
 }
 
 sub end_element {
@@ -902,7 +959,7 @@ sub end_element {
 	$self->{explained_field} = 0;
     }
 
-    # Ensure that ElementStacking's start_element is called *last* so
+    # Ensure that ElementStacking's end_element is called *last* so
     # that we are at the right level
     $self->SUPER::end_element($element);
 }
@@ -915,29 +972,34 @@ sub characters {
 	    ComposerCat::Database::explanations ($self->{explained_table}, $self->{explained_field}, $chars->{Data});
 
 	if (defined $explanation) {
+	    # alter the start tag for the field element to include an
+	    # @explanation attribute containing the explanation text
+	    my $new_field_el = $self->peek_element;
+	    _add_attrib($new_field_el, 'explanation', $explanation);
+	    $self->replace_element($new_field_el);
+	    $self->SUPER::start_element;
+
+	    # create an explanation marker empty element which will
+	    # indicate the position of the explanation toggle button
+	    my $toggle = _element('explanation-toggle');
+
 	    if ($location eq 'start') {
-		my $annot_el = _element('explanation');
-		$self->SUPER::start_element($annot_el);
-		$self->{Handler}->characters({Data => $explanation});
-		$self->SUPER::end_element($annot_el, 1);
+		$self->SUPER::start_element($toggle);
+		$self->SUPER::end_element;
 
 		$self->{Handler}->characters({Data => $chars->{Data}});
 
 	    } elsif ($location eq 'end') {
 		$self->{Handler}->characters({Data => $chars->{Data}});
 
-		my $annot_el = _element('explanation');
-		$self->SUPER::start_element($annot_el);
-		$self->{Handler}->characters({Data => $explanation});
-		$self->SUPER::end_element($annot_el, 1);
+		$self->SUPER::start_element($toggle);
+		$self->SUPER::end_element;
 
 	    } elsif ($location eq 'inline') {
 		$self->{Handler}->characters({Data => substr($chars->{Data}, 0, $position)});
 
-		my $annot_el = _element('explanation');
-		$self->SUPER::start_element($annot_el);
-		$self->{Handler}->characters({Data => $explanation});
-		$self->SUPER::end_element($annot_el, 1);
+		$self->SUPER::start_element($toggle);
+		$self->SUPER::end_element;
 
 		$self->{Handler}->characters({Data => substr($chars->{Data}, $position + 1)});
 	    }

@@ -1,7 +1,13 @@
 var composerCat = function() {
     return {
-	showPopup: function(event, element) {
-	    $(element).toggle();
+	togglePopup: function(event, text) {
+	    var popup = $(event.target).parent().find('.popup');
+	    if (popup.size() === 0) {
+		$(event.target).append('<span class="popup">' + text + '</span>').show();
+	    } else {
+		popup.hide();
+		popup.remove();
+	    }
 	},
 
 	nextExplanation: function(event) {
