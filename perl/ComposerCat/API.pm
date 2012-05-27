@@ -419,14 +419,14 @@ sub init {
 	$ComposerCat::PublicUI::browse_works_by_genre,
 	$ComposerCat::PublicUI::browse_works_by_title,
 	$ComposerCat::PublicUI::fulltext_search,
-    	\%ComposerCat::EditorUI::home,
-    	\%ComposerCat::EditorUI::login,
-    	\%ComposerCat::EditorUI::new_session,
-    	\%ComposerCat::EditorUI::edit_table,
-    	\%ComposerCat::EditorUI::table_columns,
-    	\%ComposerCat::EditorUI::table_data,
-    	\%ComposerCat::EditorUI::table_model,
-    	\%ComposerCat::EditorUI::look_up
+#\%ComposerCat::EditorUI::home,
+#\%ComposerCat::EditorUI::login,
+#\%ComposerCat::EditorUI::new_session,
+#\%ComposerCat::EditorUI::edit_table,
+#\%ComposerCat::EditorUI::table_columns,
+#\%ComposerCat::EditorUI::table_data,
+#\%ComposerCat::EditorUI::table_model,
+#\%ComposerCat::EditorUI::look_up
     	);
 
     %INDEXES = (
