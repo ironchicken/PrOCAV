@@ -14,9 +14,9 @@
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
       xmlns:dc="http://purl.org/dc/elements/1.1/"
       xmlns:mo="http://purl.org/ontology/mo/"
-      xmlns:mo-i="http://purl.org/ontology/mo-imaginary/"
+      xmlns:moext="http://purl.org/ontology/mo-extended/"
       xmlns:event="http://purl.org/NET/c4dm/event.owl"
-      version="HTML+RDFa 1.0" lang="en">
+      version="HTML+RDFa 1.1" lang="en">
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <title>Serge Prokofiev: <xsl:value-of select="//details/uniform_title" /></title>
@@ -80,7 +80,7 @@
       <span class="work-title"
 	    about="{$ID}"
 	    property="dc:title"
-	    xml:lang="en"><xsl:value-of select="uniform_title" /></span>
+	    lang="en"><xsl:value-of select="uniform_title" /></span>
       <xsl:text> </xsl:text>
       <xsl:apply-templates select="//catalogue_number[label/text()='Op. '][1]" />
     </h2>
@@ -164,10 +164,11 @@
 
 <xsl:template match="work/title">
   <li class="title"
-      about="{$ID}_{ID}"
+      about="{$URI_ROOT}/titles/{ID}"
       rev="dc:title"
       resource="{$ID}"
-      xml:lang="{language}">
+      content="{title}"
+      lang="{language}">
     <xsl:value-of select="title" />
     <xsl:if test="transliteration"> (<xsl:apply-templates select="transliteration" />)</xsl:if>
     <xsl:if test="language"> [<xsl:apply-templates select="language" />]</xsl:if>
@@ -177,12 +178,12 @@
 
 <xsl:template match="work/composition">
   <li class="composition"
-       about="{$ID}"
-       typeof="mo:Composition"
-       rel="mo:produced_work"
-       resource="{$ID}">
-    <span class="work-type"
-	  about="{$ID}"
+      about="{$URI_ROOT}/composition/{ID}"
+      typeof="mo:Composition"
+      rel="mo:produced_work"
+      resource="{$ID}">
+    <span class="content work-type"
+	  about="{$ID}/composition/{ID}"
 	  property="event:time"
 	  typeof="time:Interval"
 	  content="http://placetime.com/interval/gregorian/{end_year}-{end_month}-{end_day}T00:00:00Z/P1Y">
@@ -218,17 +219,24 @@
 </xsl:template>
 
 <xsl:template match="work/scored_for">
+  <xsl:variable name="scored_for"><xsl:value-of select="$ID" />#<xsl:if test="cardinality='solo'">solo_</xsl:if><xsl:value-of select="instrument" /><xsl:if test="role">_<xsl:value-of select="role" /></xsl:if></xsl:variable>
+
   <li class="instrument"
-      about="{$ID}_{instrument}"
-      rev="mo-i:includes_instrument"
+      about="{$scored_for}"
+      rev="moext:scored_for"
       resource="{$ID}"
       typeof="mo:Instrument"
       content="http://purl.org/ontology/taxonomy-a/mita#{instrument}">
-    <xsl:if test="cardinality='solo'">
-      <xsl:value-of select="cardinality" />
-      <xsl:text> </xsl:text>
-    </xsl:if>
-    <xsl:value-of select="role" />
+    <xsl:choose>
+      <xsl:when test="cardinality='solo'">
+        <span about="{$scored_for}" property="moext:instrument_forces"><xsl:value-of select="cardinality" /></span>
+        <xsl:text> </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <span about="{$scored_for}" property="moext:instrument_forces" content="{cardinality}" style="display:none" />
+      </xsl:otherwise>
+    </xsl:choose>
+    <span about="{$scored_for}" property="moext:instrument_role"><xsl:value-of select="role" /></span>
     <xsl:text> </xsl:text>
     <a href="{$URI_ROOT}/works?scored_for={instrument}"><xsl:value-of select="instrument" /></a>
     <xsl:if test="notes"><span class="value-notes hidden"><xsl:apply-templates select="notes" /></span></xsl:if>
@@ -237,10 +245,11 @@
 
 <xsl:template match="work/genre">
   <li class="genre"
-      about="{$ID}_{genre}"
+      about="{$ID}#{genre}"
       rev="mo:genre"
       resource="{$ID}"
-      typeof="mo:Genre">
+      typeof="mo:Genre"
+      content="http://dbpedia.org/page/{genre}"> <!-- FIXME Use a linked resources table record, not this simple substitutio -->
     <a href="{$URI_ROOT}/works?genre={genre}"><xsl:value-of select="genre" /></a>
     <xsl:if test="notes"><span class="value-notes hidden"><xsl:apply-templates select="notes" /></span></xsl:if>
   </li>
@@ -254,23 +263,24 @@
 </xsl:template>
 
 <xsl:template match="work/sub_work">
+  <xsl:variable name="sub_work_id">w<xsl:value-of select="//work/ID" />#p<xsl:value-of select="part_position" /></xsl:variable>
   <div class="work-part"
-       id="work{//work/ID}_m{part_position}"
-       about="{$ID}_m{part_position}"
+       id="{$sub_work_id}"
+       about="{$ID}/{part_position}"
        typeof="mo:Movement"
        rev="mo:movement"
        resource="{$ID}">
     <h4>
       <span class="movement-number"
-	    about="{$ID}_m{part_position}"
+	    about="{$ID}/{part_position}"
 	    property="mo:movement_number"
 	    datatype="xsd:int"
 	    content="{part_position}"><xsl:value-of select="part_number" /></span>
       <xsl:text> </xsl:text>
       <span class="movement-title"
-	    about="{$ID}_m{part_position}"
+	    about="{$ID}/{part_position}"
 	    property="dc:title"
-	    xml:lang="en"><xsl:value-of select="uniform_title" /></span>
+	    lang="en"><xsl:value-of select="uniform_title" /></span>
     </h4>
   </div>
 </xsl:template>
@@ -300,7 +310,8 @@
     <span class="name">Title</span>
     <span class="content manuscript-title"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="dc:title"><a href="{$URI_ROOT}/manuscripts/{../ID}"><xsl:apply-templates /></a></span>
+	  property="dc:title"
+	  content="{.}"><a href="{$URI_ROOT}/manuscripts/{../ID}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
@@ -356,7 +367,8 @@
     <span class="name">Date</span>
     <span class="content manuscript-date-made"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="dc:date">
+	  property="dc:date"
+	  content="http://placetime.com/interval/gregorian/{.}-{../date_made_month}-{../date_made_day}T00:00:00Z/P1D">
       <xsl:if test="../date_made_day">
         <xsl:value-of select="../date_made_day" /><xsl:text> </xsl:text>
       </xsl:if>
@@ -376,7 +388,8 @@
     <span class="name">Location</span>
     <span class="content manuscript-location"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="composercat:location"><a href="{$URI_ROOT}/archives/{../archive_id}"><xsl:apply-templates /></a></span>
+	  property="composercat:location"
+	  content="{.}"><a href="{$URI_ROOT}/archives/{../archive_id}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
@@ -385,7 +398,8 @@
     <span class="name">Location</span>
     <span class="content manuscript-location"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="composercat:location"><a href="{$URI_ROOT}/archives/{../archive_id}"><xsl:apply-templates /></a></span>
+	  property="composercat:location"
+	  content="{.}"><a href="{$URI_ROOT}/archives/{../archive_id}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
@@ -424,7 +438,8 @@
     <span class="name">Title</span>
     <span class="content publication-title"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="dc:title"><a href="{$URI_ROOT}/publications/{../ID}"><xsl:apply-templates /></a></span>
+	  property="dc:title"
+	  content="{.}"><a href="{$URI_ROOT}/publications/{../ID}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
@@ -433,7 +448,8 @@
     <span class="name">Publisher</span>
     <span class="content publication-publisher"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="composercat:publisher">
+	  property="composercat:publisher"
+	  content="{.}">
       <a href="{$URI_ROOT}/publications?publisher={.}"><xsl:apply-templates /></a>
     </span>
   </div>
@@ -444,7 +460,8 @@
     <span class="name">Publication place</span>
     <span class="content publication-publication-place"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="composercat:publication_place">
+	  property="composercat:publication_place"
+	  content="{.}">
       <a href="{$URI_ROOT}/places/{.}"><xsl:apply-templates /></a>
     </span>
   </div>
@@ -455,7 +472,8 @@
     <span class="name">Date</span>
     <span class="content publication-pub-date"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="dc:date">
+	  property="dc:date"
+	  content="http://placetime.com/interval/gregorian/{.}-{../pub_date_month}-{../pub_date_day}T00:00:00Z/P1D">
       <xsl:if test="../pub_date_day">
         <xsl:value-of select="../pub_date_day" /><xsl:text> </xsl:text>
       </xsl:if>
@@ -475,9 +493,7 @@
     <span class="name">Serial number</span>
     <span class="content publication-serial-number"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="composercat:serial_number">
-      <xsl:apply-templates />
-    </span>
+	  property="composercat:serial_number"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -486,9 +502,7 @@
     <span class="name">Score type</span>
     <span class="content publication-score-type"
 	  about="{$URI_ROOT}/publications/{../ID}"
-	  property="composercat:score_type">
-      <xsl:apply-templates />
-    </span>
+	  property="composercat:score_type"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -520,7 +534,8 @@
     <span class="name">Date</span>
     <span class="content performance-performed"
 	  about="{$URI_ROOT}/performances/{../ID}"
-	  property="dc:date">
+	  property="dc:date"
+	  content="http://placetime.com/interval/gregorian/{.}-{../performed_month}-{../performed_day}T00:00:00Z/P1D">
       <xsl:if test="../performed_day">
         <xsl:value-of select="../performed_day" /><xsl:text> </xsl:text>
       </xsl:if>
@@ -539,29 +554,26 @@
   <div class="field performance-performance-type">
     <span class="name">Venue</span>
     <span class="content performance-venue"
-	  about="{$URI_ROOT}/performances/{../ID}"
-	  property="composercat:venue">
-      <a href="{$URI_ROOT}/venues/{.}"><xsl:apply-templates /></a>
+	  about="{$URI_ROOT}/venues/{../venue_id}"
+	  rev="composercat:venue"
+	  resource="{$URI_ROOT}/performances/{../ID}">
+      <a href="{$URI_ROOT}/venues/{../venue_id}"><xsl:apply-templates /></a>
       <xsl:if test="../city">
         <xsl:text>, </xsl:text>
-        <span about="{$URI_ROOT}/venues/{.}"
-	      property="composercat:city">
-          <a href="{$URI_ROOT}/places/{../city}"><xsl:value-of select="../city" /></a>
-	</span>
+        <span about="{$URI_ROOT}/venues/{../venue_id}"
+	      property="composercat:city"
+	      content="{../city}"><a href="{$URI_ROOT}/places/{../city}"><xsl:value-of select="../city" /></a></span>
       </xsl:if>
       <xsl:if test="../country">
         <xsl:text>, </xsl:text>
-        <span about="{$URI_ROOT}/venues/{.}"
-	      property="composercat:country">
-          <a href="{$URI_ROOT}/places/{../country}"><xsl:value-of select="../country" /></a>
-	</span>
+        <span about="{$URI_ROOT}/venues/{../venue_id}"
+	      property="composercat:country"
+	      content="{../country}"><a href="{$URI_ROOT}/places/{../country}"><xsl:value-of select="../country" /></a></span>
       </xsl:if>
       <xsl:if test="../venue_type">
         <xsl:text> (</xsl:text>
-        <span about="{$URI_ROOT}/venues/{.}"
-	      property="composercat:venue_type">
-          <xsl:value-of select="../venue_type" />
-	</span>
+        <span about="{$URI_ROOT}/venues/{../venue_id}"
+	      property="composercat:venue_type"><xsl:value-of select="../venue_type" /></span>
         <xsl:text>)</xsl:text>
       </xsl:if>
     </span>
@@ -573,7 +585,8 @@
     <span class="name">Performance type</span>
     <span class="content performance-performance-type"
 	  about="{$URI_ROOT}/performances/{../ID}"
-	  property="composercat:performance_type"><a href="{$URI_ROOT}/performances/{../ID}"><xsl:apply-templates /></a></span>
+	  property="composercat:performance_type"
+	  content="{.}"><a href="{$URI_ROOT}/performances/{../ID}"><xsl:apply-templates /></a></span>
   </div>
 </xsl:template>
 
