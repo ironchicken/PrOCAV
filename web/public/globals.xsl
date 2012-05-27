@@ -94,8 +94,8 @@
   </div>
 </xsl:template>
 
-<xsl:template match="annotation" priority="-1">
-  <span class="annot-toggle" onclick="composerCat.showPopup(event, composerCat.nextAnnotation(event))">?</span><span class="annotation"><xsl:apply-templates /></span>
+<xsl:template match="explanation" priority="-1">
+  <span class="explanation-toggle" onclick="composerCat.showPopup(event, composerCat.nextExplanation(event))">?</span><span class="explanation"><xsl:apply-templates /></span>
 </xsl:template>
 
 <xsl:template match="p|div|span|a">

@@ -92,40 +92,40 @@ sub allow_markup {
     return 0;
 }
 
-sub annotations {
+sub explanations {
     my ($table, $field, $value) = @_;
     $table = table_name($table);
 
     if (defined $value) {
-	if (defined $annotations->{$table}->{$field}) {
-	    foreach my $t (@{ $annotations->{$table}->{$field} }) {
+	if (defined $explanations->{$table}->{$field}) {
+	    foreach my $t (@{ $explanations->{$table}->{$field} }) {
 		if ($value =~ $t->{pattern}) {
 		    return ($t->{description}, $t->{position}, ($t->{position} eq 'inline') ? @+[0] : undef)
 		}
 	    }
 	}
     } else {
-	return $annotations->{$table}->{$field};
+	return $explanations->{$table}->{$field};
     }
 }
 
-sub annotated_table {
+sub table_has_explanations {
     my ($table) = @_;
     $table = table_name($table);
 
-    if (defined $annotations->{$table}) {
-	return $annotations->{$table};
+    if (defined $explanations->{$table}) {
+	return $explanations->{$table};
     } else {
 	return 0;
     }
 }
 
-sub annotated_field {
+sub field_has_explanations {
     my ($table, $field) = @_;
     $table = table_name($table);
 
-    if (defined $annotations->{$table} && defined $annotations->{$table}->{$field}) {
-	return $annotations->{$table}->{$field};
+    if (defined $explanations->{$table} && defined $explanations->{$table}->{$field}) {
+	return $explanations->{$table}->{$field};
     } else {
 	return 0;
     }
@@ -857,7 +857,7 @@ sub _add_attrib {
     };
 }
 
-package ComposerCat::Database::ValueAnnotations;
+package ComposerCat::Database::ValueExplanations;
 use strict;
 use XML::SAX::Base;
 use base qw(ComposerCat::Database::ElementStacking);
@@ -872,8 +872,8 @@ sub new {
 sub start_document {
     my ($self, $document) = @_;
 
-    $self->{annotated_table} = 0;
-    $self->{annotated_field} = 0;
+    $self->{explained_table} = 0;
+    $self->{explained_field} = 0;
 
     $self->SUPER::start_document($document);
 }
@@ -886,20 +886,20 @@ sub start_element {
     # that we are at the right level
     $self->SUPER::start_element($element);
 
-    if ($self->current_level eq 'table' && ComposerCat::Database::annotated_table ($element->{Name})) {
-	$self->{annotated_table} = $element->{Name};
-    } elsif ($self->current_level eq 'field' && ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
-	$self->{annotated_field} = $element->{Name};
+    if ($self->current_level eq 'table' && ComposerCat::Database::table_has_explanations ($element->{Name})) {
+	$self->{explained_table} = $element->{Name};
+    } elsif ($self->current_level eq 'field' && ComposerCat::Database::field_has_explanations ($self->{explained_table}, $element->{Name})) {
+	$self->{explained_field} = $element->{Name};
     } 
 }
 
 sub end_element {
     my ($self, $element) = @_;
 
-    if ($self->current_level eq 'table' && ComposerCat::Database::annotated_table ($element->{Name})) {
-	$self->{annotated_table} = 0;
-    } elsif ($self->current_level eq 'field' && ComposerCat::Database::annotated_field ($self->{annotated_table}, $element->{Name})) {
-	$self->{annotated_field} = 0;
+    if ($self->current_level eq 'table' && ComposerCat::Database::table_has_explanations ($element->{Name})) {
+	$self->{explained_table} = 0;
+    } elsif ($self->current_level eq 'field' && ComposerCat::Database::field_has_explanations ($self->{explained_table}, $element->{Name})) {
+	$self->{explained_field} = 0;
     }
 
     # Ensure that ElementStacking's start_element is called *last* so
@@ -910,15 +910,15 @@ sub end_element {
 sub characters {
     my ($self, $chars) = @_;
 
-    if ($self->{annotated_field}) {
-	my ($annotation, $location, $position) =
-	    ComposerCat::Database::annotations ($self->{annotated_table}, $self->{annotated_field}, $chars->{Data});
+    if ($self->{explained_field}) {
+	my ($explanation, $location, $position) =
+	    ComposerCat::Database::explanations ($self->{explained_table}, $self->{explained_field}, $chars->{Data});
 
-	if (defined $annotation) {
+	if (defined $explanation) {
 	    if ($location eq 'start') {
-		my $annot_el = _element('annotation');
+		my $annot_el = _element('explanation');
 		$self->SUPER::start_element($annot_el);
-		$self->{Handler}->characters({Data => $annotation});
+		$self->{Handler}->characters({Data => $explanation});
 		$self->SUPER::end_element($annot_el, 1);
 
 		$self->{Handler}->characters({Data => $chars->{Data}});
@@ -926,17 +926,17 @@ sub characters {
 	    } elsif ($location eq 'end') {
 		$self->{Handler}->characters({Data => $chars->{Data}});
 
-		my $annot_el = _element('annotation');
+		my $annot_el = _element('explanation');
 		$self->SUPER::start_element($annot_el);
-		$self->{Handler}->characters({Data => $annotation});
+		$self->{Handler}->characters({Data => $explanation});
 		$self->SUPER::end_element($annot_el, 1);
 
 	    } elsif ($location eq 'inline') {
 		$self->{Handler}->characters({Data => substr($chars->{Data}, 0, $position)});
 
-		my $annot_el = _element('annotation');
+		my $annot_el = _element('explanation');
 		$self->SUPER::start_element($annot_el);
-		$self->{Handler}->characters({Data => $annotation});
+		$self->{Handler}->characters({Data => $explanation});
 		$self->SUPER::end_element($annot_el, 1);
 
 		$self->{Handler}->characters({Data => substr($chars->{Data}, $position + 1)});

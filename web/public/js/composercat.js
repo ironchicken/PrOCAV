@@ -4,7 +4,7 @@ var composerCat = function() {
 	    $(element).toggle();
 	},
 
-	nextAnnotation: function(event) {
-	    return $(event.target).next('.annotation').get();
+	nextExplanation: function(event) {
+	    return $(event.target).next('.explanation').get();
 	} };
 }();

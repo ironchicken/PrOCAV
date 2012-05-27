@@ -428,7 +428,7 @@ div.browse-option {
   display:inline;
 }
 
-.annotation {
+.explanation {
   display:none;
   margin:2px;
   border:3px solid #A5995D;
@@ -440,7 +440,7 @@ div.browse-option {
   font-size:85%;
 }
 
-.annot-toggle {
+.explanation-toggle {
   font-size:80%;
   font-weight:bold;
   font-family: 'Oxygen', sans-serif;
