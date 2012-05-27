@@ -233,7 +233,7 @@
         <xsl:text> </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <span about="{$scored_for}" property="moext:instrument_forces" content="{cardinality}" style="display:none" />
+        <span about="{$scored_for}" property="moext:instrument_forces" content="{cardinality}" style="display:none"><xsl:value-of select="cardinality" /></span>
       </xsl:otherwise>
     </xsl:choose>
     <span about="{$scored_for}" property="moext:instrument_role"><xsl:value-of select="role" /></span>
