@@ -135,23 +135,35 @@
     </div>
 
     <xsl:if test="//work/sub_work">
-      <h3><xsl:call-template name="sub-works-type" /></h3>
-      <xsl:apply-templates select="//sub_work" />
+      <h3><span class="records-toggle"
+		onclick="composerCat.toggleRecords(event, 'sub-works')">+</span> <xsl:call-template name="sub-works-type" /></h3>
+      <div class="records" id="sub-works">
+        <xsl:apply-templates select="//sub_work" />
+      </div>
     </xsl:if>
 
     <xsl:if test="//work/manuscript">
-      <h3>Manuscripts</h3>
-      <xsl:apply-templates select="//manuscript" />
+      <h3><span class="records-toggle"
+		onclick="composerCat.toggleRecords(event, 'manuscripts')">+</span> Manuscripts</h3>
+      <div class="records" id="manuscripts">
+        <xsl:apply-templates select="//manuscript" />
+      </div>
     </xsl:if>
 
     <xsl:if test="//work/publication">
-      <h3>Publications</h3>
-      <xsl:apply-templates select="//publication" />
+      <h3><span class="records-toggle"
+		onclick="composerCat.toggleRecords(event, 'publications')">+</span> Publications</h3>
+      <div class="records" id="publications">
+        <xsl:apply-templates select="//publication" />
+      </div>
     </xsl:if>
 
     <xsl:if test="//work/performance">
-      <h3>Performances</h3>
-      <xsl:apply-templates select="//performance" />
+      <h3><span class="records-toggle"
+		onclick="composerCat.toggleRecords(event, 'performances')">+</span> Performances</h3>
+      <div class="records" id="performances">
+        <xsl:apply-templates select="//performance" />
+      </div>
     </xsl:if>
   </div>
 </xsl:template>
@@ -286,7 +298,7 @@
 </xsl:template>
 
 <xsl:template match="work/manuscript">
-  <div class="manuscript"
+  <div class="record manuscript"
        id="manuscript{ID}"
        about="{$URI_ROOT}/manuscripts/{ID}"
        typeof="mo:Manuscript"
@@ -415,7 +427,7 @@
 </xsl:template>
 
 <xsl:template match="work/publication">
-  <div class="publication"
+  <div class="record publication"
        id="publication{ID}"
        about="{$URI_ROOT}/publications/{ID}"
        typeof="mo:Publication"
@@ -516,7 +528,7 @@
 </xsl:template>
 
 <xsl:template match="work/performance">
-  <div class="performance"
+  <div class="record performance"
        id="performance{ID}"
        about="{$URI_ROOT}/performances/{ID}"
        typeof="mo:Performance"
@@ -551,7 +563,7 @@
 </xsl:template>
 
 <xsl:template match="work/performance/venue">
-  <div class="field performance-performance-type">
+  <div class="field performance-venue">
     <span class="name">Venue</span>
     <span class="content performance-venue"
 	  about="{$URI_ROOT}/venues/{../venue_id}"

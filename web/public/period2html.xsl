@@ -34,8 +34,6 @@
         <div class="period main-content">
 	  <h2>Period: <xsl:value-of select="substring-after(//request/path, 'year/')" /></h2>
 
-          <xsl:call-template name="show-month" />
-
           <xsl:call-template name="show-month">
             <xsl:with-param name="month-number">1</xsl:with-param>
             <xsl:with-param name="month-name">January</xsl:with-param>
@@ -84,7 +82,9 @@
             <xsl:with-param name="month-number">12</xsl:with-param>
             <xsl:with-param name="month-name">December</xsl:with-param>
 	  </xsl:call-template>
-
+          <!-- also call template with no arguments which will display
+               records with unknown months -->
+          <xsl:call-template name="show-month" />
 	</div>
         <xsl:call-template name="user-tools" />
       </div>
@@ -97,10 +97,17 @@
 
 <xsl:template name="show-month">
   <xsl:param name="month-number">nil</xsl:param>
-  <xsl:param name="month-name">Unknown month</xsl:param>
+  <xsl:param name="month-name">Unknown</xsl:param>
 
+  <xsl:if test="//period/composition_start[start_month=$month-number or ($month-number='nil' and not(start_month))] or
+                //period/composition_end[end_month=$month-number or ($month-number='nil' and not(end_month))] or
+                //period/manuscript[made_month=$month-number or ($month-number='nil' and not(made_month))] or
+                //period/letter[composed_month=$month-number or ($month-number='nil' and not(composed_month))] or
+                //period/performance[performed_month=$month-number or ($month-number='nil' and not(performed_month))] or
+                //period/publication[pub_date_month=$month-number or ($month-number='nil' and not(pub_date_month))]">
+  <h3><span class="records-toggle"
+	    onclick="composerCat.toggleRecords(event, '{$month-name}')">+</span> <xsl:value-of select="$month-name" /></h3>
   <div class="month" id="{$month-name}">
-    <h3><xsl:value-of select="$month-name" /></h3>
 
     <!-- FIXME This is not true! These are *period* starts and ends,
          not composition commencement and completion. -->
@@ -147,10 +154,11 @@
     </xsl:if>
 
   </div>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="period/composition_start|period/composition_end">
-  <div class="composition">
+  <div class="record composition">
     <xsl:apply-templates select="uniform_title" />
     <xsl:apply-templates select="start_year|end_year" />
     <xsl:apply-templates select="work_type" />
@@ -208,7 +216,7 @@
 </xsl:template>
 
 <xsl:template match="period/manuscript">
-  <div class="manuscript">
+  <div class="record manuscript">
     <xsl:apply-templates select="title" />
     <xsl:apply-templates select="purpose" />
     <xsl:apply-templates select="made_year" />
@@ -256,7 +264,7 @@
 </xsl:template>
 
 <xsl:template match="period/letter">
-  <div class="letter">
+  <div class="record letter">
     <xsl:apply-templates select="composed" />
     <xsl:apply-templates select="addressee_family_name" />
     <xsl:apply-templates select="signatory_family_name" />
@@ -298,7 +306,7 @@
 </xsl:template>
 
 <xsl:template match="period/performance">
-  <div class="performance">
+  <div class="record performance">
     <xsl:apply-templates select="performed_year" />
     <xsl:apply-templates select="uniform_title" />
     <xsl:apply-templates select="performance_type" />
@@ -361,7 +369,7 @@
 </xsl:template>
 
 <xsl:template match="period/publication">
-  <div class="publication">
+  <div class="record publication">
     <xsl:apply-templates select="title" />
     <xsl:apply-templates select="publisher" />
     <xsl:apply-templates select="pub_date_year" />

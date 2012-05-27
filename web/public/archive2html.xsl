@@ -72,13 +72,19 @@
     </div>
 
     <xsl:if test="//archive/manuscript">
-      <h3>Manuscripts</h3>
-      <xsl:apply-templates select="//manuscript" />
+      <h3><span class="records-toggle"
+		onclick="composerCat.toggleRecords(event, 'manuscripts')">+</span> Manuscripts</h3>
+      <div class="records" id="manuscripts">
+        <xsl:apply-templates select="//manuscript" />
+      </div>
     </xsl:if>
 
     <xsl:if test="//archive/letter">
-      <h3>Letters</h3>
-      <xsl:apply-templates select="//letter" />
+      <h3><span class="records-toggle"
+		onclick="composerCat.toggleRecords(event, 'letters')">+</span> Letters</h3>
+      <div class="records" id="letters">
+        <xsl:apply-templates select="//letter" />
+      </div>
     </xsl:if>
   </div>
 </xsl:template>
@@ -239,7 +245,7 @@
 </xsl:template>
 
 <xsl:template match="archive/manuscript">
-  <div class="manuscript"
+  <div class="record manuscript"
        id="manuscript{ID}"
        about="{$URI_ROOT}/manuscripts/{ID}"
        typeof="mo:Manuscript"

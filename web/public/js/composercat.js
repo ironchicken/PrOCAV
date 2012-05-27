@@ -10,6 +10,10 @@ var composerCat = function() {
 	    }
 	},
 
+	toggleRecords: function(event, records) {
+	    $('#' + records).toggle();
+	},
+
 	nextExplanation: function(event) {
 	    return $(event.target).next('.explanation').get();
 	} };

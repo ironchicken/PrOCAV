@@ -260,6 +260,35 @@ h4 {
   color:#000000;
 }
 
+.records {
+  margin:0px;
+  padding:0x;
+  border-left:15px solid #F0F0F0;
+}
+
+.records-toggle {
+  font-size:50%;
+  font-weight:bold;
+  font-family: 'Oxygen', sans-serif;
+  margin:0px;
+  padding-left:5px;
+  padding-right:5px;
+  padding-top:1px;
+  padding-bottom:1px;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
+  cursor:pointer;
+  background-color:#F0F0F0;
+  color:#A0A0A0;
+}
+
+.record {
+  margin-left:20px;
+  margin-bottom:5px;
+  padding:3px;
+  border:1px solid #D0D0D0;
+}
+
 .field {
   
 }
@@ -426,6 +455,12 @@ div.browse-option {
 
 .hint a:hover span {
   display:inline;
+}
+
+.month {
+  margin:0px;
+  padding:0x;
+  border-left:15px solid #F0F0F0;
 }
 
 .popup {
