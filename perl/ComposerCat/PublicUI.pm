@@ -13,9 +13,9 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $view_archive $view_period $browse_works_by_scored_for
-                        $browse_works $browse_works_by_genre $browse_works_by_title $fulltext_search
-                        $bad_arguments $not_found);
+    our @EXPORT_OK = qw($home $browse $about $view_work $view_manuscript $view_archive $view_period
+                        $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
+                        $fulltext_search $bad_arguments $not_found);
 }
 
 use Apache2::Const -compile => qw(:common);
@@ -283,6 +283,21 @@ our $view_work = make_api_function(
 			      rootname => 'work'},
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'work2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'work2rdf.xsl']} });
+
+our $view_manuscript = make_api_function(
+    { uri_pattern         => qr|^/manuscripts/(?<manuscript_id>[0-9]+)/?$|,
+      require_session     => 'public',
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
+      respect_browse_idx  => 1,
+      generator           => {type     => 'proc',
+			      proc     => sub {
+				  my ($req_data, $dbh) = @_;
+				  return ComposerCat::Database::complete_manuscript(int($req_data->{url_args}->{manuscript_id}));
+			      },
+			      rootname => 'manuscript'},
+      transforms          => {'text/html'           => [$TEMPLATES_DIR . 'manuscript2html.xsl'],
+			      'application/rdf+xml' => [$TEMPLATES_DIR . 'manuscript2rdf.xsl']} });
 
 our $view_archive = make_api_function(
     { uri_pattern         => qr|^/archives/(?<archive_id>[0-9]+)/?$|,
