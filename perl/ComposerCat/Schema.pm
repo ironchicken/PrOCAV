@@ -2537,6 +2537,142 @@ sub schema_prepare_statments {
 				      manuscript         => ['MANY', '_manuscripts']};
 
     ######################################################################################################
+    ### MANUSCRIPTS TABLE STATEMENTS
+    ######################################################################################################
+
+    # manuscripts._full
+    $schema{manuscripts}->{_full} =
+	$dbh->prepare(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.part_of,
+    parent.title AS parent_title, manuscripts.parent_relation, manuscripts.physical_size, manuscripts.medium,
+    manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    annotation_of_editor.family_name AS annot_of_editor_family_name, annotation_of_editor.given_name AS annot_of_editor_given_name,
+    | . date_selector('annotation_of_made') . q|, manuscripts.notes, manuscripts.work_id, works.uniform_title
+    FROM manuscripts
+    LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
+    LEFT JOIN manuscripts AS parent ON manuscripts.part_of = parent.ID
+    LEFT JOIN works ON manuscripts.work_id = works.ID
+    LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
+    LEFT JOIN persons AS annotation_of_editor ON annotated_edition.editor = annotation_of_editor.ID
+    LEFT JOIN dates AS annotation_of_made ON annotated_edition.date_made = annotation_of_made.ID
+    WHERE manuscripts.ID=?|);
+
+    # manuscripts._composition
+    $schema{manuscripts}->{_composition} =
+	$dbh->prepare(q|SELECT composition.ID, | . date_selector('start') . ', ' . date_selector('end') . q|, composition.work_type
+    FROM composition
+    LEFT JOIN dates AS start ON start.ID = composition.period_start
+    LEFT JOIN dates AS end ON end.ID = composition.period_end
+    WHERE composition.manuscript_id = ?
+    ORDER BY start_year ASC, start_month ASC, start_day ASC|);
+
+    # manuscripts._letters
+    $schema{manuscripts}->{_letters} =
+	$dbh->prepare(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
+    signatory.family_name, signatory.given_name, letter_mentions.letter_range, letter_mentions.mentioned_extent
+    FROM letters
+    JOIN letter_mentions ON letter_mentions.letter_id = letters.ID
+    LEFT JOIN dates AS composed ON composed.ID = letters.date_composed
+    LEFT JOIN dates AS sent ON sent.ID = letters.date_sent
+    LEFT JOIN persons AS addressee ON addressee.ID = letters.addressee
+    LEFT JOIN persons AS signatory ON signatory.ID = letters.signatory
+    WHERE letter_mentions.mentioned_table = "manuscripts" AND letter_mentions.mentioned_id = ?|);
+
+    # manuscripts._in_archive
+    $schema{manuscripts}->{_in_archive} =
+	$dbh->prepare(q|SELECT archives.ID AS archive_id, archives.title AS archive, archives.abbreviation AS archive_abbr,
+    archival_ref_str, archival_ref_num, | . date_selector('acquired') . ', ' . date_selector('released') . q|,
+    in_archive.access, in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM in_archive
+    JOIN archives ON archives.ID = in_archive.archive_id
+    LEFT JOIN dates AS acquired ON acquired.ID = in_archive.date_acquired
+    LEFT JOIN dates AS released ON released.ID = in_archive.date_released
+    WHERE entity_type = "manuscripts" AND entity_id = ?
+    ORDER BY acquired_year DESC, acquired_month DESC, acquired_day DESC|);
+
+    # manuscripts.title_source
+    $schema{manuscripts}->{_title_source} =
+	$dbh->prepare(q|SELECT titles.ID, titles.title, titles.language, titles.script, titles.transliteration, titles.notes,
+    works.ID AS work_id, works.uniform_title
+    FROM titles
+    JOIN works ON works.ID = titles.work_id
+    WHERE titles.manuscript_id = ?|);
+
+    # manuscripts.dedication_source
+    $schema{manuscripts}->{_dedication_source} =
+	$dbh->prepare(q|SELECT dedicatee.ID AS dedicatee_id, dedicatee.given_name AS dedicatee_given_name,
+    dedicatee.family_name AS dedicatee_family_name, works.ID as work_id, works.uniform_title
+    FROM dedicated_to
+    JOIN persons AS dedicatee ON dedicatee.ID = dedicated_to.person_id
+    JOIN works ON works.ID = dedicated_to.work_id
+    WHERE manuscript_id = ?|);
+
+    # manuscripts._local_media_items
+    $schema{manuscripts}->{_local_media_items} =
+	$dbh->prepare_cached(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
+    media_items.content_type, media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired,
+    media_items.copyright, media_items.public, representation_of.relation
+    FROM media_items
+    JOIN representation_of ON representation_of.media_id = media_items.ID
+    WHERE representation_of.source = "local" AND representation_of.related_table = "manuscripts" AND related_id=?|);
+
+    # manuscripts._remote_media_items
+    $schema{manuscripts}->{_remote_media_items} =
+	$dbh->prepare_cached(q|SELECT remote_media_items.ID, remote_media_items.mime_type,
+    remote_media_items.uri, remote_media_items.content_type, remote_media_items.extent, remote_media_items.resolution,
+    remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright, remote_media_items.public,
+    representation_of.relation
+    FROM remote_media_items
+    JOIN representation_of ON representation_of.media_id = remote_media_items.ID
+    WHERE representation_of.source = "remote" AND representation_of.related_table = "manuscripts" AND representation_of.related_id=?|);
+
+    # manuscripts._local_media_groups
+    $schema{manuscripts}->{_local_media_groups} =
+	$dbh->prepare(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
+    media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired, media_items.copyright,
+    media_items.public, representation_of.relation, media_in_group.position, media_groups.short_description
+    FROM media_in_group
+    JOIN media_items ON media_in_group.media_id = media_items.ID
+    JOIN media_groups ON media_in_group.group_id = media_groups.ID
+    JOIN representation_of ON representation_of.media_id = media_in_group.group_id
+    WHERE media_in_group.source = "local" AND representation_of.source = "group"
+      AND representation_of.related_table = "manuscripts" AND representation_of.related_id=?
+    ORDER BY media_groups.ID, media_in_group.position|);
+
+    # manuscripts._remote_media_groups
+    $schema{manuscripts}->{_remote_media_groups} =
+	$dbh->prepare(q|SELECT remote_media_items.ID, remote_media_items.mime_type, remote_media_items.uri,
+    remote_media_items.extent, remote_media_items.resolution, remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright,
+    remote_media_items.public, representation_of.relation, media_in_group.position, media_groups.short_description
+    FROM media_in_group
+    JOIN remote_media_items ON media_in_group.media_id = remote_media_items.ID
+    JOIN media_groups ON media_in_group.group_id = media_groups.ID
+    JOIN representation_of ON representation_of.media_id = media_in_group.group_id
+    WHERE media_in_group.source = "remote" AND representation_of.source = "group"
+      AND representation_of.related_table = "manuscripts" AND representation_of.related_id=?
+    ORDER BY media_groups.ID, media_in_group.position|);
+
+    # manuscripts._resources
+    $schema{manuscripts}->{_resources} =
+	$dbh->prepare(q|SELECT resources.uri, resources.title, resources.mime_type, resources.date_made,
+    resources.date_linked, resource_about.relation
+    FROM resources
+    JOIN resource_about ON resource_about.resource_id = resources.ID
+    WHERE resource_about.related_table = "manuscripts" AND resource_about.related_id=?|);
+
+    $schema{manuscripts}->{_complete} = { details            => ['ONE', '_full'],
+					  composition        => ['MANY', '_composition'],
+					  letter             => ['MANY', '_letters'],
+					  in_archive         => ['MANY', '_in_archive'],
+					  title_source       => ['MANY', '_title_source'],
+					  dedication_source  => ['MANY', '_dedication_source'],
+					  local_media_item   => ['MANY', '_local_media_items'],
+					  remote_media_item  => ['MANY', '_remote_media_items'],
+					  local_media_group  => ['MANY', '_local_media_groups'],
+					  remote_media_group => ['MANY', '_remote_media_groups'],
+					  resource           => ['MANY', '_resources'] };
+
+    ######################################################################################################
     ### PERIOD STATEMENTS
     ######################################################################################################
 
