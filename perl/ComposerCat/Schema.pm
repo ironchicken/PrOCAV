@@ -1536,10 +1536,10 @@ our %schema = (
     in_archive         => {
 	_worksheet => "in_archive",
 
-	_field_order         => [qw(document_id archive_id aggregation_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
-	_unique_fields       => [qw(document_id archive_id)],
+	_field_order         => [qw(document_id page_id archive_id aggregation_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
+	_unique_fields       => [qw(document_id page_id archive_id)],
 	_single_select_field => "document_id",
-	_insert_fields       => [qw(document_id archive_id aggregation_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
+	_insert_fields       => [qw(document_id page_id archive_id aggregation_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
 	_order_fields        => [qw(archive_id archival_ref_num archival_ref_str document_id)],
 	_default_order       => "ASC",
 
@@ -1548,6 +1548,13 @@ our %schema = (
 			    not_null => 1,
 			    cell_width => 8,
 			    hint => "ID of the document"},
+
+	page_id         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "document_pages",
+			    look_up => "document_pages",
+			    cell_width => 12,
+			    hint => "ID of the document page"},
 
 	archive_id      => {access => "rw",
 			    data_type => "integer",

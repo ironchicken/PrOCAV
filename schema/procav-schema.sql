@@ -292,6 +292,7 @@ CREATE TABLE archives (
 CREATE TABLE in_archive (
   ID                INT PRIMARY KEY auto_increment,
   document_id       INT NOT NULL,
+  page_id           INT,
   archive_id        INT NOT NULL,
   aggregation_id    INT,
   archival_ref_str  VARCHAR(64),
