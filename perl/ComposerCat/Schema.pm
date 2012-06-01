@@ -20,6 +20,9 @@ BEGIN {
 use ComposerCat::Resources qw(dbpedia_uri);
 use ComposerCat::Database qw(record_exists insert_record insert_resource);
 
+use Data::Dumper;
+$Data::Dumper::Indent = 0;
+
 #################################################################################################################
 #### NAMED LOOK-UPS
 #################################################################################################################
@@ -1436,7 +1439,89 @@ our %schema = (
 
 	notes           => {access => "rw",
 			    data_type => "string",
-			    cell_width => 80},
+			    cell_width => 80,
+			    update_hook => sub { my ($dbh, $operation, $record) = @_;
+						 my @spa_ms_refs = ();
+						 # find occurrences of page ranges
+						 while ($record->{notes} =~ m|(R88[23][0-9])/([0-9]{3}-[0-9]{3})\.pdf/([0-9]{3})-([0-9]{3})|g) {
+						     push @spa_ms_refs, [$1, $2, $3, $4];
+						 }
+						 # also find single page references
+						 while ($record->{notes} =~ m|(R88[23][0-9])/([0-9]{3}-[0-9]{3})\.pdf/([0-9]{3})(?!-[0-9]{3})|g) {
+						     push @spa_ms_refs, [$1, $2, $3, undef];
+						 }
+
+						 for (@spa_ms_refs) {
+						     my ($reel, $file, $first_page, $last_page) = @$_;
+
+						     my $reel_agg_id = @{ $dbh->selectrow_arrayref(q|SELECT ID FROM aggregations WHERE label=? LIMIT 1|, undef, $reel) }[0] or return;
+						     my $file_agg_id = @{ $dbh->selectrow_arrayref(q|SELECT ID FROM aggregations WHERE label=? AND parent=? LIMIT 1|, undef, $file, $reel_agg_id) }[0] or return;
+
+						     for (int $first_page..int($last_page) || int($first_page)) {
+							 my $page_spec = {
+							     document_id => $record->{document_id},
+							     page_number => $_,
+							     page_label  => sprintf("%03d", $_) };
+							 
+							 print "About to insert page " . Dumper($page_spec) . "\n";
+
+							 my $page_id = ComposerCat::Database::insert_record('document_pages', $page_spec, {processing_hook => 1})
+							     if (not ComposerCat::Database::record_exists('document_pages', $page_spec));
+
+							 my $item_agg_spec = {
+							     label     => sprintf("%03d", $_),
+							     label_num => $_,
+							     level     => 'item',
+							     parent    => $file_agg_id,
+							     archive   => 1 };
+									       
+							 print "About to insert item aggregation " . Dumper($item_agg_spec) . "\n";
+
+							 my $item_agg_id = ComposerCat::Database::insert_record('aggregations', $item_agg_spec, {processing_hook => 1})
+							     if (not ComposerCat::Database::record_exists('aggregations', $item_agg_spec));
+
+							 return if (!$page_id || !$item_agg_id);
+
+							 my $in_archive_spec = {
+							     document_id    => $record->{document_id},
+							     page_id        => $page_id,
+							     archive_id     => 1,
+							     item_status    => 'original',
+							     aggregation_id => $item_agg_id };
+
+							 print "About to insert in_archive " . Dumper($in_archive_spec) . "\n";
+
+							 my $in_archive_id = ComposerCat::Database::insert_record('in_archive', $in_archive_spec, {processing_hook => 1})
+							     if (not ComposerCat::Database::record_exists('in_archive', $in_archive_spec));
+
+							 my $media_item_spec = {
+							     mime_type    => 'application/pdf',
+							     path         => "SPA/$reel/$file/" . sprintf("%03d", $_) . ".pdf",
+							     content_type => 'notation',
+							     extent       => '1 page',
+							     public       => 1};
+
+							 print "About to insert media_item " . Dumper($media_item_spec) . "\n";
+
+							 my $media_item_id = ComposerCat::Database::insert_record('media_items', $media_item_spec, {processing_hook => 1})
+							     if (not ComposerCat::Database::record_exists('media_items', $media_item_spec));
+
+							 return if (!$media_item_id);
+
+							 my $rep_of_spec = {
+							     source        => 'local',
+							     media_id      => $media_item_id,
+							     related_table => 'document_pages',
+							     related_id    => $page_id,
+							     relation      => 'digitisation' };
+
+							 print "About to insert representation_of " . Dumper($rep_of_spec) . "\n";
+
+							 ComposerCat::Database::insert_record('representation_of', $rep_of_spec, {processing_hook => 1})
+							     if (not ComposerCat::Database::record_exists('representation_of', $rep_of_spec));
+						     
+						     }
+						 } } },
 
 	staff_notes     => {access => "rw",
 			    data_type => "string",
