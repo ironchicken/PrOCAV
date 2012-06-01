@@ -52,14 +52,6 @@ our %look_ups = (
 				   {value => "autograph complete full score", display => "Autograph complete full score"},
 				   {value => "annotated published score",     display => "Annotated published score"}]; },
 
-    aggregation_parent_relation => sub { [{value => "fonds",      display => "Fonds"},
-					  {value => "sub-fonds",  display => "Sub-fonds"},
-					  {value => "series",     display => "Series"},
-					  {value => "sub-series", display => "Sub-series"},
-					  {value => "files",      display => "Files"},
-					  {value => "sub-files",  display => "Sub-files"},
-					  {value => "item",       display => "Item"}]; },
-
     archival_access       => sub { [{value => "private", display => "Private"},
 				    {value => "public",  display => "Public"}]; },
 
