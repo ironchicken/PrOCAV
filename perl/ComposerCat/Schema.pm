@@ -56,6 +56,8 @@ our %look_ups = (
 					  {value => "sub-fonds",  display => "Sub-fonds"},
 					  {value => "series",     display => "Series"},
 					  {value => "sub-series", display => "Sub-series"},
+					  {value => "files",      display => "Files"},
+					  {value => "sub-files",  display => "Sub-files"},
 					  {value => "item",       display => "Item"}]; },
 
     archival_access       => sub { [{value => "private", display => "Private"},
@@ -69,6 +71,7 @@ our %look_ups = (
 				    {value => "series",     display => "Series"},
 				    {value => "sub-series", display => "Sub-series"},
 				    {value => "files",      display => "Files"},
+				    {value => "sub-files",  display => "Sub-files"},
 				    {value => "item",       display => "Item"}]; },
 
     page_sides            => sub { [{value => "r", display => "r"},

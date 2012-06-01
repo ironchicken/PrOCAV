@@ -313,7 +313,7 @@ CREATE TABLE aggregations (
   label             VARCHAR(32),
   label_num         INT,
   title             VARCHAR(32),
-  `level`           ENUM('fonds', 'sub-fonds', 'series', 'sub-series', 'files', 'item') NOT NULL,
+  `level`           ENUM('fonds', 'sub-fonds', 'series', 'sub-series', 'files', 'sub-files', 'item') NOT NULL,
   parent            INT,
   extent_stmt       VARCHAR(128),
   archive           INT NOT NULL,
