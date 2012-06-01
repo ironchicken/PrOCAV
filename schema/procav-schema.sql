@@ -1,8 +1,8 @@
 -- Schema for PrOCAV database
 SET NAMES utf8;
-DROP DATABASE IF EXISTS procav;
-CREATE DATABASE IF NOT EXISTS procav;
-USE procav;
+-- DROP DATABASE IF EXISTS procav;
+-- CREATE DATABASE IF NOT EXISTS procav;
+-- USE procav;
 
 -- musical works by Prokofiev
 CREATE TABLE works (
@@ -173,47 +173,97 @@ CREATE TABLE performed_in (
   notes             TEXT,
   staff_notes       TEXT);
 
--- letters, normally from Prokofiev
-CREATE TABLE letters (
+-- documents, including letters; documents may mention records from
+-- other tables; they may comprise pages; and they may be in archives
+CREATE TABLE documents (
+  ID                INT PRIMARY KEY auto_increment);
+
+-- a page of a document
+CREATE TABLE document_pages (
   ID                INT PRIMARY KEY auto_increment,
-  letters_db_ID     VARCHAR(32),
-  date_composed     INT,
-  date_sent         INT,
-  addressee         INT,
-  signatory         INT,
-  original_text     TEXT,
-  english_text      TEXT,
+  document_id       INT NOT NULL,
+  page_number       INT,
+  page_side         ENUM('r','v'),
+  page_label        VARCHAR(32),
+  notes             TEXT,
   staff_notes       TEXT);
 
--- asserts that a letter mentions something in the database
-CREATE TABLE letter_mentions (
+-- -- defines a range within a document
+-- CREATE TABLE document_range (
+--   ID                INT PRIMARY KEY auto_increment,
+--   document_id       INT NOT NULL,
+--   notes             TEXT,
+--   staff_notes       TEXT);
+
+-- asserts that a page is in a range
+CREATE TABLE page_in_range (
+  range_id          INT NOT NULL, -- this is *not* a foreign key; ranges should share a range_id value
+  page_id           INT NOT NULL,
+  `position`        INT,
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- asserts that a document mentions something in the database
+CREATE TABLE document_mentions (
   ID                INT PRIMARY KEY auto_increment,
-  letter_id         INT NOT NULL,
-  letter_ragne      VARCHAR(64),
+  document_id       INT NOT NULL,
+  range_id          INT,
+  document_range    VARCHAR(64),
   mentioned_table   ENUM('works', 'titles', 'composition', 'editions', 'publications',
-                         'performances', 'letters', 'manuscripts', 'texts',
-                         'dedicated_to', 'commissioned_by') NOT NULL,
+                         'performances', 'documents', 'texts', 'dedicated_to',
+			 'commissioned_by') NOT NULL,
   mentioned_id      INT NOT NULL,
   mentioned_extent  VARCHAR(64),
   notes             TEXT,
   staff_notes       TEXT);
 
--- a music manuscript relating to a work
-CREATE TABLE manuscripts (
+-- asserts that a document contains something in the database
+-- (including musical works)
+CREATE TABLE document_contains (
   ID                INT PRIMARY KEY auto_increment,
-  work_id           INT,
+  document_id       INT NOT NULL,
+  contained_table   ENUM('works', 'texts') NOT NULL,
+  contained_id      INT NOT NULL,
+  contained_extent  VARCHAR(128) NOT NULL DEFAULT 'complete',
+  range_id          INT,
+  document_range    VARCHAR(128),
+  hand              INT,-- points to a person who wrote in the document
+  notes             TEXT,
+  staff_notes       TEXT);
+  
+-- letters, normally from Prokofiev; these are a special class of
+-- documents
+CREATE TABLE letters (
+  document_id       INT UNIQUE NOT NULL,
+  letters_db_ID     VARCHAR(32),
+  date_composed     INT,
+  date_sent         INT,
+  addressee         INT,
+  signatory         INT,
+  physical_size     VARCHAR(64),
+  support           VARCHAR(64), -- e.g. paper
+  medium            VARCHAR(64), -- e.g. print, ink, pencil
+  layout            VARCHAR(64),
+  missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
+  original_text     TEXT,
+  english_text      TEXT,
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- a music manuscript; these are a special class of document
+CREATE TABLE manuscripts (
+  document_id       INT UNIQUE NOT NULL,
   title             VARCHAR(128),
   purpose           ENUM('sketch', 'contextualised sketch', 'draft short/piano score',
                          'extended draft short score', 'instrumental annotations',
                          'draft full score', 'autograph complete full score',
                          'annotated published score'),
-  part_of           INT,
-  parent_relation   ENUM('fonds', 'sub-fonds', 'series', 'sub-series', 'item'),
-  physical_size     VARCHAR(32),
-  medium            VARCHAR(32),
-  extent            INT,
-  missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
   date_made         INT,
+  physical_size     VARCHAR(64),
+  support           VARCHAR(64), -- e.g. paper
+  medium            VARCHAR(64), -- e.g. print, ink, pencil
+  layout            VARCHAR(64),
+  missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
   annotation_of     INT,
   notes             TEXT,
   staff_notes       TEXT);
@@ -236,13 +286,14 @@ CREATE TABLE archives (
   notes             TEXT,
   staff_notes       TEXT);
 
--- asserts that an archivalable entity is in an archive optionally
+-- asserts that an archivalable document is in an archive optionally
 -- with an identifier from that archive; use a resources record to
 -- associate an external URI
 CREATE TABLE in_archive (
-  entity_type       ENUM('manuscripts', 'letters') NOT NULL,
-  entity_id         INT NOT NULL,
+  ID                INT PRIMARY KEY auto_increment,
+  document_id       INT NOT NULL,
   archive_id        INT NOT NULL,
+  aggregation_id    INT,
   archival_ref_str  VARCHAR(64),
   archival_ref_num  INT,
   date_acquired     INT,
@@ -251,6 +302,21 @@ CREATE TABLE in_archive (
   item_status       ENUM('original', 'copy') NOT NULL DEFAULT 'original',
   copy_type         VARCHAR(32), -- e.g. photocopy, microfilm, scan
   copyright         VARCHAR(255),
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- represents a collection within an archive; these collections are
+-- organised hierarchically
+CREATE TABLE aggregations (
+  ID                INT PRIMARY KEY auto_increment,
+  label             VARCHAR(32),
+  label_num         INT,
+  title             VARCHAR(32),
+  `level`           ENUM('fonds', 'sub-fonds', 'series', 'sub-series', 'files', 'item') NOT NULL,
+  parent            INT,
+  extent_stmt       VARCHAR(128),
+  archive           INT NOT NULL,
+  description       VARCHAR(255),
   notes             TEXT,
   staff_notes       TEXT);
 
@@ -377,8 +443,9 @@ CREATE TABLE representation_of (
   `source`          ENUM('local', 'remote', 'group') NOT NULL,
   media_id          INT NOT NULL,
   related_table     ENUM('works', 'editions', 'publications', 'performances',
-                         'letters', 'manuscripts', 'texts', 'media_items',
-                         'remote_media_items') NOT NULL,
+                         'documents', 'document_pages', 'texts', 'media_items',
+			 'remote_media_items')
+			 NOT NULL,
   related_id        INT NOT NULL,
   relation          ENUM('digitisation', 'transcription', 'features'));
 
@@ -396,10 +463,11 @@ CREATE TABLE resources (
 CREATE TABLE resource_about (
   resource_id       INT NOT NULL,
   related_table     ENUM('works', 'titles', 'genres', 'instruments', 'composition',
-                         'editions', 'publications', 'performances', 'letters',
-                         'letter_mentions', 'manuscripts', 'archives', 'in_archive',
-			 'texts', 'persons', 'dedicated_to', 'commissioned_by',
-			 'remote_media_items') NOT NULL,
+                         'editions', 'publications', 'performances', 'documents',
+                         'document_pages', 'document_mentions', 'document_contains',
+			 'archives', 'in_archive', 'aggregations', 'texts', 'persons',
+			 'dedicated_to', 'commissioned_by', 'remote_media_items')
+			 NOT NULL,
   related_id        INT NOT NULL,
   relation          VARCHAR(128));
 

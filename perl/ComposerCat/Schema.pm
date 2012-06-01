@@ -52,20 +52,27 @@ our %look_ups = (
 				   {value => "autograph complete full score", display => "Autograph complete full score"},
 				   {value => "annotated published score",     display => "Annotated published score"}]; },
 
-    manuscript_parent_relation => sub { [{value => "fonds",      display => "Fonds"},
-					 {value => "sub-fonds",  display => "Sub-fonds"},
-					 {value => "series",     display => "Series"},
-					 {value => "sub-series", display => "Sub-series"},
-					 {value => "item",       display => "Item"}]; },
-
-    archivable_entities  => sub { [{value => "manuscripts", display => "Manuscripts"},
-				   {value => "letters",     display => "Letters"}]; },
+    aggregation_parent_relation => sub { [{value => "fonds",      display => "Fonds"},
+					  {value => "sub-fonds",  display => "Sub-fonds"},
+					  {value => "series",     display => "Series"},
+					  {value => "sub-series", display => "Sub-series"},
+					  {value => "item",       display => "Item"}]; },
 
     archival_access       => sub { [{value => "private", display => "Private"},
 				    {value => "public",  display => "Public"}]; },
 
     archival_item_status  => sub { [{value => "original", display => "Original"},
 				    {value => "copy",     display => "Copy"}]; },
+
+    aggregation_levels    => sub { [{value => "fonds",      display => "Fonds"},
+				    {value => "sub-fonds",  display => "Sub-fonds"},
+				    {value => "series",     display => "Series"},
+				    {value => "sub-series", display => "Sub-series"},
+				    {value => "files",      display => "Files"},
+				    {value => "item",       display => "Item"}]; },
+
+    page_sides            => sub { [{value => "r", display => "r"},
+				    {value => "v", display => "v"}]; },
 
     instrument_cardinality => sub { [{value => "solo",   display => "Solo"},
 				     {value => "desk",   display => "Desk"},
@@ -84,11 +91,13 @@ our %look_ups = (
 				   {value => "editions", display => "Editions"},
 				   {value => "publications", display => "Publications"},
 				   {value => "performances", display => "Performances"},
-				   {value => "letters", display => "Letters"},
-				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "documents", display => "Documents"},
 				   {value => "texts", display => "Texts"},
 				   {value => "dedicated_to", display => "Dedicated_to"},
 				   {value => "commissioned_by", display => "Commissioned_by"}]; },
+
+    containable_tables   => sub { [{value => "works", display => "Works"},
+				   {value => "texts", display => "Texts"}]; },
 
     sex                  => sub { [{value => "male", display => "Male"},
 				   {value => "female", display => "Female"}]; },
@@ -116,11 +125,11 @@ our %look_ups = (
 				   {value => "editions", display => "Editions"},
 				   {value => "publications", display => "Publications"},
 				   {value => "performances", display => "Performances"},
-				   {value => "letters", display => "Letters"},
-				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "documents", display => "Documents"},
+				   {value => "document_pages", display => "Document pages"},
 				   {value => "texts", display => "Texts"},
-				   {value => "media_items", display => "media_items"},
-				   {value => "remote_media_items", display => "remote_media_items"}]; },
+				   {value => "media_items", display => "Media items"},
+				   {value => "remote_media_items", display => "Remote media items"}]; },
 
     media_content_types  => sub { [{value => "audio",    display => "Audio"},
 				   {value => "notation", display => "Notation"},
@@ -140,16 +149,18 @@ our %look_ups = (
 				   {value => "editions", display => "Editions"},
 				   {value => "publications", display => "Publications"},
 				   {value => "performances", display => "Performances"},
-				   {value => "letters", display => "Letters"},
-				   {value => "letter_mentions", display => "Letter mentions"},
-				   {value => "manuscripts", display => "Manuscripts"},
+				   {value => "documents", display => "Documents"},
+				   {value => "document_pages", display => "Document pages"},
+				   {value => "document_mentions", display => "Document mentions"},
+				   {value => "document_contains", display => "Document contains"},
 				   {value => "archives", display => "Archives"},
 				   {value => "in_archive", display => "Item in archive"},
+				   {value => "aggregations", display => "Aggregations"},
 				   {value => "persons", display => "Persons"},
 				   {value => "texts", display => "Texts"},
-				   {value => "dedicated_to", display => "Dedicated_to"},
-				   {value => "commissioned_by", display => "Commissioned_by"},
-				   {value => "remote_media_items", display => "remote_media_items"}]; },
+				   {value => "dedicated_to", display => "Dedicated to"},
+				   {value => "commissioned_by", display => "Commissioned by"},
+				   {value => "remote_media_items", display => "Remote media items"}]; },
 
     # FIXME Think about the logic of this; not after X is inclusive of
     # X, whereas before X is exclusive of X
@@ -171,9 +182,23 @@ our %look_ups = (
 
     instruments          => sub { @_[0]->prepare(qq(SELECT instrument AS value, instrument AS display FROM instruments ORDER BY instrument)); },
 
-    manuscripts          => sub { @_[0]->prepare(qq(SELECT manuscripts.ID AS value, title AS display FROM manuscripts ORDER BY title)); },
+    documents            => sub { @_[0]->prepare(qq(SELECT document_id AS value, CONCAT("manuscript: ", title) AS display FROM manuscripts UNION SELECT letters.document_id AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters LEFT JOIN persons AS s ON letters.signatory = s.ID LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed)); },
+
+    document_pages       => sub { @_[0]->prepare(qq(SELECT document_pages.ID AS value, CONCAT("manuscript: ", title, ", ", page_number, page_side) AS display FROM document_pages JOIN manuscripts ON document_pages.document_id = manuscripts.document_id UNION SELECT document_pages.ID AS value, CONCAT("letter to: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day, ", ", page_number, page_side) AS display FROM document_pages JOIN letters ON document_pages.document_id = letters.document_id LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed)); },
+
+    document_ranges      => sub { @_[0]->prepare(qq(SELECT range_id AS value, CONCAT("range #", range_id, "; ", count(*), " pages from ", page_number, page_side) AS display FROM page_in_range JOIN document_pages ON page_in_range.page_id = document_pages.ID GROUP BY range_id ORDER BY range_id, position)); },
+
+    manuscript_pages     => sub { @_[0]->prepare(qq(SELECT document_pages.ID AS value, CONCAT("manuscript: ", title, ", ", page_number, page_side) AS display FROM document_pages JOIN manuscripts ON document_pages.document_id = manuscripts.document_id)); },
+
+    letter_pages         => sub { @_[0]->prepare(qq(SELECT document_pages.ID AS value, CONCAT("letter to: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day, ", ", page_number, page_side) AS display FROM document_pages JOIN letters ON document_pages.document_id = letters.document_id LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed)); },
+
+    manuscripts          => sub { @_[0]->prepare(qq(SELECT manuscripts.document_id AS value, title AS display FROM manuscripts ORDER BY title)); },
 
     archives             => sub { @_[0]->prepare(qq(SELECT archives.ID AS value, IFNULL(abbreviation, title) AS display FROM archives ORDER BY display)); },
+
+    aggregations         => sub { @_[0]->prepare(qq(SELECT aggregations.ID AS value, CONCAT(archives.abbreviation, "/", IFNULL(CONCAT(parent.label, "/"),""), aggregations.label) AS display FROM aggregations LEFT JOIN aggregations AS parent ON aggregations.parent = parent.ID JOIN archives ON aggregations.archive = archives.ID ORDER BY archives.abbreviation, aggregations.label_num, aggregations.label)); },
+
+    parent_aggregation   => sub { @_[0]->prepare(qq(SELECT aggregations.ID AS value, CONCAT(archives.abbreviation, "/", IFNULL(CONCAT(parent.label, "/"),""), aggregations.label) AS display FROM aggregations LEFT JOIN aggregations AS parent ON aggregations.parent = parent.ID JOIN archives ON aggregations.archive = archives.ID WHERE aggregations.level != "item" ORDER BY archives.abbreviation, aggregations.label_num, aggregations.label)); },
 
     editions             => sub { @_[0]->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
 
@@ -185,7 +210,7 @@ our %look_ups = (
 
     performances         => sub { @_[0]->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
 
-    letters              => sub { @_[0]->prepare(qq(SELECT letters.ID AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters LEFT JOIN persons AS s ON letters.signatory = s.ID LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
+    letters              => sub { @_[0]->prepare(qq(SELECT letters.document_id AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters LEFT JOIN persons AS s ON letters.signatory = s.ID LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
 
     catalogues           => sub { @_[0]->prepare(qq(SELECT ID AS value, label AS display FROM catalogues ORDER BY label)); },
 
@@ -200,7 +225,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments manuscripts archives in_archive editions publications published_in performances venues performed_in letters letter_mentions texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1030,18 +1055,237 @@ our %schema = (
 			    data_type => "string",
 			    cell_width => 80}},
 
-    letters            => {
-	_worksheet => "letters",
+    documents          => {
+	_worksheet => "documents",
 
-	_field_order         => [qw(ID letters_db_ID date_composed date_sent addressee signatory original_text english_text staff_notes)],
+	_field_order         => [qw(ID)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(letters_db_ID date_composed date_sent addressee signatory original_text english_text staff_notes)],
+	_insert_fields       => [],
 	_order_fields        => [qw(ID)],
 	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
+			    cell_width => 8}},
+
+    document_pages     => {
+	_worksheet => "document_pages",
+
+	_field_order         => [qw(ID document_id page_number page_side page_label notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(document_id page_number page_side page_label notes staff_notes)],
+	_order_fields        => [qw(document_id page_number page_side)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+	document_id     => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "documents",
+			    look_up => "documents",
+			    hint => "ID of the document of which this is a page",
+			    cell_width => 15},
+
+	page_number     => {access => "rw",
+			    data_type => "integer",
+			    cell_width => 8},
+
+	page_side       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "page_sides",
+			    cell_width => 8},
+
+	page_label      => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 12},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    # document_range     => {
+    # 	_worksheet => "document_range",
+
+    # 	_field_order         => [qw(ID document_id notes staff_notes)],
+    # 	_unique_fields       => [qw(ID)],
+    # 	_single_select_field => "ID",
+    # 	_insert_fields       => [qw(document_id notes staff_notes)],
+    # 	_order_fields        => [qw(ID)],
+    # 	_default_order       => "ASC",
+
+    # },
+
+    page_in_range      => {
+	_worksheet => "page_in_range",
+
+	_field_order         => [qw(range_id page_id position notes staff_notes)],
+	_unique_fields       => [qw(range_id page_id)],
+	_single_select_field => "page_id",
+	_insert_fields       => [qw(range_id page_id position notes staff_notes)],
+	_order_fields        => [qw(range_id position)],
+	_default_order       => "ASC",
+
+	range_id        => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1},
+
+	page_id         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "document_pages",
+			    look_up => "document_pages",
+			    not_null => 1,
+			    hint => "ID of the page",
+			    cell_width => 12},
+
+	position        => {access => "rw",
+			    data_type => "integer",
+			    cell_width => 8},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    document_mentions  => {
+	_worksheet => "document_mentions",
+
+	_field_order         => [qw(ID document_id range_id document_range mentioned_table mentioned_id mentioned_extent notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(document_id range_id document_range mentioned_table mentioned_id mentioned_extent notes staff_notes)],
+	_order_fields        => [qw(document_id)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	document_id     => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "documents",
+	 		    look_up => "documents",
+			    hint => "ID of the document"},
+
+	range_id        => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "document_range",
+			    look_up => "document_ranges",
+			    hint => "range_id of the document range"},
+
+	document_range  => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+	mentioned_table => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "mentionable_tables",
+			    not_null => 1,
+			    cell_width => 12},
+
+	mentioned_id    => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1,
+			    cell_width => 8},
+
+	mentioned_extent => {access => "rw",
+			     data_type => "string",
+			     width => 64,
+			     cell_width => 12},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    document_contains  => {
+	_worksheet => "document_contains",
+
+	_field_order         => [qw(ID document_id contained_table contained_id contained_extent range_id document_range hand notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(document_id contained_table contained_id contained_extent range_id document_range hand notes staff_notes)],
+	_order_fields        => [qw(document_id contained_table contained_id)],
+	_default_order       => "ASC",
+
+        ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	document_id     => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "documents",
+	 		    look_up => "documents",
+			    hint => "ID of the document"},
+
+	contained_table => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "containable_tables",
+			    not_null => 1,
+			    cell_width => 12},
+
+	contained_id    => {access => "rw",
+			    data_type => "integer",
+			    not_null => 1},
+
+	contained_extent => {access => "rw",
+			     data_type => "string",
+			     not_null => 1,
+			     default => "complete"},
+
+	range_id        => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "document_range",
+			    look_up => "document_ranges",
+			    hint => "range_id of the document range"},
+
+	document_range  => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+        hand            => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+			    look_up => "persons",
+			    cell_width => 15},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    letters            => {
+	_worksheet => "letters",
+
+	_field_order         => [qw(document_id letters_db_ID date_composed date_sent addressee signatory physical_size support medium layout missing original_text english_text notes staff_notes)],
+	_unique_fields       => [qw(document_id)],
+	_single_select_field => "document_id",
+	_insert_fields       => [qw(document_id letters_db_ID date_composed date_sent addressee signatory physical_size support medium layout missing original_text english_text notes staff_notes)],
+	_order_fields        => [qw(document_id)],
+	_default_order       => "ASC",
+
+	document_id     => {access => "rw",
+			    data_type => "integer",
+			    unique => 1,
+			    not_null => 1,
 			    cell_width => 8},
 
 	letters_db_ID   => {access => "rw",
@@ -1049,16 +1293,16 @@ our %schema = (
 			    cell_width => 8},
 
 	date_composed   => {access => "rw",
-			    data_type => "integer"},
-			    #value_parser => sub { },
-			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
-			    #update => qq(UPDATE dates SET  WHERE ID=?)},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the date this letter was composed"},
 
 	date_sent       => {access => "rw",
-			    data_type => "integer"},
-			    #value_parser => sub { },
-			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
-			    #update => qq(UPDATE dates SET  WHERE ID=?)},
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the date this letter was sent"},
 
 	# addressee       => {access => "rw",
 	# 		    data_type => "look_up",
@@ -1082,6 +1326,33 @@ our %schema = (
 	 		    look_up => "persons",
 			    hint => "ID of the person the letter was signed by"},
 
+	physical_size   => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+
+	support         => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+	medium          => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+	layout          => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+	missing         => {access => "rw",
+			    data_type => "boolean",
+			    not_null => 1,
+			    default => 0,
+			    cell_width => 8},
+
 	original_text   => {access => "rw",
 			    data_type => "string",
 			    cell_width => 60},
@@ -1089,55 +1360,6 @@ our %schema = (
 	english_text    => {access => "rw",
 			    data_type => "string",
 			    cell_width => 60},
-
-	staff_notes     => {access => "rw",
-			    data_type => "string",
-			    cell_width => 80}},
-
-    letter_mentions    => {
-	_worksheet => "letter_mentions",
-
-	_field_order         => [qw(ID letter_id letter_range mentioned_table mentioned_id mentioned_extent notes staff_notes)],
-	_unique_fields       => [qw(ID)],
-	_single_select_field => "ID",
-	_insert_fields       => [qw(letter_id letter_range mentioned_table mentioned_id mentioned_extent notes staff_notes)],
-	_order_fields        => [qw(letter_id)],
-	_default_order       => "ASC",
-
-	ID              => {access => "ro",
-			    primary_key => 1,
-			    cell_width => 8},
-
-	# letter_id       => {access => "rw",
-	# 		    data_type => "look_up",
-	# 		    look_up => "letters",
-	# 		    not_null => 1,
-	# 		    cell_width => 20},
-
-	letter_id       => {access => "rw",
-			    data_type => "integer",
-			    foreign_key => "letters",
-	 		    look_up => "letters",
-			    hint => "ID of the letter"},
-
-	letter_range    => {access => "rw",
-			    data_type => "string",
-			    cell_width => 12},
-
-	mentioned_table => {access => "rw",
-			    data_type => "look_up",
-			    look_up => "mentionable_tables",
-			    not_null => 1,
-			    cell_width => 12},
-
-	mentioned_id    => {access => "rw",
-			    data_type => "integer",
-			    not_null => 1,
-			    cell_width => 8},
-
-	mentioned_extent => {access => "rw",
-			     data_type => "string",
-			     cell_width => 12},
 
 	notes           => {access => "rw",
 			    data_type => "string",
@@ -1150,22 +1372,18 @@ our %schema = (
     manuscripts        => {
 	_worksheet => "manuscripts",
 
-	_field_order         => [qw(ID work_id title purpose part_of parent_relation physical_size medium extent missing date_made annotation_of notes staff_notes)],
-	_unique_fields       => [qw(ID)],
-	_single_select_field => "ID",
-	_insert_fields       => [qw(title work_id purpose part_of parent_relation physical_size medium extent missing date_made annotation_of notes staff_notes)],
+	_field_order         => [qw(document_id title purpose date_made physical_size support medium layout missing annotation_of notes staff_notes)],
+	_unique_fields       => [qw(document_id)],
+	_single_select_field => "document_id",
+	_insert_fields       => [qw(document_id title purpose date_made physical_size support medium layout missing annotation_of notes staff_notes)],
 	_order_fields        => [qw(title)],
 	_default_order       => "ASC",
 
-	ID              => {access => "ro",
-			    primary_key => 1,
-			    cell_width => 8},
-
-	work_id         => {access => "rw",
+	document_id     => {access => "rw",
 			    data_type => "integer",
-			    foreign_key => "works",
-			    look_up => "all_works",
-			    hint => "ID of the work"},
+			    unique => 1,
+			    not_null => 1,
+			    cell_width => 8},
 
 	title           => {access => "rw",
 			    data_type => "string",
@@ -1178,30 +1396,30 @@ our %schema = (
 			    not_null => 1,
 			    cell_width => 20},
 
-	part_of         => {access => "rw",
+	date_made       => {access => "rw",
 			    data_type => "integer",
-			    foreign_key => "manuscripts",
-	 		    look_up => "parent_manuscripts",
-			    hint => "ID of parent manuscript"},
-
-	parent_relation => {access => "rw",
-			    data_type => "look_up",
-			    look_up => "manuscript_parent_relation",
-			    list_mutable => 0,
-			    cell_width => 12},
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the date this manuscript was made"},
 
 	physical_size   => {access => "rw",
 			    data_type => "string",
 			    width => 32,
 			    cell_width => 12},
 
-	medium          => {access => "rw",
+	support         => {access => "rw",
 			    data_type => "string",
-			    width => 32,
+			    width => 64,
 			    cell_width => 12},
 
-	extent          => {access => "rw",
-			    data_type => "integer",
+	medium          => {access => "rw",
+			    data_type => "string",
+			    width => 64,
+			    cell_width => 12},
+
+	layout          => {access => "rw",
+			    data_type => "string",
+			    width => 64,
 			    cell_width => 12},
 
 	missing         => {access => "rw",
@@ -1209,15 +1427,6 @@ our %schema = (
 			    not_null => 1,
 			    default => 0,
 			    cell_width => 8},
-
-	date_made       => {access => "rw",
-			    data_type => "integer",
-			    foreign_key => "dates",
-			    look_up => "dates",
-			    hint => "ID of the date this manuscript was made"},
-			    #value_parser => sub { },
-			    #insert => qq(INSERT INTO dates (`year`, `month`, `day`, year_accuracy, month_accuracy, day_accuracy, end_year, end_month, end_day, end_year_accuracy, end_month_accuracy, end_day_accuracy) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)),
-			    #update => qq(UPDATE dates SET  WHERE ID=?)},
 
 	# annotation_of   => {access => "rw",
 	# 		    data_type => "look_up",
@@ -1327,24 +1536,18 @@ our %schema = (
     in_archive         => {
 	_worksheet => "in_archive",
 
-	_field_order         => [qw(entity_type entity_id archive_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
-	_unique_fields       => [qw(entity_type entity_id archive_id)],
-	_single_select_field => "entity_id",
-	_insert_fields       => [qw(entity_type entity_id archive_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
-	_order_fields        => [qw(archive_id archival_ref_num archival_ref_str entity_type entity_id)],
+	_field_order         => [qw(document_id archive_id aggregation_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
+	_unique_fields       => [qw(document_id archive_id)],
+	_single_select_field => "document_id",
+	_insert_fields       => [qw(document_id archive_id aggregation_id archival_ref_str archival_ref_num date_acquired date_released access item_status copy_type copyright notes staff_notes)],
+	_order_fields        => [qw(archive_id archival_ref_num archival_ref_str document_id)],
 	_default_order       => "ASC",
 
-	entity_type     => {access => "rw",
-			    data_type => "look_up",
-			    look_up => "archivable_entities",
-			    not_null => 1,
-			    cell_width => 8},
-
-	entity_id       => {access => "rw",
+	document_id     => {access => "rw",
 			    data_type => "integer",
 			    not_null => 1,
 			    cell_width => 8,
-			    hint => "ID of the item"},
+			    hint => "ID of the document"},
 
 	archive_id      => {access => "rw",
 			    data_type => "integer",
@@ -1352,7 +1555,14 @@ our %schema = (
 			    look_up => "archives",
 			    not_null => 1,
 			    cell_width => 12,
-			    hint => "ID of the archive in which the item is housed"},
+			    hint => "ID of the archive in which the document is housed"},
+
+	aggregation_id  => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "aggregations",
+			    look_up => "aggregations",
+			    cell_width => 12,
+			    hint => "ID of the aggregation identifying this document in the archive"},
 
 	archival_ref_str => {access => "rw",
 			     data_type => "string",
@@ -1395,6 +1605,71 @@ our %schema = (
 			    data_type => "string",
 			    width => 255,
 			    cell_width => 15},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    aggregations       => {
+	_worksheet => "aggregations",
+
+	_field_order         => [qw(ID label label_num title level parent extent_stmt archive description notes staff_notes)],
+	_unique_fields       => [qw(ID)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(label label_num title level parent extent_stmt archive description notes staff_notes)],
+	_order_fields        => [qw(archive label_num label)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	label           => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 12},
+
+	label_num       => {access => "rw",
+			    data_type => "integer"},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 12},
+
+	level           => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "aggregation_levels",
+			    not_null => 1,
+			    cell_width => 12},
+
+	parent          => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "aggregations",
+			    look_up => "parent_aggregations",
+			    hint => "ID of the aggregation level above this aggregation"},
+
+	extent_stmt     => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_width => 20},
+
+	archive         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "archives",
+			    look_up => "archives",
+			    not_null => 1,
+			    cell_width => 12,
+			    hint => "ID of the archive in which this aggregation is found"},
+
+	description     => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 25},
 
 	notes           => {access => "rw",
 			    data_type => "string",
