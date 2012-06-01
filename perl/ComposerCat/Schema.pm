@@ -1068,7 +1068,7 @@ our %schema = (
 	_worksheet => "document_pages",
 
 	_field_order         => [qw(ID document_id page_number page_side page_label notes staff_notes)],
-	_unique_fields       => [qw(ID)],
+	_unique_fields       => [qw(document_id page_number)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(document_id page_number page_side page_label notes staff_notes)],
 	_order_fields        => [qw(document_id page_number page_side)],
@@ -1620,7 +1620,7 @@ our %schema = (
 	_worksheet => "aggregations",
 
 	_field_order         => [qw(ID label label_num title level parent extent_stmt archive description notes staff_notes)],
-	_unique_fields       => [qw(ID)],
+	_unique_fields       => [qw(label parent)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(label label_num title level parent extent_stmt archive description notes staff_notes)],
 	_order_fields        => [qw(archive label_num label)],
@@ -2066,7 +2066,7 @@ our %schema = (
 	_worksheet => "media_items",
 
 	_field_order         => [qw(ID mime_type path content_type extent resolution date_made date_acquired copyright public staff_notes)],
-	_unique_fields       => [qw(ID)],
+	_unique_fields       => [qw(path)],
 	_single_select_field => "ID",
 	_insert_fields       => [qw(mime_type path content_type extent resolution date_made date_acquired copyright public staff_notes)],
 	_order_fields        => [qw(path)],
