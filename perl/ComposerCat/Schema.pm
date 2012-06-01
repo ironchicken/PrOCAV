@@ -196,9 +196,9 @@ our %look_ups = (
 
     archives             => sub { @_[0]->prepare(qq(SELECT archives.ID AS value, IFNULL(abbreviation, title) AS display FROM archives ORDER BY display)); },
 
-    aggregations         => sub { @_[0]->prepare(qq(SELECT aggregations.ID AS value, CONCAT(archives.abbreviation, "/", IFNULL(CONCAT(parent.label, "/"),""), aggregations.label) AS display FROM aggregations LEFT JOIN aggregations AS parent ON aggregations.parent = parent.ID JOIN archives ON aggregations.archive = archives.ID ORDER BY archives.abbreviation, aggregations.label_num, aggregations.label)); },
+    aggregations         => sub { @_[0]->prepare(qq(SELECT aggregations.ID AS value, CONCAT(archives.abbreviation, "/", IFNULL(CONCAT(parent.label, "/"),""), aggregations.label) AS display FROM aggregations LEFT JOIN aggregations AS parent ON aggregations.parent = parent.ID JOIN archives ON aggregations.archive = archives.ID ORDER BY archives.abbreviation, parent.label_num, aggregations.label_num, aggregations.label)); },
 
-    parent_aggregation   => sub { @_[0]->prepare(qq(SELECT aggregations.ID AS value, CONCAT(archives.abbreviation, "/", IFNULL(CONCAT(parent.label, "/"),""), aggregations.label) AS display FROM aggregations LEFT JOIN aggregations AS parent ON aggregations.parent = parent.ID JOIN archives ON aggregations.archive = archives.ID WHERE aggregations.level != "item" ORDER BY archives.abbreviation, aggregations.label_num, aggregations.label)); },
+    parent_aggregation   => sub { @_[0]->prepare(qq(SELECT aggregations.ID AS value, CONCAT(archives.abbreviation, "/", IFNULL(CONCAT(parent.label, "/"),""), aggregations.label) AS display FROM aggregations LEFT JOIN aggregations AS parent ON aggregations.parent = parent.ID JOIN archives ON aggregations.archive = archives.ID WHERE aggregations.level != "item" ORDER BY archives.abbreviation, parent.label_num, aggregations.label_num, aggregations.label)); },
 
     editions             => sub { @_[0]->prepare(qq(SELECT editions.ID AS value, CONCAT(title, " (", publication_range, ")") AS display FROM editions JOIN published_in ON editions.ID=edition_id JOIN publications ON publications.ID=publication_id ORDER BY title)); },
 
