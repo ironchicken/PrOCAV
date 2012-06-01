@@ -151,12 +151,16 @@ sub prepare_statements {
     #$schema{$table}->{_match_all}->{TraceLevel} = "2|SQL";
 
     foreach my $table (@table_order) {
+	# prepare _ID_exists statement
+	$schema{$table}->{_ID_exists} = $dbh->prepare_cached(
+	    sprintf(qq/SELECT ID FROM %s WHERE ID=?/, $table));
+
 	# prepare _exists statement
 	$schema{$table}->{_exists} = $dbh->prepare_cached(
 	    sprintf(qq/SELECT %s FROM %s WHERE %s LIMIT 1/,
 		    $schema{$table}->{_single_select_field},
 		    $table,
-		    join(" AND ", map { "$_=?"; } @{ $schema{$table}->{_unique_fields} })));
+		    join(" AND ", map { "($_=? OR ($_ IS NULL AND ?=1))"; } @{ $schema{$table}->{_unique_fields} })));
     
 	# prepare _match_all statement
 	$schema{$table}->{_match_all} = $dbh->prepare_cached(
@@ -278,6 +282,11 @@ sub create_session {
 #### DATA ACCESS/MANIPULATION FUNCTIONS
 #################################################################################################################
 
+sub prepare_nulls {
+    my ($table, $record, $fields) = @_;
+    return [map { ($_, (defined $_) ? 0: 1); } @{ $record }{@{ $schema{$table}->{$fields} }}];
+}
+
 sub parse_date { }
 
 sub record_stmt {
@@ -299,23 +308,25 @@ sub record {
 sub record_exists {
     my ($table, $record) = @_;
 
-    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_fields} }});
-    return defined $schema{$table}->{_exists}->fetchrow_arrayref;
+    if (defined $record->{ID}) {
+	$schema{$table}->{_ID_exists}->execute($record->{ID});
+	return defined $schema{$table}->{_ID_exists}->fetchrow_arrayref;
+    } else {
+	$schema{$table}->{_exists}->execute(@{ prepare_nulls($table, $record, '_unique_fields') });
+	return defined $schema{$table}->{_exists}->fetchrow_arrayref;
+    }
 }
 
 sub record_different {
     my ($table, $record) = @_;
 
     # if the record exists ...
-    $schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_fields} }});
+    #$schema{$table}->{_exists}->execute(@{ $record }{@{ $schema{$table}->{_unique_fields} }});
+    $schema{$table}->{_exists}->execute(@{ prepare_nulls($table, $record, '_unique_fields') });
     if (defined $schema{$table}->{_exists}->fetchrow_arrayref) {
 	# ... but does not match the given $record in *every* field,
 	# then return TRUE
-	my @args = ();
-	foreach my $value (@{ $record }{@{ $schema{$table}->{_field_order} }}) {
-	    push @args, ($value, (defined $value) ? 0 : 1);
-	}
-	$schema{$table}->{_match_all}->execute(@args);
+	$schema{$table}->{_match_all}->execute(@{ prepare_nulls($table, $record, '_field_order') });
 
 	return not defined $schema{$table}->{_match_all}->fetchrow_arrayref;
     } else {
@@ -380,8 +391,8 @@ sub update_record {
     # first, get a copy of the record as it is before this udate
     my $previous_record = undef;
     if (not $flags->{processing_hook}) {
-	$schema{$table}->{_get}->execute(map { ($_, (defined $_) ? 0 : 1); } @{ $record }{@{ $schema{$table}->{_unique_fields} }});
-	$previous_record = $schema{$table}->{_get}->fetchrow_arrayref;
+	$schema{$table}->{_get}->execute(@{ prepare_nulls($table, $record, '_unique_fields') });
+	$previous_record = $schema{$table}->{_get}->fetchrow_hashref;
     }
 
     # then update the record
