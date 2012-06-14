@@ -2521,7 +2521,7 @@ sub schema_prepare_statments {
     $schema{works}->{_titles} = $dbh->prepare_cached(q|SELECT titles.ID, titles.title, titles.transliteration,
     titles.language, titles.script, manuscripts.title AS manuscript_title, persons.given_name, persons.family_name
     FROM titles
-    LEFT JOIN manuscripts ON manuscripts.ID = titles.manuscript_id
+    LEFT JOIN manuscripts ON manuscripts.document_id = titles.manuscript_id
     LEFT JOIN editions ON editions.ID = titles.edition_id
     LEFT JOIN persons ON editions.ID = titles.person_id
     WHERE titles.work_id=?
@@ -2566,7 +2566,7 @@ sub schema_prepare_statments {
     FROM composition
     LEFT JOIN dates AS start ON composition.period_start = start.ID
     LEFT JOIN dates AS end ON composition.period_end = end.ID
-    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.ID
+    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.document_id
     WHERE composition.work_id=?
     ORDER BY end.year, end.month, end.day, composition.work_type|);
 
@@ -2600,29 +2600,45 @@ sub schema_prepare_statments {
     ORDER BY performed.year, performed.month, performed.day|);
 
     # works._letters
-    $schema{works}->{_letters} = $dbh->prepare_cached(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    $schema{works}->{_letters} =
+	$dbh->prepare_cached(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
-    addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, letter_mentions.letter_ragne,
-    letter_mentions.mentioned_extent AS work_extent, letter_mentions.notes
+    addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, document_mentions.document_range,
+    document_mentions.mentioned_extent AS work_extent, document_mentions.notes AS mention_notes
     FROM letters
-    JOIN letter_mentions ON letter_mentions.letter_id = letters.ID
+    JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    LEFT JOIN document_mentions ON document_mentions.document_id = letters.document_id
     LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
     LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
     LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
     LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
-    WHERE letter_mentions.mentioned_table = "works" AND letter_mentions.mentioned_id=?
+    WHERE document_mentions.mentioned_table = "works" AND document_mentions.mentioned_id=?
     ORDER BY composed.year, composed.month, composed.day|);
 
     #works._manuscripts
-    $schema{works}->{_manuscripts} = $dbh->prepare_cached(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
-    manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
-    manuscripts.notes, archives.ID AS archive_id, archives.abbreviation AS archive_abbr, archives.title AS archive
+    $schema{works}->{_manuscripts} =
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, document_contains.contained_id,
+    document_contains.contained_table, document_contains.notes AS contain_notes
     FROM manuscripts
+    JOIN in_archive ON in_archive.document_id = manuscripts.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = manuscripts.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    LEFT JOIN document_contains ON document_contains.document_id = manuscripts.document_id
     LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
     -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
-    LEFT JOIN in_archive ON in_archive.entity_id = manuscripts.ID
-    LEFT JOIN archives ON in_archive.archive_id = archives.ID
-    WHERE manuscripts.work_id=? AND (in_archive.entity_type = "manuscripts" OR in_archive.entity_type IS NULL)
+    WHERE in_archive.page_id IS NULL
+      AND document_contains.contained_id = ? AND document_contains.contained_table = "works"
+    GROUP BY manuscripts.document_id
     ORDER BY made.year, made.month, made.day, manuscripts.purpose|);
 
     # works._texts
@@ -2640,7 +2656,7 @@ sub schema_prepare_statments {
     dedicated_to.dedication_text, | . date_selector('made') . q|
     FROM dedicated_to
     JOIN persons AS dedicatee ON dedicated_to.person_id = dedicatee.ID
-    LEFT JOIN manuscripts ON dedicated_to.manuscript_id = manuscripts.ID
+    LEFT JOIN manuscripts ON dedicated_to.manuscript_id = manuscripts.document_id
     LEFT JOIN editions ON dedicated_to.edition_id = editions.ID
     LEFT JOIN dates AS edition_date ON editions.date_made = edition_date.ID
     LEFT JOIN dates AS made ON dedicated_to.date_made = made.ID
@@ -2866,37 +2882,73 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS disbanded ON archives.date_disbanded = disbanded.ID
     WHERE archives.ID=?|);
 
+    sub aggregations_query_template {
+	sprintf(q|SELECT aggregations.ID, aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.parent, aggregations.extent_stmt,
+    aggregations.description, aggregations.notes, (SELECT count(children.ID) FROM aggregations AS children WHERE children.parent = aggregations.ID) AS extent
+    FROM aggregations
+    WHERE aggregations.archive = ? AND level = '%s'
+    ORDER BY label_num, label|, shift);
+    }
+
+    $schema{archives}->{_fonds}      = $dbh->prepare(aggregations_query_template('fonds'));
+    $schema{archives}->{_sub_fonds}  = $dbh->prepare(aggregations_query_template('sub-fonds'));
+    $schema{archives}->{_series}     = $dbh->prepare(aggregations_query_template('series'));
+    $schema{archives}->{_sub_series} = $dbh->prepare(aggregations_query_template('sub-series'));
+    $schema{archives}->{_files}      = $dbh->prepare(aggregations_query_template('files'));
+    $schema{archives}->{_sub_files}  = $dbh->prepare(aggregations_query_template('sub-files'));
+
     $schema{archives}->{_letters} =
-	$dbh->prepare(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+	$dbh->prepare_cached(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
     addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text,
-    in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
     in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
     FROM letters
-    JOIN in_archive ON in_archive.entity_id = letters.ID
+    JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
     LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
     LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
     LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
     LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
-    WHERE in_archive.entity_type = "letters" AND in_archive.archive_id=?
-    ORDER BY in_archive.archival_ref_num, in_archive.archival_ref_str, composed.year, composed.month, composed.day|);
+    WHERE in_archive.archive_id=?
+    ORDER BY composed.year, composed.month, composed.day|);
 
     $schema{archives}->{_manuscripts} =
-	$dbh->prepare_cached(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
-    manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
-    in_archive.archival_ref_str, in_archive.archival_ref_num, in_archive.date_acquired, in_archive.date_released, in_archive.access,
-    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, manuscripts.work_id
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, document_contains.contained_id,
+    document_contains.contained_table
     FROM manuscripts
-    JOIN in_archive ON in_archive.entity_id = manuscripts.ID
-    LEFT JOIN works ON manuscripts.work_id = works.ID
+    JOIN in_archive ON in_archive.document_id = manuscripts.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = manuscripts.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    LEFT JOIN document_contains ON document_contains.document_id = manuscripts.document_id
+    LEFT JOIN works ON document_contains.contained_id = works.ID
     LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
     -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
-    WHERE in_archive.entity_type = "manuscripts" AND in_archive.archive_id=?
-    ORDER BY in_archive.archival_ref_num, in_archive.archival_ref_str, made.year, made.month, made.day, manuscripts.title, manuscripts.purpose|);
+    WHERE in_archive.page_id IS NULL
+      AND (document_contains.contained_table = "works" OR document_contains.contained_table IS NULL)
+      AND in_archive.archive_id=?
+    GROUP BY manuscripts.document_id
+    ORDER BY fp_parent_aggr.label_num, fp_aggr.label_num, in_archive.archival_ref_num, in_archive.archival_ref_str, made.year, made.month, made.day, manuscripts.title, manuscripts.purpose|);
 
-    $schema{archives}->{_complete} = {details            => ['ONE', '_full'],
-				      letter             => ['MANY', '_letters'],
-				      manuscript         => ['MANY', '_manuscripts']};
+    $schema{archives}->{_complete} = { details            => ['ONE', '_full'],
+				       fonds              => ['MANY', '_fonds'],
+				       sub_fonds          => ['MANY', '_sub_fonds'],
+				       series             => ['MANY', '_series'],
+				       sub_series         => ['MANY', '_sub_series'],
+				       files              => ['MANY', '_files'],
+				       sub_files          => ['MANY', '_sub_files'],
+				       letter             => ['MANY', '_letters'],
+				       manuscript         => ['MANY', '_manuscripts'] };
 
     ######################################################################################################
     ### MANUSCRIPTS TABLE STATEMENTS
@@ -2904,19 +2956,21 @@ sub schema_prepare_statments {
 
     # manuscripts._full
     $schema{manuscripts}->{_full} =
-	$dbh->prepare(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.part_of,
-    parent.title AS parent_title, manuscripts.parent_relation, manuscripts.physical_size, manuscripts.medium,
-    manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
-    annotation_of_editor.family_name AS annot_of_editor_family_name, annotation_of_editor.given_name AS annot_of_editor_given_name,
-    | . date_selector('annotation_of_made') . q|, manuscripts.notes, manuscripts.work_id, works.uniform_title
+	$dbh->prepare(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose,
+    manuscripts.physical_size, manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing,
+    | . date_selector('made') . q|, annotated_edition.ID AS annotation_of, annotation_of_editor.family_name AS annot_of_editor_family_name,
+    annotation_of_editor.given_name AS annot_of_editor_given_name, | . date_selector('annotation_of_made') . q|,
+    manuscripts.notes, document_contains.contained_id, document_contains.contained_table, document_contains.contained_extent,
+    document_contains.document_range AS manuscript_range, document_contains.notes AS contains_notes, works.uniform_title, texts.title
     FROM manuscripts
     LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
-    LEFT JOIN manuscripts AS parent ON manuscripts.part_of = parent.ID
-    LEFT JOIN works ON manuscripts.work_id = works.ID
+    LEFT JOIN document_contains ON document_contains.document_id = manuscripts.document_id
+    LEFT JOIN works ON document_contains.contained_id = works.ID
+    LEFT JOIN texts ON document_contains.contained_id = texts.ID
     LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
     LEFT JOIN persons AS annotation_of_editor ON annotated_edition.editor = annotation_of_editor.ID
     LEFT JOIN dates AS annotation_of_made ON annotated_edition.date_made = annotation_of_made.ID
-    WHERE manuscripts.ID=?|);
+    WHERE manuscripts.document_id=?|);
 
     # manuscripts._composition
     $schema{manuscripts}->{_composition} =
@@ -2929,28 +2983,45 @@ sub schema_prepare_statments {
 
     # manuscripts._letters
     $schema{manuscripts}->{_letters} =
-	$dbh->prepare(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+	$dbh->prepare(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
-    signatory.family_name, signatory.given_name, letter_mentions.letter_range, letter_mentions.mentioned_extent
+    signatory.family_name, signatory.given_name, document_mentions.document_range AS letter_range, document_mentions.mentioned_extent
     FROM letters
-    JOIN letter_mentions ON letter_mentions.letter_id = letters.ID
+    JOIN document_mentions ON document_mentions.document_id = letters.document_id
     LEFT JOIN dates AS composed ON composed.ID = letters.date_composed
     LEFT JOIN dates AS sent ON sent.ID = letters.date_sent
     LEFT JOIN persons AS addressee ON addressee.ID = letters.addressee
     LEFT JOIN persons AS signatory ON signatory.ID = letters.signatory
-    WHERE letter_mentions.mentioned_table = "manuscripts" AND letter_mentions.mentioned_id = ?|);
+    WHERE document_mentions.mentioned_table = "manuscripts" AND document_mentions.mentioned_id = ?|);
 
     # manuscripts._in_archive
     $schema{manuscripts}->{_in_archive} =
 	$dbh->prepare(q|SELECT archives.ID AS archive_id, archives.title AS archive, archives.abbreviation AS archive_abbr,
     archival_ref_str, archival_ref_num, | . date_selector('acquired') . ', ' . date_selector('released') . q|,
-    in_archive.access, in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    in_archive.access, in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes,
+    aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.extent_stmt, aggregations.description,
+    parent_aggr.ID AS parent_aggr_id, parent_aggr.label AS parent_aggr_label, parent_aggr.level AS parent_aggr_level
     FROM in_archive
     JOIN archives ON archives.ID = in_archive.archive_id
+    JOIN manuscripts ON manuscripts.document_id = in_archive.document_id
+    LEFT JOIN aggregations ON in_archive.aggregation_id = aggregations.ID
+    LEFT JOIN aggregations AS parent_aggr ON aggregations.parent = parent_aggr.ID
     LEFT JOIN dates AS acquired ON acquired.ID = in_archive.date_acquired
     LEFT JOIN dates AS released ON released.ID = in_archive.date_released
-    WHERE entity_type = "manuscripts" AND entity_id = ?
+    WHERE in_archive.page_id IS NULL AND manuscripts.document_id = ?
     ORDER BY acquired_year DESC, acquired_month DESC, acquired_day DESC|);
+
+    # manuscripts._pages
+    $schema{manuscripts}->{_pages} =
+	$dbh->prepare(q|SELECT document_pages.ID AS document_page_id, page_number, page_side, page_label, document_pages.notes AS page_notes,
+    aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.extent_stmt, aggregations.description,
+    parent_aggr.ID AS parent_aggr_id, parent_aggr.label AS parent_aggr_label, parent_aggr.level AS parent_aggr_level
+    FROM document_pages
+    LEFT JOIN in_archive ON in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations ON aggregations.ID = in_archive.aggregation_id
+    LEFT JOIN aggregations AS parent_aggr ON aggregations.parent = parent_aggr.ID
+    WHERE document_pages.document_id = ?
+    ORDER BY parent_aggr.label_num, page_number, page_side, page_label|);
 
     # manuscripts.title_source
     $schema{manuscripts}->{_title_source} =
@@ -3023,6 +3094,7 @@ sub schema_prepare_statments {
     WHERE resource_about.related_table = "manuscripts" AND resource_about.related_id=?|);
 
     $schema{manuscripts}->{_complete} = { details            => ['ONE', '_full'],
+					  pages              => ['MANY', '_pages'],
 					  composition        => ['MANY', '_composition'],
 					  letter             => ['MANY', '_letters'],
 					  in_archive         => ['MANY', '_in_archive'],
@@ -3043,7 +3115,7 @@ sub schema_prepare_statments {
     FROM composition
     JOIN works ON composition.work_id = works.ID
     LEFT JOIN dates AS start ON composition.period_start = start.ID
-    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.ID
+    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.document_id
     WHERE start.year = ?
     ORDER BY start.year, start.month, start.day, composition.work_type|);
 
@@ -3052,25 +3124,37 @@ sub schema_prepare_statments {
     FROM composition
     JOIN works ON composition.work_id = works.ID
     LEFT JOIN dates AS end ON composition.period_end = end.ID
-    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.ID
+    LEFT JOIN manuscripts ON composition.manuscript_id = manuscripts.document_id
     WHERE end.year = ?
     ORDER BY end.year, end.month, end.day, composition.work_type|);
 
     $schema{period}->{_manuscripts} =
-	$dbh->prepare_cached(q|SELECT manuscripts.ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
-    manuscripts.medium, manuscripts.extent, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
-    manuscripts.notes, archives.ID AS archive_id, archives.abbreviation AS archive_abbr, archives.title AS archive
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+    manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, document_contains.contained_id,
+    document_contains.contained_table
     FROM manuscripts
-    JOIN dates AS made ON manuscripts.date_made = made.ID
-    LEFT JOIN in_archive ON in_archive.entity_id = manuscripts.ID
-    LEFT JOIN archives ON in_archive.archive_id = archives.ID
-    WHERE made.year = ? AND (in_archive.entity_type = "manuscripts" OR in_archive.entity_type IS NULL)
+    JOIN in_archive ON in_archive.document_id = manuscripts.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = manuscripts.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    LEFT JOIN document_contains ON document_contains.document_id = manuscripts.document_id
+    LEFT JOIN works ON document_contains.contained_id = works.ID
+    LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
+    -- LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
+    WHERE in_archive.page_id IS NULL
+      AND (document_contains.contained_table = "works" OR document_contains.contained_table IS NULL)
+      AND made.year=?
+    GROUP BY manuscripts.document_id
     ORDER BY made.year, made.month, made.day, manuscripts.purpose|);
 
     # FIXME Find a good abstraction for binding a single argument to
     # multiple placeholders. The is called from Database::AUTOLOAD.
     $schema{period}->{_letters} =
-	$dbh->prepare_cached(q|SELECT letters.ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|, addressee.ID AS addressee_id,
+	$dbh->prepare_cached(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|, addressee.ID AS addressee_id,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.ID AS signatory_id,
     signatory.given_name AS signatory_given_name, signatory.family_name AS signatory_family_name
     FROM letters
