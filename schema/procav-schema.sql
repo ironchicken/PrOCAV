@@ -158,7 +158,7 @@ CREATE TABLE performances (
 CREATE TABLE venues (
   ID                INT PRIMARY KEY auto_increment,
   `name`            VARCHAR(255) NOT NULL,
-  city              VARCHAR(255),
+  town_id           INT,
   country           CHAR(2),
   venue_type        VARCHAR(128),
   homepage          VARCHAR(255),
@@ -211,7 +211,7 @@ CREATE TABLE document_mentions (
   document_range    VARCHAR(64),
   mentioned_table   ENUM('works', 'titles', 'composition', 'editions', 'publications',
                          'performances', 'documents', 'texts', 'dedicated_to',
-			 'commissioned_by') NOT NULL,
+			 'commissioned_by', 'biographical_details') NOT NULL,
   mentioned_id      INT NOT NULL,
   mentioned_extent  VARCHAR(64),
   notes             TEXT,
@@ -240,16 +240,41 @@ CREATE TABLE letters (
   date_sent         INT,
   addressee         INT,
   signatory         INT,
+  recipient_addr    INT,
+  sender_addr       INT,
   physical_size     VARCHAR(64),
   support           VARCHAR(64), -- e.g. paper
   medium            VARCHAR(64), -- e.g. print, ink, pencil
   layout            VARCHAR(64),
   missing           TINYINT DEFAULT 0,-- NOT NULL DEFAULT 0,
+  `language`        CHAR(2),
+  script            VARCHAR(32),
   original_text     TEXT,
   english_text      TEXT,
   notes             TEXT,
   staff_notes       TEXT);
 
+-- addresses to which letters may be sent
+CREATE TABLE post_addresses (
+  ID                INT PRIMARY KEY auto_increment,
+  address           TEXT,
+  town_id           INT,
+  country           CHAR(2),
+  latitude	    DECIMAL(18,12),
+  longitude	    DECIMAL(18,12),
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- towns which can be used in post_addresses or as venues
+CREATE TABLE towns (
+  ID                INT PRIMARY KEY auto_increment,
+  `name`            VARCHAR(255) NOT NULL,
+  country           CHAR(2),
+  latitude	    DECIMAL(18,12),
+  longitude	    DECIMAL(18,12),
+  notes             TEXT,
+  staff_notes       TEXT);
+  
 -- a music manuscript; these are a special class of document
 CREATE TABLE manuscripts (
   document_id       INT UNIQUE NOT NULL,
@@ -351,6 +376,43 @@ CREATE TABLE persons (
   family_name       VARCHAR(255),
   sex               ENUM('male', 'female'),
   nationality       CHAR(2),
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- persons may be known by other names
+CREATE TABLE person_names (
+  person_id         INT NOT NULL,
+  name_type         ENUM('nick', 'pen', 'stage', 'familial', 'maiden', 'former', 'position'),
+  `name`            VARCHAR(255) NOT NULL,
+  script            VARCHAR(32),
+  transliteration   VARCHAR(255),
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- describes relationships between persons
+CREATE TABLE person_relations (
+  from_person       INT NOT NULL,
+  to_person         INT NOT NULL,
+  relation_type     VARCHAR(32) NOT NULL,
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- asserts that a person collaborated on a musical work; (all works
+-- are assumed to be composed by Prokofiev)
+CREATE TABLE collaborated_on (
+  work_id           INT NOT NULL,
+  person_id         INT NOT NULL,
+  `role`            ENUM('choreographer', 'desinger', 'director', 'producer', 'arranger'),
+  notes             TEXT,
+  staff_notes       TEXT);
+
+-- records details of persons' lives
+CREATE TABLE biographical_details (
+  ID                INT PRIMARY KEY auto_increment,
+  person_id         INT NOT NULL,
+  start_date        INT NOT NULL,
+  end_date          INT,
+  detail_type       VARCHAR(32) NOT NULL, -- e.g. birth, death, marriage, emmigration
   notes             TEXT,
   staff_notes       TEXT);
 
@@ -466,8 +528,9 @@ CREATE TABLE resource_about (
   related_table     ENUM('works', 'titles', 'genres', 'instruments', 'composition',
                          'editions', 'publications', 'performances', 'documents',
                          'document_pages', 'document_mentions', 'document_contains',
-			 'archives', 'in_archive', 'aggregations', 'texts', 'persons',
-			 'dedicated_to', 'commissioned_by', 'remote_media_items')
+                         'archives', 'in_archive', 'aggregations', 'texts', 'persons',
+                         'dedicated_to', 'commissioned_by', 'towns',
+                         'remote_media_items')
 			 NOT NULL,
   related_id        INT NOT NULL,
   relation          VARCHAR(128));
