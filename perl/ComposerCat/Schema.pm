@@ -1637,7 +1637,7 @@ our %schema = (
 	_field_order         => [qw(ID title abbreviation date_established date_disbanded location city country uri telephone email latitude longitude notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(ID title abbreviation date_established date_disbanded location city country uri telephone email latitude longitude notes staff_notes)],
+	_insert_fields       => [qw(title abbreviation date_established date_disbanded location city country uri telephone email latitude longitude notes staff_notes)],
 	_order_fields        => [qw(abbreviation)],
 	_default_order       => "ASC",
 
