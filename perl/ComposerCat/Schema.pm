@@ -218,6 +218,8 @@ our %look_ups = (
 
     persons              => sub { @_[0]->prepare(qq(SELECT persons.ID AS value, CONCAT(family_name, ", ", given_name) AS display FROM persons ORDER BY family_name, given_name)); },
 
+    biographical_detail_types => sub { @_[0]->prepare(qq(SELECT DISTINCT detail_type AS value, detail_type AS display FROM biographical_details ORDER BY detail_type)); },
+
     score_types          => sub { @_[0]->prepare(qq(SELECT DISTINCT score_type AS value, score_type AS display FROM publications ORDER BY score_type)); },
 
     performances         => sub { @_[0]->prepare(qq(SELECT performances.ID AS value, CONCAT(works.uniform_title, " ", dates.day, "/", dates.month, "/", dates.year) AS display FROM performances JOIN works ON performances.work_id=works.ID JOIN dates ON performances.date_performed=dates.ID ORDER BY works.uniform_title, dates.year, dates.month, dates.day)); },
@@ -239,7 +241,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters postal_addresses towns manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters postal_addresses towns manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on biographical_details catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -2104,6 +2106,56 @@ our %schema = (
 			    data_type => "string",
 			    cell_width => 80}},
 
+    biographical_details => {
+	_worksheet => "biographical_details",
+
+	_field_order         => [qw(ID person_id start_date end_date detail_type notes staff_notes)],
+	_unique_fields       => [qw(person_id start_date detail_type)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(person_id start_date end_date detail_type notes staff_notes)],
+	_order_fields        => [qw(start_date person_id)],
+	_default_order       => "ASC",
+
+	ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	person_id       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+	 		    look_up => "persons",
+			    not_null => 1,
+			    hint => "ID of the person"},
+
+	start_date      => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    not_null => 1,
+			    hint => "ID of the start date (or only date) for the detail"},
+
+	end_date        => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "dates",
+			    look_up => "dates",
+			    hint => "ID of the end date for the detail"},
+
+	detail_type     => {access => "rw",
+			    data_type => "string",
+			    look_up => "biographical_detail_types",
+			    list_mutable => 1,
+			    not_null => 1,
+			    width => 32,
+			    cell_width => 10},
+			    
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+	
     dedicated_to       => {
 	_worksheet => "dedicated_to",
 
