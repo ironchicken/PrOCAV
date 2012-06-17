@@ -255,7 +255,7 @@ CREATE TABLE letters (
   staff_notes       TEXT);
 
 -- addresses to which letters may be sent
-CREATE TABLE post_addresses (
+CREATE TABLE postal_addresses (
   ID                INT PRIMARY KEY auto_increment,
   address           TEXT,
   town_id           INT,
