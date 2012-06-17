@@ -237,7 +237,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters towns manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1372,6 +1372,47 @@ our %schema = (
 	english_text    => {access => "rw",
 			    data_type => "string",
 			    cell_width => 60},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    towns              => {
+	_worksheet => "towns",
+
+	_field_order         => [qw(ID name country latitude longitude notes staff_notes)],
+	_unique_fields       => [qw(name country)],
+	_single_select_field => "ID",
+	_insert_fields       => [qw(name country latitude longitude notes staff_notes)],
+	_order_fields        => [qw(name)],
+	_default_order       => "ASC",
+
+        ID              => {access => "ro",
+			    primary_key => 1,
+			    cell_width => 8},
+
+	name            => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    not_null => 1,
+			    cell_width => 15},
+
+	country         => {access => "rw",
+			    data_type => "string",
+			    width => 2,
+			    cell_width => 8},
+
+	latitude        => {access => "rw",
+			    data_type => "decimal",
+			    cell_width => 8},
+
+	longitude       => {access => "rw",
+			    data_type => "decimal",
+			    cell_width => 8},
 
 	notes           => {access => "rw",
 			    data_type => "string",
