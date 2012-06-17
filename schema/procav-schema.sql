@@ -462,15 +462,21 @@ CREATE TABLE dates (
 CREATE TABLE media_items (
   ID                INT PRIMARY KEY auto_increment,
   mime_type         VARCHAR(32) NOT NULL,
-  `path`            VARCHAR(255) UNIQUE NOT NULL,
+  `path`            VARCHAR(255) UNIQUE,
   content_type      ENUM('audio', 'notation', 'text', 'analysis', 'data') NOT NULL,
   extent            VARCHAR(128),
   resolution        VARCHAR(128),
   date_made         DATETIME,
-  date_acquired     DATETIME NOT NULL,
+  date_acquired     DATETIME,
   copyright         VARCHAR(255),
   `public`          TINYINT NOT NULL DEFAULT 1,
   staff_notes       TEXT);
+
+-- some media types will be stored in the database, rather than in the
+-- filesystem
+CREATE TABLE media_data (
+  media_id          INT NOT NULL UNIQUE,
+  `data`            BLOB NOT NULL);
 
 -- digitised media from outside the archive
 CREATE TABLE remote_media_items (

@@ -241,7 +241,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters postal_addresses towns manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on biographical_details catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters postal_addresses towns manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on biographical_details catalogues dates media_items media_data remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -2440,7 +2440,6 @@ our %schema = (
 	path            => {access => "rw",
 			    data_type => "string",
 			    unique => 1,
-			    not_null => 1,
 			    width => 255,
 			    cell_width => 30},
 
@@ -2484,6 +2483,25 @@ our %schema = (
 	staff_notes     => {access => "rw",
 			    data_type => "string",
 			    cell_width => 80}},
+
+    media_data          => {
+	_worksheet => "media_data",
+
+	_field_order         => [qw(media_id data)],
+	_unique_fields       => [qw(media_id)],
+	_single_select_field => "media_id",
+	_insert_fields       => [qw(media_id data)],
+	_order_fields        => [qw(media_id)],
+	_default_order       => "ASC",
+
+	media_id         => {access => "rw",
+			     data_type => "integer",
+			     foreign_key => "media_items",
+			     look_up => "media_items",
+			     hint => "ID of the media item"},
+
+	data             => {access => "rw",
+			     data_type => "string"}},
 
     remote_media_items  => {
 	_worksheet => "remote_media_items",
