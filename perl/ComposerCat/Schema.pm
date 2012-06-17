@@ -237,7 +237,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons person_names collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons person_names person_relations collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1936,6 +1936,42 @@ our %schema = (
 			    data_type => "string",
 			    width => 255,
 			    cell_width => 20},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    person_relations   => {
+	_worksheet => "person_relations",
+
+	_field_order         => [qw(from_person to_person relation_type notes staff_notes)],
+	_unique_fields       => [qw(from_person to_person relation_type)],
+	_single_select_field => "to_person",
+	_insert_fields       => [qw(from_person to_person relation_type notes staff_notes)],
+	_order_fields        => [qw(from_person to_person relation_type)],
+	_default_order       => "ASC",
+
+	from_person     => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+	 		    look_up => "persons",
+			    hint => "ID of the subject person in the relation"},
+
+	to_person       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+	 		    look_up => "persons",
+			    hint => "ID of the object person in the relation (usually Prokofiev)"},
+
+	relation_type   => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    not_null => 1,
+			    cell_width => 12},
 
 	notes           => {access => "rw",
 			    data_type => "string",
