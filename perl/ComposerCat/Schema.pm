@@ -120,6 +120,14 @@ our %look_ups = (
 				   {value => 'producer',      display => 'Producer'},
 				   {value => 'arranger',      display => 'Arranger'}]; },
 
+    person_name_types    => sub { [{value => 'nick',     display => 'Nick name'},
+				   {value => 'pen',      display => 'Pen name'},
+				   {value => 'stage',    display => 'Stage name'},
+				   {value => 'familial', display => 'Familial name'},
+				   {value => 'maiden',   display => 'Maiden name'},
+				   {value => 'former',   display => 'Former name'},
+				   {value => 'position', display => 'Position'}]; },
+
     no_author            => sub { [{value => "anonymous", display => "Anonymous"},
 				   {value => "traditional", display => "Traditional"}]; },
 
@@ -229,7 +237,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons person_names collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1883,6 +1891,51 @@ our %schema = (
 			    data_type => "string",
 			    width => 2,
 			    cell_width => 8},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    person_names       => {
+	_worksheet => "person_names",
+
+	_field_order         => [qw(person_id name_type name script transliteration notes staff_notes)],
+	_unique_fields       => [qw(person_id name)],
+	_single_select_field => "person_id",
+	_insert_fields       => [qw(person_id name_type name script transliteration notes staff_notes)],
+	_order_fields        => [qw(person_id name)],
+	_default_order       => "ASC",
+
+	person_id       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+	 		    look_up => "persons",
+			    hint => "ID of the person"},
+
+	name_type       => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "person_name_types",
+			    cell_width => 8},
+
+	name            => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    not_null => 1,
+			    cell_width => 15},
+
+	script          => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 10},
+
+	transliteration => {access => "rw",
+			    data_type => "string",
+			    width => 255,
+			    cell_width => 20},
 
 	notes           => {access => "rw",
 			    data_type => "string",
