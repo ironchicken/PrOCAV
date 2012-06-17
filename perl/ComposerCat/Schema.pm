@@ -114,6 +114,12 @@ our %look_ups = (
 
     modes                => sub { [{value => "major", display => "Major"}, {value => "minor", display => "Minor"}]; },
 
+    collaboration_roles  => sub { [{value => 'choreographer', display => 'Choreographer'},
+				   {value => 'designer',      display => 'Designer'},
+				   {value => 'director',      display => 'Director'},
+				   {value => 'producer',      display => 'Producer'},
+				   {value => 'arranger',      display => 'Arranger'}]; },
+
     no_author            => sub { [{value => "anonymous", display => "Anonymous"},
 				   {value => "traditional", display => "Traditional"}]; },
 
@@ -223,7 +229,7 @@ our %look_ups = (
 #### DATABASE SCHEMA
 #################################################################################################################
 
-our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
+our @table_order = qw(works musical_information catalogue_numbers titles composition genres work_status scored_for dedicated_to commissioned_by instruments editions publications published_in performances venues performed_in documents document_pages page_in_range document_mentions document_contains letters manuscripts archives in_archive aggregations texts persons collaborated_on catalogues dates media_items remote_media_items media_groups media_in_group representation_of resources resource_about);
 
 our %schema = (
     works => {
@@ -1876,6 +1882,41 @@ our %schema = (
 	nationality     => {access => "rw",
 			    data_type => "string",
 			    width => 2,
+			    cell_width => 8},
+
+	notes           => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80},
+
+	staff_notes     => {access => "rw",
+			    data_type => "string",
+			    cell_width => 80}},
+
+    collaborated_on    => {
+	_worksheet => "collaborated_on",
+
+	_field_order         => [qw(work_id person_id role notes staff_notes)],
+	_unique_fields       => [qw(work_id person_id role)],
+	_single_select_field => "person_id",
+	_insert_fields       => [qw(work_id person_id role notes staff_notes)],
+	_order_fields        => [qw(work_id person_id role)],
+	_default_order       => "ASC",
+
+	work_id         => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "works",
+	 		    look_up => "all_works",
+			    hint => "ID of the work"},
+
+	person_id       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "persons",
+	 		    look_up => "persons",
+			    hint => "ID of the person who collaborated on the work"},
+
+	role            => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "collaboration_roles",
 			    cell_width => 8},
 
 	notes           => {access => "rw",
