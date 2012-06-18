@@ -35,7 +35,7 @@
         <form id="fulltext-search" name="fulltext-search" action="{$URI_ROOT}/search" method="GET">
           <input type="hidden" name="start" id="start" value="1" />
           <input type="hidden" name="limit" id="limit" value="10" />
-          <p>Search: <input type="text" name="terms" id="terms" onchange="document.forms[1].submit()" /><span class="go-btn" onclick="document.forms[1].submit()">GO</span></p>
+          <p>Search: <input type="text" name="terms" id="terms" onchange="document.forms[0].submit()" /><span class="go-btn" onclick="document.forms[0].submit()">GO</span></p>
 	</form>
       </li>
     </ul>
