@@ -13,8 +13,8 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $view_manuscript $view_archive $view_period $view_media_item
-                        $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
+    our @EXPORT_OK = qw($home $browse $about $digital_archive $view_work $view_manuscript $view_archive $view_period
+                        $view_media_item $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
                         $fulltext_search $bad_arguments $not_found);
 }
 
@@ -54,6 +54,15 @@ our $about = make_api_function(
       optional_parameters => [],
       accept_types        => ['text/html'],
       generator           => {type => 'xmlfile', path => $DOCUMENTS_DIR . 'about.xml'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
+
+our $digital_archive = make_api_function(
+    { uri_pattern         => qr|^/digital-archive/?$|,
+      require_session     => 'public',
+      required_parameters => [],
+      optional_parameters => [],
+      accept_types        => ['text/html'],
+      generator           => {type => 'xmlfile', path => $DOCUMENTS_DIR . 'digital-archive.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse_works = make_api_function(

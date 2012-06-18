@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<document>
+  <head>
+    <title>Digital Archive</title>
+    <created>2012-05-24</created>
+    <modified>2011-05-24</modified>
+  </head>
+  <body>
+    <div id="document-body">
+      <p>
+        The Digital Archive will be created as Phase 3 of the
+        PCDA. Selected manuscripts (music, letters, ephemera) will be
+        linked to catalogue entries, and accessed directly via the
+        Browse menu. Metadata will explain the contents and the
+        relation of digitized materials to the work. An index will
+        list all digitized materials. To view digitized sources
+        outside those published on PCDA you will be asked to apply to the
+        <a href="http://www.sprkfv.net/archive/contact.html">Foundation</a>.
+      </p>
+      <img src="/public/img/op-36-ms-sample.png" alt="Manuscript sample for Five Poems for Voice and Piano Op. 36" />
+      <p style="font-weight:bold;font-size:80%;margin-top:0px">
+        Manuscript sample for <a href="/works/43">Five Poems for Voice and Piano Op. 36</a>
+      </p>
+    </div>
+  </body>
+</document>

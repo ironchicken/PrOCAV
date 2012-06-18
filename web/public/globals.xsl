@@ -35,6 +35,7 @@
       <li><a href="{$URI_ROOT}/browse">Browse</a></li>
       <li><a href="#">Search</a></li>
       <li><a href="{$URI_ROOT}/about">About</a></li>
+      <li><a href="{$URI_ROOT}/digital-archive">Digital Archive</a></li>
     </ul>
     <img src="/public/img/prokofiev-piano.png" alt="Prokofiev at piano" style="margin:25px" />
   </div>
