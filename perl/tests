@@ -12,6 +12,7 @@ use ComposerCat::API qw(handler make_api_function);
 use ComposerCat::Database qw(make_dbh all_records table_info insert_record insert_resource);
 use ComposerCat::Resources qw(dbpedia_uri);
 use ComposerCat::Search qw(process_all_pages);
+use ComposerCat::Digitisations qw(mime_type render);
 use Data::Dumper;
 
 $Data::Dumper::Indent = 1;
@@ -306,6 +307,11 @@ sub test_markup_filter {
 
 sub test_process_all_pages {
     ComposerCat::Search::process_all_pages(sub { print $_[0]->{url} . "\n" . $_[0]->{content} . "\n"; });
+}
+
+sub test_lilypond_renderer {
+    open OUT, "foo.png";
+    render {mime_type => 'application/x-lilypond', data => q!\header { tagline = ##f } { g1 | e1 | c2. c'4 | g4 c g e | c4 r r2 | }!}, \*STDOUT;
 }
 
 sub main {
