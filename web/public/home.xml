@@ -13,6 +13,8 @@
         authoritative catalogue of works by Prokofiev, one of the
         twentieth century's greatest composers.
       </p>
+      <img src="/public/img/prokofiev-piano2.png" alt="Prokofiev at piano"
+	   style="margin:0px;padding:0px;float:right" />
       <p>
         A relational database and digital archive, PCDA links
         Prokofiev Archive holdings, catalogue information and
@@ -31,7 +33,7 @@
       <form id="fulltext-search2" name="fulltext-search2" action="{$URI_ROOT}/search" method="GET">
         <input type="hidden" name="start" id="start" value="1" />
         <input type="hidden" name="limit" id="limit" value="10" />
-        <p><input type="text" name="terms" id="terms" onchange="document.forms[2].submit()" /></p>
+        <p><input type="text" name="terms" id="terms" onchange="document.forms[2].submit()" /><span class="go-btn" onclick="document.forms[2].submit()">GO</span></p>
       </form>
     </div>
   </body>

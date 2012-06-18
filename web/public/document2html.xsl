@@ -23,17 +23,15 @@
   </head>
   <body>
     <xsl:call-template name="page-header" />
+    <xsl:call-template name="page-menu" />
+    <xsl:call-template name="timeline" />
     <div id="body">
-      <xsl:call-template name="page-menu" />
-      <div id="container">
-        <div class="main-content">
-          <h2><xsl:value-of select="/document/head/title" /></h2>
-          <xsl:apply-templates select="//body" />
-          <xsl:call-template name="user-tools" />
-	</div>
-      </div>
+      <h2><xsl:value-of select="/document/head/title" /></h2>
+      <xsl:apply-templates select="//body" />
     </div>
-    <xsl:call-template name="page-footer" />
+    <xsl:call-template name="page-footer">
+      <xsl:with-param name="logos">yes</xsl:with-param>
+    </xsl:call-template>
   </body>    
 </html>
 </xsl:template>

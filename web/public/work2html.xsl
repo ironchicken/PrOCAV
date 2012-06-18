@@ -37,20 +37,16 @@
     <xsl:call-template name="page-tools" />
   </head>
   <body>
-    <div id="page">
     <xsl:call-template name="page-header" />
+    <xsl:call-template name="page-menu" />
+    <xsl:call-template name="timeline" />
     <div id="body">
-      <xsl:call-template name="page-menu" />
-      <div id="container">
-        <xsl:call-template name="browsing-index" />
-        <xsl:comment> index </xsl:comment>
-        <xsl:apply-templates select="//details" />
-        <xsl:comment> noindex </xsl:comment>
-        <xsl:call-template name="user-tools" />
-      </div>
+      <xsl:call-template name="browsing-index" />
+      <xsl:comment> index </xsl:comment>
+      <xsl:apply-templates select="//details" />
+      <xsl:comment> noindex </xsl:comment>
     </div>
     <xsl:call-template name="page-footer" />
-    </div>
   </body>    
 </html>
 </xsl:template>
@@ -65,7 +61,7 @@
 
 <xsl:template match="next_record[ID]">
   <li>
-    <a href="{$URI_ROOT}/works/{ID}"><xsl:value-of select="uniform_title" /><xsl:text> </xsl:text>
+   <a href="{$URI_ROOT}/works/{ID}"><xsl:value-of select="uniform_title" /><xsl:text> </xsl:text>
     <xsl:value-of select="catalogue" />
     <xsl:value-of select="catalogue_number" /></a> &gt;&gt;
   </li>

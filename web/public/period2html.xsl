@@ -26,71 +26,65 @@
     <xsl:call-template name="page-tools" />
   </head>
   <body>
-    <div id="page">
     <xsl:call-template name="page-header" />
-    <div id="body">
-      <xsl:call-template name="page-menu" />
-      <div id="container">
-        <div class="period main-content">
-	  <h2>Period: <xsl:value-of select="substring-after(//request/path, 'year/')" /></h2>
+    <xsl:call-template name="page-menu" />
+    <xsl:call-template name="timeline" />
+    <div id="body" class="period">
+      <h2>Period: <xsl:value-of select="substring-after(//request/path, 'year/')" /></h2>
 
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">1</xsl:with-param>
-            <xsl:with-param name="month-name">January</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">2</xsl:with-param>
-            <xsl:with-param name="month-name">February</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">3</xsl:with-param>
-            <xsl:with-param name="month-name">March</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">4</xsl:with-param>
-            <xsl:with-param name="month-name">April</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">5</xsl:with-param>
-            <xsl:with-param name="month-name">May</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">6</xsl:with-param>
-            <xsl:with-param name="month-name">June</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">7</xsl:with-param>
-            <xsl:with-param name="month-name">July</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">8</xsl:with-param>
-            <xsl:with-param name="month-name">August</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">9</xsl:with-param>
-            <xsl:with-param name="month-name">September</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">10</xsl:with-param>
-            <xsl:with-param name="month-name">October</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">11</xsl:with-param>
-            <xsl:with-param name="month-name">November</xsl:with-param>
-	  </xsl:call-template>
-          <xsl:call-template name="show-month">
-            <xsl:with-param name="month-number">12</xsl:with-param>
-            <xsl:with-param name="month-name">December</xsl:with-param>
-	  </xsl:call-template>
-          <!-- also call template with no arguments which will display
-               records with unknown months -->
-          <xsl:call-template name="show-month" />
-	</div>
-        <xsl:call-template name="user-tools" />
-      </div>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">1</xsl:with-param>
+        <xsl:with-param name="month-name">January</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">2</xsl:with-param>
+        <xsl:with-param name="month-name">February</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">3</xsl:with-param>
+        <xsl:with-param name="month-name">March</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">4</xsl:with-param>
+        <xsl:with-param name="month-name">April</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">5</xsl:with-param>
+        <xsl:with-param name="month-name">May</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">6</xsl:with-param>
+        <xsl:with-param name="month-name">June</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">7</xsl:with-param>
+        <xsl:with-param name="month-name">July</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">8</xsl:with-param>
+        <xsl:with-param name="month-name">August</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">9</xsl:with-param>
+        <xsl:with-param name="month-name">September</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">10</xsl:with-param>
+        <xsl:with-param name="month-name">October</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">11</xsl:with-param>
+        <xsl:with-param name="month-name">November</xsl:with-param>
+      </xsl:call-template>
+      <xsl:call-template name="show-month">
+        <xsl:with-param name="month-number">12</xsl:with-param>
+        <xsl:with-param name="month-name">December</xsl:with-param>
+      </xsl:call-template>
+      <!-- also call template with no arguments which will display
+           records with unknown months -->
+      <xsl:call-template name="show-month" />
     </div>
     <xsl:call-template name="page-footer" />
-    </div>
   </body>    
 </html>
 </xsl:template>

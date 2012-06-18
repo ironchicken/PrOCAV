@@ -29,44 +29,40 @@
   </head>
   <body>
     <xsl:call-template name="page-header" />
+    <xsl:call-template name="page-menu" />
+    <xsl:call-template name="timeline" />
     <div id="body">
-      <xsl:call-template name="page-menu" />
-      <div id="container">
-        <div class="main-content">
-          <h2>Browse works</h2>
-          <p>
-            Browsing for works where <xsl:value-of
-            select="$param-name" /> is <xsl:value-of
-            select="//params[name='cmp']/value" /> "<xsl:value-of
-            select="$param-value" />". <xsl:value-of select="//total"
-            /> records match.
-	  </p>
-          <p>
-            <xsl:choose>
-              <xsl:when test="//prev != ''"><a href="/works?{$cmp}{$param-name}={$param-value}&amp;start={//prev}&amp;limit={//limit}">&lt;&lt;</a></xsl:when>
-              <xsl:otherwise>&lt;&lt;</xsl:otherwise>
-	    </xsl:choose>
-            <xsl:text> </xsl:text>
-            <xsl:choose>
-              <xsl:when test="//start != ''">
-                <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
-	      </xsl:when>
-              <xsl:otherwise>
-	        1 to <xsl:value-of select="//count" />
-	      </xsl:otherwise>
-	    </xsl:choose>
-            <xsl:text> </xsl:text>
-            <xsl:choose>
-              <xsl:when test="//next != ''"><a href="/works?{$cmp}{$param-name}={$param-value}&amp;start={//next}&amp;limit={//limit}">&gt;&gt;</a></xsl:when>
-              <xsl:otherwise>&gt;&gt;</xsl:otherwise>
-	    </xsl:choose>
-	  </p>
-          <ol class="main-content" start="{//start}">
-            <xsl:apply-templates select="//work" />
-	  </ol>
-          <xsl:call-template name="user-tools" />
-	</div>
-      </div>
+      <h2>Browse works</h2>
+      <p>
+        Browsing for works where <xsl:value-of
+	select="$param-name" /> is <xsl:value-of
+	select="//params[name='cmp']/value" /> "<xsl:value-of
+	select="$param-value" />". <xsl:value-of select="//total"
+	/> records match.
+      </p>
+      <p>
+        <xsl:choose>
+          <xsl:when test="//prev != ''"><a href="/works?{$cmp}{$param-name}={$param-value}&amp;start={//prev}&amp;limit={//limit}">&lt;&lt;</a></xsl:when>
+          <xsl:otherwise>&lt;&lt;</xsl:otherwise>
+	</xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:choose>
+          <xsl:when test="//start != ''">
+            <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
+	  </xsl:when>
+          <xsl:otherwise>
+	    1 to <xsl:value-of select="//count" />
+	  </xsl:otherwise>
+	</xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:choose>
+          <xsl:when test="//next != ''"><a href="/works?{$cmp}{$param-name}={$param-value}&amp;start={//next}&amp;limit={//limit}">&gt;&gt;</a></xsl:when>
+          <xsl:otherwise>&gt;&gt;</xsl:otherwise>
+	</xsl:choose>
+      </p>
+      <ol class="main-content" start="{//start}">
+        <xsl:apply-templates select="//work" />
+      </ol>
     </div>
     <xsl:call-template name="page-footer" />
   </body>    

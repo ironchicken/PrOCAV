@@ -11,7 +11,7 @@
 
 <xsl:template name="page-tools">
   <script type="text/javascript" src="/public/js/jquery-1.7.2.min.js"> //script </script>
-  <link href="http://fonts.googleapis.com/css?family=Crimson+Text|Droid+Sans|Dosis:400,500|Oxygen" rel="stylesheet" type="text/css" />
+  <link href="http://fonts.googleapis.com/css?family=Crimson+Text:400,700|Oxygen" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" type="text/css" href="/public/css/composercat.css" />
   <script type="text/javascript" src="/public/js/composercat.js"> //script </script>
 </xsl:template>
@@ -24,20 +24,26 @@
 </xsl:template>
 
 <xsl:template name="page-menu">
-  <div id="left-area">
-    <form id="fulltext-search" name="fulltext-search" action="{$URI_ROOT}/search" method="GET">
-      <input type="hidden" name="start" id="start" value="1" />
-      <input type="hidden" name="limit" id="limit" value="10" />
-      <p>Search: <input type="text" name="terms" id="terms" onchange="document.forms[1].submit()" /></p>
-    </form>
+
     <ul id="catalogue-menu">
       <li><a href="{$URI_ROOT}">Home</a></li>
       <li><a href="{$URI_ROOT}/browse">Browse</a></li>
       <li><a href="#">Search</a></li>
       <li><a href="{$URI_ROOT}/about">About</a></li>
       <li><a href="{$URI_ROOT}/digital-archive">Digital Archive</a></li>
+      <li>
+        <form id="fulltext-search" name="fulltext-search" action="{$URI_ROOT}/search" method="GET">
+          <input type="hidden" name="start" id="start" value="1" />
+          <input type="hidden" name="limit" id="limit" value="10" />
+          <p>Search: <input type="text" name="terms" id="terms" onchange="document.forms[1].submit()" /><span class="go-btn" onclick="document.forms[1].submit()">GO</span></p>
+	</form>
+      </li>
     </ul>
-    <img src="/public/img/prokofiev-piano.png" alt="Prokofiev at piano" style="margin:25px" />
+</xsl:template>
+
+<xsl:template name="timeline">
+  <div id="timeline">
+    <img src="/public/img/timeline-keyboard.png" alt="Timeline" />
   </div>
 </xsl:template>
 
@@ -57,17 +63,22 @@
 
 <xsl:template match="index_args/*" />
 
+<!--
 <xsl:template name="user-tools">
   <div id="right-area">
-    <!--<span style="color:#FFFFFF">User tools</span>-->
+    <span style="color:#FFFFFF">User tools</span>
   </div>
 </xsl:template>
+-->
 
 <xsl:template name="page-footer">
+  <xsl:param name="logos">no</xsl:param>
   <div id="footer">
-    <table style="border:none">
+    Copyright © 2012 The Prokofiev Foundation
+    <xsl:if test="$logos='yes'">
+    <table style="border:none;width:700px">
       <tr>
-        <td colspan="3" style="text-align:center">
+        <td colspan="3" style="text-align:left">
           The Prokofiev Catalogue and Digital Archive is supported by
           the <a href="http://www.sprkfv.net/">Serge Prokofiev
           Foundation</a>, <a href="http://www.gold.ac.uk/">Goldsmiths,
@@ -86,12 +97,8 @@
           <a href="http://www.princeton.edu/"><img src="/public/img/princeton.png" alt="Princeton University" /></a>
 	</td>
       </tr>
-      <tr>
-        <td colspan="3" style="text-align:center">
-          Copyright © 2012 The Prokofiev Catalogue and Digital Archive
-	</td>
-      </tr>
     </table>
+    </xsl:if>
   </div>
 </xsl:template>
 

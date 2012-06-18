@@ -21,42 +21,37 @@
   </head>
   <body>
     <xsl:call-template name="page-header" />
+    <xsl:call-template name="page-menu" />
+    <xsl:call-template name="timeline" />
     <div id="body">
-      <xsl:call-template name="page-menu" />
-      <div id="container">
-        <div class="main-content">
-          <h2>Search for "<xsl:value-of select="$terms" />"</h2>
-          <p>
-            Your search for "<xsl:value-of select="$terms" />"
-            returned <xsl:value-of select="//hits" />
-            result(s).
-	  </p>
-          <p>
-            <xsl:choose>
-              <xsl:when test="//prev != ''"><a href="/search?terms={$terms}&amp;start={//prev}&amp;limit={//limit}">&lt;&lt;</a></xsl:when>
-              <xsl:otherwise>&lt;&lt;</xsl:otherwise>
-	    </xsl:choose>
-            <xsl:text> </xsl:text>
-            <xsl:choose>
-              <xsl:when test="//start != ''">
-                <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
-	      </xsl:when>
-              <xsl:otherwise>
-	        1 to <xsl:value-of select="//count" />
-	      </xsl:otherwise>
-	    </xsl:choose>
-            <xsl:text> </xsl:text>
-            <xsl:choose>
-              <xsl:when test="//next != ''"><a href="/search?terms={$terms}&amp;start={//next}&amp;limit={//limit}">&gt;&gt;</a></xsl:when>
-              <xsl:otherwise>&gt;&gt;</xsl:otherwise>
-	    </xsl:choose>
-	  </p>
-          <ol start="{//start}">
-            <xsl:apply-templates select="//result" />
-	  </ol>
-	</div>
-        <xsl:call-template name="user-tools" />
-      </div>
+      <h2>Search for "<xsl:value-of select="$terms" />"</h2>
+      <p>
+        Your search for "<xsl:value-of select="$terms" />" returned
+        <xsl:value-of select="//hits" /> result(s).
+      </p>
+      <p>
+        <xsl:choose>
+          <xsl:when test="//prev != ''"><a href="/search?terms={$terms}&amp;start={//prev}&amp;limit={//limit}">&lt;&lt;</a></xsl:when>
+          <xsl:otherwise>&lt;&lt;</xsl:otherwise>
+	</xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:choose>
+          <xsl:when test="//start != ''">
+            <xsl:value-of select="//start" /> to <xsl:value-of select="number(//start) + number(//count) - 1" />
+	  </xsl:when>
+          <xsl:otherwise>
+	    1 to <xsl:value-of select="//count" />
+	  </xsl:otherwise>
+	</xsl:choose>
+        <xsl:text> </xsl:text>
+        <xsl:choose>
+          <xsl:when test="//next != ''"><a href="/search?terms={$terms}&amp;start={//next}&amp;limit={//limit}">&gt;&gt;</a></xsl:when>
+          <xsl:otherwise>&gt;&gt;</xsl:otherwise>
+	</xsl:choose>
+      </p>
+      <ol start="{//start}">
+        <xsl:apply-templates select="//result" />
+      </ol>
     </div>
     <xsl:call-template name="page-footer" />
   </body>    

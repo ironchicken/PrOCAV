@@ -31,17 +31,15 @@
   <body>
     <div id="page">
     <xsl:call-template name="page-header" />
+    <xsl:call-template name="page-menu" />
+    <xsl:call-template name="timeline" />
     <div id="body">
-      <xsl:call-template name="page-menu" />
-      <div id="container">
-        <xsl:comment> index </xsl:comment>
-        <xsl:apply-templates select="//details" />
-        <xsl:comment> noindex </xsl:comment>
-        <xsl:call-template name="user-tools" />
-      </div>
+      <xsl:comment> index </xsl:comment>
+      <xsl:apply-templates select="//details" />
+      <xsl:comment> noindex </xsl:comment>
     </div>
-    <xsl:call-template name="page-footer" />
-    </div>
+  </div>
+  <xsl:call-template name="page-footer" />
   </body>    
 </html>
 </xsl:template>
