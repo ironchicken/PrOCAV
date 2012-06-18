@@ -3266,17 +3266,29 @@ sub schema_prepare_statments {
     manuscripts.physical_size, manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing,
     | . date_selector('made') . q|, annotated_edition.ID AS annotation_of, annotation_of_editor.family_name AS annot_of_editor_family_name,
     annotation_of_editor.given_name AS annot_of_editor_given_name, | . date_selector('annotation_of_made') . q|,
-    manuscripts.notes, document_contains.contained_id, document_contains.contained_table, document_contains.contained_extent,
-    document_contains.document_range AS manuscript_range, document_contains.notes AS contains_notes, works.uniform_title, texts.title
+    manuscripts.notes
     FROM manuscripts
     LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
-    LEFT JOIN document_contains ON document_contains.document_id = manuscripts.document_id
-    LEFT JOIN works ON document_contains.contained_id = works.ID
-    LEFT JOIN texts ON document_contains.contained_id = texts.ID
     LEFT JOIN editions AS annotated_edition ON manuscripts.annotation_of = annotated_edition.ID
     LEFT JOIN persons AS annotation_of_editor ON annotated_edition.editor = annotation_of_editor.ID
     LEFT JOIN dates AS annotation_of_made ON annotated_edition.date_made = annotation_of_made.ID
     WHERE manuscripts.document_id=?|);
+
+    # manuscripts._works
+    $schema{manuscripts}->{_works} =
+	$dbh->prepare(q|SELECT document_contains.contained_extent AS work_extent, document_contains.document_range AS manuscript_range,
+    document_contains.notes AS contains_notes, works.uniform_title, works.ID AS work_id
+    FROM document_contains
+    JOIN works ON document_contains.contained_id = works.ID
+    WHERE document_contains.contained_table = "works" AND document_contains.document_id=?|);
+
+    # manuscripts._texts
+    $schema{manuscripts}->{_texts} =
+	$dbh->prepare(q|SELECT document_contains.contained_extent AS text_extent, document_contains.document_range AS manuscript_range,
+    document_contains.notes AS contains_notes, texts.title, texts.ID AS text_id
+    FROM document_contains
+    JOIN texts ON document_contains.contained_id = texts.ID
+    WHERE document_contains.contained_table = "texts" AND document_contains.document_id=?|);
 
     # manuscripts._composition
     $schema{manuscripts}->{_composition} =
@@ -3416,7 +3428,9 @@ sub schema_prepare_statments {
     WHERE resource_about.related_table = "manuscripts" AND resource_about.related_id=?|);
 
     $schema{manuscripts}->{_complete} = { details            => ['ONE', '_full'],
-					  pages              => ['MANY', '_pages'],
+					  work               => ['MANY', '_works'],
+					  text               => ['MANY', '_texts'],
+					  page               => ['MANY', '_pages'],
 					  composition        => ['MANY', '_composition'],
 					  letter             => ['MANY', '_letters'],
 					  in_archive         => ['MANY', '_in_archive'],
