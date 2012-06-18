@@ -3342,6 +3342,7 @@ sub schema_prepare_statments {
 	$dbh->prepare(q|SELECT document_pages.ID AS document_page_id, page_number, page_side, page_label, document_pages.notes AS page_notes,
     aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.extent_stmt, aggregations.description,
     parent_aggr.ID AS parent_aggr_id, parent_aggr.label AS parent_aggr_label, parent_aggr.level AS parent_aggr_level,
+    gparent_aggr.ID AS gparent_aggr_id, gparent_aggr.label AS gparent_aggr_label, gparent_aggr.level AS gparent_aggr_level,
     media_items.ID AS media_id, media_items.mime_type, media_items.path, media_items.content_type, media_items.extent, media_items.resolution,
     media_items.date_made, media_items.date_acquired, media_items.copyright, media_items.public, representation_of.relation,
     representation_of.purpose, representation_of.related_range
@@ -3349,6 +3350,7 @@ sub schema_prepare_statments {
     LEFT JOIN in_archive ON in_archive.page_id = document_pages.ID
     LEFT JOIN aggregations ON aggregations.ID = in_archive.aggregation_id
     LEFT JOIN aggregations AS parent_aggr ON aggregations.parent = parent_aggr.ID
+    LEFT JOIN aggregations AS gparent_aggr ON parent_aggr.parent = gparent_aggr.ID
     LEFT JOIN representation_of ON representation_of.related_id = document_pages.ID
     LEFT JOIN media_items ON media_items.ID = representation_of.media_id
     WHERE document_pages.document_id = ?
