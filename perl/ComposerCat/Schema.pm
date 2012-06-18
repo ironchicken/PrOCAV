@@ -2795,7 +2795,7 @@ sub schema_prepare_statments {
     # works._sub_works retrieves all the records from the WORKS table
     # which stand in a part_of relation with the given WORKS record
     $schema{works}->{_sub_works} = $dbh->prepare_cached(q|SELECT works.ID, sub_works.ID, sub_works.uniform_title, sub_works.sub_title, sub_works.parent_relation,
-    sub_works.duration, sub_works.notes, musical_information.performance_direction,
+    sub_works.part_number, sub_works.part_position, sub_works.duration, sub_works.notes, musical_information.performance_direction,
     musical_information.tonic, musical_information.tonic_chromatic,
     musical_information.mode, musical_information.time_sig_beats,
     musical_information.time_sig_division
@@ -2904,7 +2904,7 @@ sub schema_prepare_statments {
 
     # works._letters
     $schema{works}->{_letters} =
-	$dbh->prepare_cached(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+	$dbh->prepare_cached(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
     addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text, document_mentions.document_range,
     document_mentions.mentioned_extent AS work_extent, document_mentions.notes AS mention_notes
@@ -2924,14 +2924,15 @@ sub schema_prepare_statments {
 
     #works._manuscripts
     $schema{works}->{_manuscripts} =
-	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id AS ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
     in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
     fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
     in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, document_contains.contained_id,
-    document_contains.contained_table, document_contains.notes AS contain_notes
+    document_contains.contained_table, document_contains.notes AS contain_notes, archives.ID AS archive_id, archives.title AS archive, archives.abbreviation AS archive_abbr
     FROM manuscripts
     JOIN in_archive ON in_archive.document_id = manuscripts.document_id
+    LEFT JOIN archives ON archives.ID = in_archive.archive_id
     LEFT JOIN document_pages ON document_pages.document_id = manuscripts.document_id
     LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
     LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
@@ -3203,7 +3204,7 @@ sub schema_prepare_statments {
     $schema{archives}->{_sub_files}  = $dbh->prepare(aggregations_query_template('sub-files'));
 
     $schema{archives}->{_letters} =
-	$dbh->prepare_cached(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+	$dbh->prepare_cached(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
     addressee.family_name AS signatory_family_name, letters.original_text, letters.english_text,
     in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
@@ -3223,11 +3224,11 @@ sub schema_prepare_statments {
     ORDER BY composed.year, composed.month, composed.day|);
 
     $schema{archives}->{_manuscripts} =
-	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id AS ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
     in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
     fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
-    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, document_contains.contained_id,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.ID AS work_id, works.uniform_title, document_contains.contained_id,
     document_contains.contained_table
     FROM manuscripts
     JOIN in_archive ON in_archive.document_id = manuscripts.document_id
@@ -3261,7 +3262,7 @@ sub schema_prepare_statments {
 
     # manuscripts._full
     $schema{manuscripts}->{_full} =
-	$dbh->prepare(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose,
+	$dbh->prepare(q|SELECT manuscripts.document_id AS ID, manuscripts.title, manuscripts.purpose,
     manuscripts.physical_size, manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing,
     | . date_selector('made') . q|, annotated_edition.ID AS annotation_of, annotation_of_editor.family_name AS annot_of_editor_family_name,
     annotation_of_editor.given_name AS annot_of_editor_given_name, | . date_selector('annotation_of_made') . q|,
@@ -3288,7 +3289,7 @@ sub schema_prepare_statments {
 
     # manuscripts._letters
     $schema{manuscripts}->{_letters} =
-	$dbh->prepare(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
     signatory.family_name, signatory.given_name, document_mentions.document_range AS letter_range, document_mentions.mentioned_extent,
     in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
@@ -3450,11 +3451,11 @@ sub schema_prepare_statments {
     ORDER BY end.year, end.month, end.day, composition.work_type|);
 
     $schema{period}->{_manuscripts} =
-	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id AS ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
     manuscripts.support, manuscripts.medium, manuscripts.layout, manuscripts.missing, | . date_selector('made') . q|, manuscripts.annotation_of,
     in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
     fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
-    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.uniform_title, document_contains.contained_id,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes, works.ID AS work_id, works.uniform_title, document_contains.contained_id,
     document_contains.contained_table
     FROM manuscripts
     JOIN in_archive ON in_archive.document_id = manuscripts.document_id
@@ -3475,7 +3476,7 @@ sub schema_prepare_statments {
     # FIXME Find a good abstraction for binding a single argument to
     # multiple placeholders. The is called from Database::AUTOLOAD.
     $schema{period}->{_letters} =
-	$dbh->prepare_cached(q|SELECT letters.document_id, | . date_selector('composed') . ', ' . date_selector('sent') . q|, addressee.ID AS addressee_id,
+	$dbh->prepare_cached(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|, addressee.ID AS addressee_id,
     addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.ID AS signatory_id,
     signatory.given_name AS signatory_given_name, signatory.family_name AS signatory_family_name,
     in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
