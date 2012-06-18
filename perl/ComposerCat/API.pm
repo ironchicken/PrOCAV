@@ -251,96 +251,114 @@ sub make_api_function {
 						$options->{accept_types} :
 						['text/html', 'application/xml', 'text/xml']);
 
-	binmode($dest, ':utf8:');
+	# prepare information about the request
+	my @params = $apr_req->param;
+	my @cookies = $apr_req->jar;
 
-	# construct a SAX processing pipeline
-	my @p = (XML::Filter::BufferText->new,
-		 ComposerCat::Database::ValueExplanations->new,
-		 ComposerCat::Database::MarkupFilter->new);
+	my $req_data ||= { uri      => $req->uri,
+			   params   => {map { $_ => $apr_req->param($_); } @params},
+			   cookies  => {map { $_ => $apr_req->jar($_); } @cookies},
+			   url_args => $url_args };
+
+	# the saxproc and xmlfile generator types are both handled by
+	# SAX pipelines
+	if ($options->{generator}->{type} eq 'saxproc' ||
+	    $options->{generator}->{type} eq 'xmlfile') {
+
+	    binmode($dest, ':utf8:');
+
+	    # construct a SAX processing pipeline
+	    my @p = (XML::Filter::BufferText->new,
+		     ComposerCat::Database::ValueExplanations->new,
+		     ComposerCat::Database::MarkupFilter->new);
 	
-	if (defined $options->{transforms} && defined $options->{transforms}->{$content_type}) {
-	    push @p, map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
-	}
-
-	push @p, XML::SAX::Writer->new(Output         => $dest,
-				       Escape         => {'&' => '&amp;',
-							  '<' => '&lt;',
-							  '>' => '&gt;'},
-				       QuoteCharacter => '"',
-				       EncodeFrom     => 'UTF-8',
-				       EncodeTo       => 'UTF-8');
-
-	my $pipeline = Pipeline(@p);
-
-	# begin the response
-	$req->content_type(($content_type eq 'text/html') ? 'text/html; charset=utf-8' : $content_type);
-
-	print $dest '<?xml version="1.0" encoding="utf-8" ?>'  if ($content_type eq 'application/xml' || $content_type eq 'text/xml');
-	print $dest '<!DOCTYPE html>' if ($content_type eq 'text/html');
-
-	# construct an XML generator and execute the SAX pipeline
-	my $generator;
-
-	if ($options->{generator}->{type} eq 'proc') {
-	    # add some request information to the response data
-	    my @params = $apr_req->param;
-	    my @cookies = $apr_req->jar;
-
-	    my $response = {request => {retrieved  => sprintf("%s", DateTime->now(time_zone => 'local')),
-	    				path       => $req->uri,
-	    				params     => [map { {name => $_, value => $apr_req->param($_) }; } @params],
-	    				session_id => cookie 'composercat_public_sid', $req, $apr_req}};
-
-	    # execute the handler procedure
-	    my $req_data ||= { uri      => $req->uri,
-			       params   => {map { $_ => $apr_req->param($_); } @params},
-			       cookies  => {map { $_ => $apr_req->jar($_); } @cookies},
-			       url_args => $url_args };
-
-	    my $data = &{ $options->{generator}->{proc} }($req_data, $dbh);
-
-	    # generate index browsing information
-	    if (defined $options->{browse_index}) {
-		# if this API method is indexable then send
-		# information about the index
-		$req->server->log_error("Sending index information: " .
-					Dumper({ index_function => $options->{browse_index}->{index_function},
-						 list_path      => $options->{browse_index}->{list_path},
-						 index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} }));
-		send_index_cookies({ index_function => $options->{browse_index}->{index_function},
-				     list_path      => $options->{browse_index}->{list_path},
-				     index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} },
-				   $req, $apr_req);
-	    } elsif ($options->{respect_browse_idx}) {
-		# if this API method makes use of indexes, then send
-		# the next/prev record information
-		$response->{index} = get_index($req, $apr_req, $dbh, $data) || undef;
-		$req->server->log_error("Received index information: " . Dumper($response->{index}));
-		send_index_cookies($response->{index}, $req, $apr_req) if ($response->{index});
-	    } else {
-		# otherwise, remove any existing index information
-		$req->server->log_error("Removing index information");
-		send_index_cookies({ index_function => undef, list_path => undef, index_args => undef }, $req, $apr_req);
+	    if (defined $options->{transforms} && defined $options->{transforms}->{$content_type}) {
+		push @p, map { XML::Filter::XSLT->new(Source => {SystemId => $_}); } @{ $options->{transforms}->{$content_type} };
 	    }
 
-	    # set up an XML generator
-	    $generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => 'response');
-	    if (ref $data eq "ARRAY") {
-		# if the handler procedure returned an array, then add
-		# it to the response data using the supplied
-		# 'recordname' as a key; this will ensure that the
-		# multiple items in the array are each contained in
-		# elements whose tag name is the value of 'recordname'
-		$response->{content} = {$options->{generator}->{recordname} => $data};
-	    } else {
-		# otherwise, add the handler return value to the
-		# response data using the supplied 'rootname' as a key
-		$response->{content} = {$options->{generator}->{rootname} => $data};
+	    push @p, XML::SAX::Writer->new(Output         => $dest,
+					   Escape         => {'&' => '&amp;',
+							      '<' => '&lt;',
+							      '>' => '&gt;'},
+					   QuoteCharacter => '"',
+					   EncodeFrom     => 'UTF-8',
+					   EncodeTo       => 'UTF-8');
+
+	    my $pipeline = Pipeline(@p);
+
+	    # begin the response
+	    $req->content_type(($content_type eq 'text/html') ? 'text/html; charset=utf-8' : $content_type);
+
+	    print $dest '<?xml version="1.0" encoding="utf-8" ?>'  if ($content_type eq 'application/xml' || $content_type eq 'text/xml');
+	    print $dest '<!DOCTYPE html>' if ($content_type eq 'text/html');
+
+	    # construct an XML generator and execute the SAX pipeline
+	    my $generator;
+
+	    if ($options->{generator}->{type} eq 'saxproc') {
+		# add some request information to the response data
+		#my @params = $apr_req->param;
+		#my @cookies = $apr_req->jar;
+
+		my $response = {request => {retrieved  => sprintf("%s", DateTime->now(time_zone => 'local')),
+					    path       => $req->uri,
+					    params     => [map { {name => $_, value => $apr_req->param($_) }; } @params],
+					    session_id => cookie 'composercat_public_sid', $req, $apr_req}};
+
+		# execute the handler procedure
+		#my $req_data ||= { uri      => $req->uri,
+		#		   params   => {map { $_ => $apr_req->param($_); } @params},
+		#		   cookies  => {map { $_ => $apr_req->jar($_); } @cookies},
+		#		   url_args => $url_args };
+
+		my $data = &{ $options->{generator}->{proc} }($req_data, $dbh);
+
+		# generate index browsing information
+		if (defined $options->{browse_index}) {
+		    # if this API method is indexable then send
+		    # information about the index
+		    $req->server->log_error("Sending index information: " .
+					    Dumper({ index_function => $options->{browse_index}->{index_function},
+						     list_path      => $options->{browse_index}->{list_path},
+						     index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} }));
+		    send_index_cookies({ index_function => $options->{browse_index}->{index_function},
+					 list_path      => $options->{browse_index}->{list_path},
+					 index_args     => {map { $_ => $req_data->{params}->{$_} } @{ $options->{browse_index}->{index_args} }} },
+				       $req, $apr_req);
+		} elsif ($options->{respect_browse_idx}) {
+		    # if this API method makes use of indexes, then send
+		    # the next/prev record information
+		    $response->{index} = get_index($req, $apr_req, $dbh, $data) || undef;
+		    $req->server->log_error("Received index information: " . Dumper($response->{index}));
+		    send_index_cookies($response->{index}, $req, $apr_req) if ($response->{index});
+		} else {
+		    # otherwise, remove any existing index information
+		    $req->server->log_error("Removing index information");
+		    send_index_cookies({ index_function => undef, list_path => undef, index_args => undef }, $req, $apr_req);
+		}
+
+		# set up an XML generator
+		$generator = XML::Generator::PerlData->new(Handler => $pipeline, rootname => 'response');
+		if (ref $data eq "ARRAY") {
+		    # if the handler procedure returned an array, then add
+		    # it to the response data using the supplied
+		    # 'recordname' as a key; this will ensure that the
+		    # multiple items in the array are each contained in
+		    # elements whose tag name is the value of 'recordname'
+		    $response->{content} = {$options->{generator}->{recordname} => $data};
+		} else {
+		    # otherwise, add the handler return value to the
+		    # response data using the supplied 'rootname' as a key
+		    $response->{content} = {$options->{generator}->{rootname} => $data};
+		}
+		$generator->parse($response);
+	    } elsif ($options->{generator}->{type} eq 'xmlfile') {
+		$pipeline->parse_file($options->{generator}->{path});
 	    }
-	    $generator->parse($response);
-	} elsif ($options->{generator}->{type} eq 'file') {
-	    $pipeline->parse_file($options->{generator}->{path});
+	} elsif ($options->{generator}->{type} eq 'binary') {
+	    my $data = &{ $options->{generator}->{proc} }($req, $req_data, $dbh, $dest);
 	}
+
 	return $func->{error_code};
     };
 

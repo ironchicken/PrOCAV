@@ -34,7 +34,7 @@ our $home = make_api_function(
       required_parameters => [],
       optional_parameters => [],
       accept_types        => ['text/html'],
-      generator           => {type => 'file', path => $DOCUMENTS_DIR . 'home.xml'},
+      generator           => {type => 'xmlfile', path => $DOCUMENTS_DIR . 'home.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse = make_api_function(
@@ -43,7 +43,7 @@ our $browse = make_api_function(
       required_parameters => [],
       optional_parameters => [],
       accept_types        => ['text/html'],
-      generator           => {type => 'file', path => $DOCUMENTS_DIR . 'browse-selection.xml'},
+      generator           => {type => 'xmlfile', path => $DOCUMENTS_DIR . 'browse-selection.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $about = make_api_function(
@@ -52,7 +52,7 @@ our $about = make_api_function(
       required_parameters => [],
       optional_parameters => [],
       accept_types        => ['text/html'],
-      generator           => {type => 'file', path => $DOCUMENTS_DIR . 'about.xml'},
+      generator           => {type => 'xmlfile', path => $DOCUMENTS_DIR . 'about.xml'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'document2html.xsl']} });
 
 our $browse_works = make_api_function(
@@ -64,7 +64,7 @@ our $browse_works = make_api_function(
       browse_index        => { index_function => 'works',
 			       list_path      => 'works',
 			       index_args     => [qw(order_by)] },
-      generator           => {type => 'proc',
+      generator           => {type => 'saxproc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
 
@@ -117,7 +117,7 @@ our $browse_works_by_scored_for = make_api_function(
       browse_index        => { index_function => 'works_by_scored_for',
 			       list_path      => 'works',
 			       index_args     => [qw(scored_for cmp)] },
-      generator           => {type => 'proc',
+      generator           => {type => 'saxproc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
 
@@ -183,7 +183,7 @@ our $browse_works_by_genre = make_api_function(
       browse_index        => { index_function => 'works_by_genre',
 			       list_path      => 'works',
 			       index_args     => [qw(genre)] },
-      generator           => {type => 'proc',
+      generator           => {type => 'saxproc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
 				  
@@ -220,7 +220,7 @@ our $browse_works_by_title = make_api_function(
       browse_index        => { index_function => 'works_by_title',
 			       list_path      => 'works',
 			       index_args     => [qw(title cmp)] },
-      generator           => {type => 'proc',
+      generator           => {type => 'saxproc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
 
@@ -275,7 +275,7 @@ our $view_work = make_api_function(
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       respect_browse_idx  => 1,
-      generator           => {type     => 'proc',
+      generator           => {type     => 'saxproc',
 			      proc     => sub {
 				  my ($req_data, $dbh) = @_;
 				  return ComposerCat::Database::complete_work(int($req_data->{url_args}->{work_id}));
@@ -290,7 +290,7 @@ our $view_manuscript = make_api_function(
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       respect_browse_idx  => 1,
-      generator           => {type     => 'proc',
+      generator           => {type     => 'saxproc',
 			      proc     => sub {
 				  my ($req_data, $dbh) = @_;
 				  return ComposerCat::Database::complete_manuscript(int($req_data->{url_args}->{manuscript_id}));
@@ -305,7 +305,7 @@ our $view_archive = make_api_function(
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       respect_browse_idx  => 0,
-      generator           => {type     => 'proc',
+      generator           => {type     => 'saxproc',
 			      proc     => sub {
 				  my ($req_data, $dbh) = @_;
 				  return ComposerCat::Database::complete_archive(int($req_data->{url_args}->{archive_id}));
@@ -320,7 +320,7 @@ our $view_period = make_api_function(
       optional_parameters => [qw(accept)],
       accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
       respect_browse_idx  => 0,
-      generator           => {type     => 'proc',
+      generator           => {type     => 'saxproc',
 			      proc     => sub {
 				  my ($req_data, $dbh) = @_;
 				  return ComposerCat::Database::complete_period(int($req_data->{url_args}->{year}));
@@ -335,7 +335,7 @@ our $fulltext_search = make_api_function(
       required_parameters => [qw(terms)],
       optional_parameters => [qw(accept start limit)],
       accept_types        => ['text/html', 'application/xml', 'text/xml'],
-      generator           => {type => 'proc',
+      generator           => {type => 'saxproc',
 			      proc => sub {
 				  my ($req_data, $dbh, $surrounding) = @_;
 				  return ComposerCat::Search::search_fulltext_index($req_data->{params}->{terms},
@@ -349,7 +349,7 @@ our $fulltext_search = make_api_function(
 our $bad_arguments = make_api_function(
     { accept_types => ['text/html', 'application/xml', 'text/xml'],
       error_code   => Apache2::Const::HTTP_BAD_REQUEST,
-      generator    => {type => 'proc',
+      generator    => {type => 'saxproc',
 		       proc => sub {
 			   my ($req_data, $dbh) = @_;
 			   #my ($req_data, $dbh, $failed_handler) = @_;
@@ -367,7 +367,7 @@ our $bad_arguments = make_api_function(
 our $not_found = make_api_function(
     { accept_types => ['text/html', 'application/xml', 'text/xml'],
       error_code   => Apache2::Const::NOT_FOUND,
-      generator    => {type => 'proc',
+      generator    => {type => 'saxproc',
 		       proc => sub {
 			   my ($req_data, $dbh) = @_;
 			   #my ($req_data, $dbh, $failed_handler) = @_;
