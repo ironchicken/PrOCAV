@@ -36,17 +36,17 @@ sub mime_type {
 }
 
 sub render {
-    my ($media_item, $output) = @_;
+    my ($media_item, $req) = @_;
 
     while (my ($mime_type, $renderer) = each %RENDERERS) {
 	if ($media_item->{mime_type} eq $mime_type) {
-	    return &{ $renderer }($media_item, $output);
+	    return &{ $renderer }($media_item, $req);
 	}
     }
 }
 
 sub render_lilypond {
-    my ($media_item, $output) = @_;
+    my ($media_item, $req) = @_;
 
     if (defined $media_item->{data}) {
 	my ($tfh, $t) = tempfile;
@@ -58,9 +58,7 @@ sub render_lilypond {
 	    waitpid $lilypid, 0;
 	    $u = $t . '.png';
 	    system "convert $u -trim +repage $u > /dev/null 2>&1";
-	    open(NOTATION, $u);
-	    print $output do { local $/; <NOTATION>; };
-	    close NOTATION;
+	    $req->sendfile($u);
 	}
 	close $tfh;
 	unlink $t;

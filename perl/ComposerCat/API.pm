@@ -19,6 +19,7 @@ BEGIN {
 
 use DateTime;
 use Apache2::RequestRec ();
+use Apache2::RequestIO ();
 use APR::Request::Apache2;
 use Apache2::Const -compile => qw(:common :log :http);
 use APR::Table;
@@ -418,7 +419,7 @@ sub make_paged {
 our @DISPATCH_TABLE = ();
 
 sub init {
-    use ComposerCat::PublicUI qw($home $browse $about $view_work $view_manuscript $view_archive $view_period
+    use ComposerCat::PublicUI qw($home $browse $about $view_work $view_manuscript $view_archive $view_period $view_media_item
                                  $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
                                  $fulltext_search $bad_arguments $not_found);
 
@@ -433,6 +434,7 @@ sub init {
     	$ComposerCat::PublicUI::view_manuscript,
     	$ComposerCat::PublicUI::view_archive,
     	$ComposerCat::PublicUI::view_period,
+	$ComposerCat::PublicUI::view_media_item,
     	$ComposerCat::PublicUI::browse_works,
     	$ComposerCat::PublicUI::browse_works_by_scored_for,
 	$ComposerCat::PublicUI::browse_works_by_genre,

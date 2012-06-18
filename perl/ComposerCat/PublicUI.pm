@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $view_work $view_manuscript $view_archive $view_period
+    our @EXPORT_OK = qw($home $browse $about $view_work $view_manuscript $view_archive $view_period $view_media_item
                         $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
                         $fulltext_search $bad_arguments $not_found);
 }
@@ -22,6 +22,7 @@ use Apache2::Const -compile => qw(:common);
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
 use ComposerCat::API qw(make_api_function make_paged);
 use ComposerCat::Search qw(search_fulltext_index);
+use ComposerCat::Digitisations qw(mime_type render);
 
 my $PROCAV_DOMAIN = "localhost";
 my $PUBLIC_PATH = "/";
@@ -328,6 +329,37 @@ our $view_period = make_api_function(
 			      rootname => 'period'},
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'period2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'period2rdf.xsl']} });
+
+our $view_media_item = make_api_function(
+    { uri_pattern         => qr|^/show_media/(?<media_id>[0-9]+)/?$|,
+      require_session     => 'public',
+      accept_types        => ['image/png', 'image/jpeg', 'application/pdf', 'audio/mpeg', 'audio/mp3'],
+      respect_browse_idx  => 0,
+      generator           => { type => 'binary',
+			       proc => sub {
+				   my ($req, $req_data, $dbh, $dest) = @_;
+
+				   my $media_item = ComposerCat::Database::complete_media_item(int($req_data->{url_args}->{media_id}));
+
+				   # get the correct MIME type from
+				   # the Digitisations module
+				   my $mime_type = mime_type $media_item->{details};
+				   #print $media_item->{details}->{mime_type} . " becomes " . $mime_type . "\n";
+				   if ($mime_type) {
+				       $req->content_type($mime_type);
+				       # call the Digitisations
+				       # module's render method
+				       render $media_item->{details}, $req;
+				   } else {
+				       # if the Digitisations module
+				       # does not recognise the media
+				       # item's declared MIME type,
+				       # send the file pointed to by
+				       # the item's path
+				       $req->content_type($media_item->{details}->{mime_type});
+				       $req->sendfile($media_item->{details}->{path});
+				   }
+			       } } });
 
 our $fulltext_search = make_api_function(
     { uri_pattern         => qr|^/search$|,
