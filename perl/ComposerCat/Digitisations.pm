@@ -53,7 +53,7 @@ sub render_lilypond {
 	my $u;
 	my $lilypid = open(LILY, "| lilypond --png -o $t - > /dev/null 2>&1");
 	if ($lilypid) {
-	    print LILY $media_item->{data};
+	    print LILY q|\header { tagline = ##f } | . $media_item->{data};
 	    close LILY;
 	    waitpid $lilypid, 0;
 	    $u = $t . '.png';
