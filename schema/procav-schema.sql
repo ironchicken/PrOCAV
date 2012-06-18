@@ -516,7 +516,9 @@ CREATE TABLE representation_of (
 			 'remote_media_items')
 			 NOT NULL,
   related_id        INT NOT NULL,
-  relation          ENUM('digitisation', 'transcription', 'features'));
+  relation          ENUM('digitisation', 'transcription', 'features'),
+  purpose           ENUM('incipit', 'theme', 'excerpt', 'copy'),
+  related_range     VARCHAR(128));
 
 -- sources of information from outside the database
 CREATE TABLE resources (

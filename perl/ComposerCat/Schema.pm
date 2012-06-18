@@ -153,6 +153,11 @@ our %look_ups = (
 				   {value => "transcription", display => "Transcription"},
 				   {value => "features", display => "Features"}]; },
 
+    representation_purposes => sub { [{value => 'incipit', display => 'Incipit'},
+				      {value => 'theme',   display => 'Theme'},
+				      {value => 'excerpt', display => 'Excerpt'},
+				      {value => 'copy',    display => 'Copy'}]; },
+
     resources_for        => sub { [{value => "works", display => "Works"},
 				   {value => "titles", display => "Titles"},
 				   {value => "genres", display => "Genres"},
@@ -2635,10 +2640,10 @@ our %schema = (
     representation_of  => {
 	_worksheet => "representation_of",
 
-	_field_order         => [qw(source media_id related_table related_id relation)],
+	_field_order         => [qw(source media_id related_table related_id relation purpose related_range)],
 	_unique_fields       => [qw(source media_id related_table related_id)],
 	_single_select_field => "media_id",
-	_insert_fields       => [qw(source media_id related_table related_id relation)],
+	_insert_fields       => [qw(source media_id related_table related_id relation purpose related_range)],
 	_order_fields        => [qw(related_table related_id media_id)],
 	_default_order       => "ASC",
 
@@ -2667,7 +2672,17 @@ our %schema = (
 	relation        => {access => "rw",
 			    data_type => "look_up",
 			    look_up => "media_relations",
-			    cell_width => 12}},
+			    cell_width => 12},
+
+	purpose         => {access => "rw",
+			    data_type => "look_up",
+			    look_up => "representation_purposes",
+			    cell_width => 10},
+
+	related_range   => {access => "rw",
+			    data_type => "string",
+			    width => 128,
+			    cell_with => 12}},
 
     resources          => {
 	_worksheet => "resources",
@@ -2963,7 +2978,7 @@ sub schema_prepare_statments {
     # works._local_media_items
     $schema{works}->{_local_media_items} = $dbh->prepare_cached(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
     media_items.content_type, media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired,
-    media_items.copyright, media_items.public, representation_of.relation
+    media_items.copyright, media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range
     FROM media_items
     JOIN representation_of ON representation_of.media_id = media_items.ID
     WHERE representation_of.source = "local" AND representation_of.related_table = "works" AND related_id=?|);
@@ -2972,7 +2987,7 @@ sub schema_prepare_statments {
     $schema{works}->{_remote_media_items} = $dbh->prepare_cached(q|SELECT remote_media_items.ID, remote_media_items.mime_type,
     remote_media_items.uri, remote_media_items.content_type, remote_media_items.extent, remote_media_items.resolution,
     remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright, remote_media_items.public,
-    representation_of.relation
+    representation_of.relation, representation_of.purpose, representation_of.related_range
     FROM remote_media_items
     JOIN representation_of ON representation_of.media_id = remote_media_items.ID
     WHERE representation_of.source = "remote" AND representation_of.related_table = "works" AND representation_of.related_id=?|);
@@ -2980,7 +2995,8 @@ sub schema_prepare_statments {
     # works._local_media_groups
     $schema{works}->{_local_media_groups} = $dbh->prepare(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
     media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired, media_items.copyright,
-    media_items.public, representation_of.relation, media_in_group.position, media_groups.short_description
+    media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range,
+    media_in_group.position, media_groups.short_description
     FROM media_in_group
     JOIN media_items ON media_in_group.media_id = media_items.ID
     JOIN media_groups ON media_in_group.group_id = media_groups.ID
@@ -2992,7 +3008,8 @@ sub schema_prepare_statments {
     # works._remote_media_groups
     $schema{works}->{_remote_media_groups} = $dbh->prepare(q|SELECT remote_media_items.ID, remote_media_items.mime_type, remote_media_items.uri,
     remote_media_items.extent, remote_media_items.resolution, remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright,
-    remote_media_items.public, representation_of.relation, media_in_group.position, media_groups.short_description
+    remote_media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range, media_in_group.position,
+    media_groups.short_description
     FROM media_in_group
     JOIN remote_media_items ON media_in_group.media_id = remote_media_items.ID
     JOIN media_groups ON media_in_group.group_id = media_groups.ID
@@ -3313,7 +3330,8 @@ sub schema_prepare_statments {
     aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.extent_stmt, aggregations.description,
     parent_aggr.ID AS parent_aggr_id, parent_aggr.label AS parent_aggr_label, parent_aggr.level AS parent_aggr_level,
     media_items.ID AS media_id, media_items.mime_type, media_items.path, media_items.content_type, media_items.extent, media_items.resolution,
-    media_items.date_made, media_items.date_acquired, media_items.copyright, media_items.public, representation_of.relation
+    media_items.date_made, media_items.date_acquired, media_items.copyright, media_items.public, representation_of.relation,
+    representation_of.purpose, representation_of.related_range
     FROM document_pages
     LEFT JOIN in_archive ON in_archive.page_id = document_pages.ID
     LEFT JOIN aggregations ON aggregations.ID = in_archive.aggregation_id
@@ -3345,7 +3363,7 @@ sub schema_prepare_statments {
     $schema{manuscripts}->{_local_media_items} =
 	$dbh->prepare_cached(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
     media_items.content_type, media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired,
-    media_items.copyright, media_items.public, representation_of.relation
+    media_items.copyright, media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range
     FROM media_items
     JOIN representation_of ON representation_of.media_id = media_items.ID
     WHERE representation_of.source = "local" AND representation_of.related_table = "manuscripts" AND related_id=?|);
@@ -3355,7 +3373,7 @@ sub schema_prepare_statments {
 	$dbh->prepare_cached(q|SELECT remote_media_items.ID, remote_media_items.mime_type,
     remote_media_items.uri, remote_media_items.content_type, remote_media_items.extent, remote_media_items.resolution,
     remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright, remote_media_items.public,
-    representation_of.relation
+    representation_of.relation, representation_of.purpose, representation_of.related_range
     FROM remote_media_items
     JOIN representation_of ON representation_of.media_id = remote_media_items.ID
     WHERE representation_of.source = "remote" AND representation_of.related_table = "manuscripts" AND representation_of.related_id=?|);
@@ -3364,7 +3382,8 @@ sub schema_prepare_statments {
     $schema{manuscripts}->{_local_media_groups} =
 	$dbh->prepare(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
     media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired, media_items.copyright,
-    media_items.public, representation_of.relation, media_in_group.position, media_groups.short_description
+    media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range,
+    media_in_group.position, media_groups.short_description
     FROM media_in_group
     JOIN media_items ON media_in_group.media_id = media_items.ID
     JOIN media_groups ON media_in_group.group_id = media_groups.ID
@@ -3377,7 +3396,8 @@ sub schema_prepare_statments {
     $schema{manuscripts}->{_remote_media_groups} =
 	$dbh->prepare(q|SELECT remote_media_items.ID, remote_media_items.mime_type, remote_media_items.uri,
     remote_media_items.extent, remote_media_items.resolution, remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright,
-    remote_media_items.public, representation_of.relation, media_in_group.position, media_groups.short_description
+    remote_media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range,
+    media_in_group.position, media_groups.short_description
     FROM media_in_group
     JOIN remote_media_items ON media_in_group.media_id = remote_media_items.ID
     JOIN media_groups ON media_in_group.group_id = media_groups.ID
