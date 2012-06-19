@@ -3475,6 +3475,165 @@ sub schema_prepare_statments {
     ORDER BY manuscripts.title, manuscripts.purpose|);
 
     ######################################################################################################
+    ### LETTERS TABLE STATEMENTS
+    ######################################################################################################
+
+    # letters._full
+    $schema{letters}->{_full} =
+	$dbh->prepare_cached(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
+    addressee.family_name AS signatory_family_name, recipient_address.address AS recipient_address, sender_address.address AS sender_address,
+    answers.ID As answers_id, | . date_selector('answers_composed') . q|,letters.original_text, letters.english_text,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM letters
+    JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    LEFT JOIN dates AS composed ON letters.date_composed = composed.ID
+    LEFT JOIN dates AS sent ON letters.date_sent = sent.ID
+    LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
+    LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
+    LEFT JOIN postal_addresses AS recipient_address ON recipient_address.ID = recipient_addr
+    LEFT JOIN postal_addresses AS sender_address ON sender_address.ID = sender_addr
+    LEFT JOIN letters AS answers ON answers.ID = answer_t
+    LEFT JOIN dates AS answers_composed ON answers.date_composed = answers_composed.ID
+    WHERE letters.document_id=?|);
+
+    # letters._pages
+    $schema{letters}->{_pages} =
+	$dbh->prepare(q|SELECT document_pages.ID AS document_page_id, page_number, page_side, page_label, document_pages.notes AS page_notes,
+    aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.extent_stmt, aggregations.description,
+    parent_aggr.ID AS parent_aggr_id, parent_aggr.label AS parent_aggr_label, parent_aggr.level AS parent_aggr_level,
+    gparent_aggr.ID AS gparent_aggr_id, gparent_aggr.label AS gparent_aggr_label, gparent_aggr.level AS gparent_aggr_level,
+    media_items.ID AS media_id, media_items.mime_type, media_items.path, media_items.content_type, media_items.extent, media_items.resolution,
+    media_items.date_made, media_items.date_acquired, media_items.copyright, media_items.public, representation_of.relation,
+    representation_of.purpose, representation_of.related_range
+    FROM document_pages
+    LEFT JOIN in_archive ON in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations ON aggregations.ID = in_archive.aggregation_id
+    LEFT JOIN aggregations AS parent_aggr ON aggregations.parent = parent_aggr.ID
+    LEFT JOIN aggregations AS gparent_aggr ON parent_aggr.parent = gparent_aggr.ID
+    LEFT JOIN representation_of ON representation_of.related_id = document_pages.ID
+    LEFT JOIN media_items ON media_items.ID = representation_of.media_id
+    WHERE document_pages.document_id = ?
+      AND (representation_of.related_table = "document_pages" OR representation_of.related_table IS NULL)
+    ORDER BY parent_aggr.label_num, page_number, page_side, page_label|);
+
+    # letters._mentions
+    $schema{letter}->{_mentions} =
+	$dbh->prepare(q|SELECT ID, document_id, document_range, mentioned_table, mentioned_id, mentioned_extent, notes
+    FROM document_mentions
+    WHERE document_id=?|);
+
+    # letters._in_archive
+    $schema{letters}->{_in_archive} =
+	$dbh->prepare(q|SELECT archives.ID AS archive_id, archives.title AS archive, archives.abbreviation AS archive_abbr,
+    archival_ref_str, archival_ref_num, | . date_selector('acquired') . ', ' . date_selector('released') . q|,
+    in_archive.access, in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes,
+    aggregations.label, aggregations.label_num, aggregations.title, aggregations.level, aggregations.extent_stmt, aggregations.description,
+    parent_aggr.ID AS parent_aggr_id, parent_aggr.label AS parent_aggr_label, parent_aggr.level AS parent_aggr_level
+    FROM in_archive
+    JOIN archives ON archives.ID = in_archive.archive_id
+    JOIN letters ON letters.document_id = in_archive.document_id
+    LEFT JOIN aggregations ON in_archive.aggregation_id = aggregations.ID
+    LEFT JOIN aggregations AS parent_aggr ON aggregations.parent = parent_aggr.ID
+    LEFT JOIN dates AS acquired ON acquired.ID = in_archive.date_acquired
+    LEFT JOIN dates AS released ON released.ID = in_archive.date_released
+    WHERE in_archive.page_id IS NULL AND letters.document_id = ?
+    ORDER BY acquired_year DESC, acquired_month DESC, acquired_day DESC|);
+
+    # letters._local_media_items
+    $schema{letters}->{_local_media_items} =
+	$dbh->prepare_cached(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
+    media_items.content_type, media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired,
+    media_items.copyright, media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range
+    FROM media_items
+    JOIN representation_of ON representation_of.media_id = media_items.ID
+    WHERE representation_of.source = "local" AND representation_of.related_table = "letters" AND related_id=?|);
+
+    # letters._remote_media_items
+    $schema{letters}->{_remote_media_items} =
+	$dbh->prepare_cached(q|SELECT remote_media_items.ID, remote_media_items.mime_type,
+    remote_media_items.uri, remote_media_items.content_type, remote_media_items.extent, remote_media_items.resolution,
+    remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright, remote_media_items.public,
+    representation_of.relation, representation_of.purpose, representation_of.related_range
+    FROM remote_media_items
+    JOIN representation_of ON representation_of.media_id = remote_media_items.ID
+    WHERE representation_of.source = "remote" AND representation_of.related_table = "letters" AND representation_of.related_id=?|);
+
+    # letters._local_media_groups
+    $schema{letters}->{_local_media_groups} =
+	$dbh->prepare(q|SELECT media_items.ID, media_items.mime_type, media_items.path,
+    media_items.extent, media_items.resolution, media_items.date_made, media_items.date_acquired, media_items.copyright,
+    media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range,
+    media_in_group.position, media_groups.short_description
+    FROM media_in_group
+    JOIN media_items ON media_in_group.media_id = media_items.ID
+    JOIN media_groups ON media_in_group.group_id = media_groups.ID
+    JOIN representation_of ON representation_of.media_id = media_in_group.group_id
+    WHERE media_in_group.source = "local" AND representation_of.source = "group"
+      AND representation_of.related_table = "letters" AND representation_of.related_id=?
+    ORDER BY media_groups.ID, media_in_group.position|);
+
+    # letters._remote_media_groups
+    $schema{letters}->{_remote_media_groups} =
+	$dbh->prepare(q|SELECT remote_media_items.ID, remote_media_items.mime_type, remote_media_items.uri,
+    remote_media_items.extent, remote_media_items.resolution, remote_media_items.date_made, remote_media_items.date_linked, remote_media_items.copyright,
+    remote_media_items.public, representation_of.relation, representation_of.purpose, representation_of.related_range,
+    media_in_group.position, media_groups.short_description
+    FROM media_in_group
+    JOIN remote_media_items ON media_in_group.media_id = remote_media_items.ID
+    JOIN media_groups ON media_in_group.group_id = media_groups.ID
+    JOIN representation_of ON representation_of.media_id = media_in_group.group_id
+    WHERE media_in_group.source = "remote" AND representation_of.source = "group"
+      AND representation_of.related_table = "letters" AND representation_of.related_id=?
+    ORDER BY media_groups.ID, media_in_group.position|);
+
+    # letters._resources
+    $schema{letters}->{_resources} =
+	$dbh->prepare(q|SELECT resources.uri, resources.title, resources.mime_type, resources.date_made,
+    resources.date_linked, resource_about.relation
+    FROM resources
+    JOIN resource_about ON resource_about.resource_id = resources.ID
+    WHERE resource_about.related_table = "letters" AND resource_about.related_id=?|);
+
+    $schema{letters}->{_complete} = { details            => ['ONE', '_full'],
+				      page               => ['MANY', '_pages'],
+				      mention            => ['MANY', '_mentions'],
+				      in_archive         => ['MANY', '_in_archive'],
+				      #title_source       => ['MANY', '_title_source'],
+				      #dedication_source  => ['MANY', '_dedication_source'],
+				      local_media_item   => ['MANY', '_local_media_items'],
+				      remote_media_item  => ['MANY', '_remote_media_items'],
+				      local_media_group  => ['MANY', '_local_media_groups'],
+				      remote_media_group => ['MANY', '_remote_media_groups'],
+				      resource           => ['MANY', '_resources'] };
+
+    $schema{letters}->{_list_order_by_date} =
+	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
+    signatory.family_name, signatory.given_name,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM letters
+    LEFT JOIN dates AS composed ON composed.ID = letters.date_composed
+    LEFT JOIN dates AS sent ON sent.ID = letters.date_sent
+    LEFT JOIN persons AS addressee ON addressee.ID = letters.addressee
+    LEFT JOIN persons AS signatory ON signatory.ID = letters.signatory
+    LEFT JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    GROUP BY letters.document_id
+    ORDER BY composed.year, composed.month, composed.day|);
+
+
     ### PERIOD STATEMENTS
     ######################################################################################################
 
