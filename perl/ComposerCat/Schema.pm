@@ -231,6 +231,8 @@ our %look_ups = (
 
     letters              => sub { @_[0]->prepare(qq(SELECT letters.document_id AS value, CONCAT("From: ", s.given_name, " ", s.family_name, "; To: ", a.given_name, " ", a.family_name, "; Date: ", c.year, "/", c.month, "/", c.day) AS display FROM letters LEFT JOIN persons AS s ON letters.signatory = s.ID LEFT JOIN persons AS a ON letters.addressee = a.ID LEFT JOIN dates AS c ON c.ID = letters.date_composed ORDER BY c.year, c.month, c.day)); },
 
+    addresses            => sub { @_[0]->prepare(qq(SELECT ID AS value, address AS display FROM postal_addresses ORDER BY address)); },
+
     catalogues           => sub { @_[0]->prepare(qq(SELECT ID AS value, label AS display FROM catalogues ORDER BY label)); },
 
     towns                => sub { @_[0]->prepare(qq(SELECT ID AS value, name AS display FROM towns ORDER BY name)); },
@@ -1296,10 +1298,10 @@ our %schema = (
     letters            => {
 	_worksheet => "letters",
 
-	_field_order         => [qw(document_id letters_db_ID date_composed date_sent addressee signatory physical_size support medium layout missing original_text english_text notes staff_notes)],
+	_field_order         => [qw(document_id letters_db_ID date_composed date_sent addressee signatory recipient_addr sender_addr answer_to physical_size support medium layout missing original_text english_text notes staff_notes)],
 	_unique_fields       => [qw(document_id)],
 	_single_select_field => "document_id",
-	_insert_fields       => [qw(document_id letters_db_ID date_composed date_sent addressee signatory physical_size support medium layout missing original_text english_text notes staff_notes)],
+	_insert_fields       => [qw(document_id letters_db_ID date_composed date_sent addressee signatory recipient_addr sender_addr answer_to physical_size support medium layout missing original_text english_text notes staff_notes)],
 	_order_fields        => [qw(document_id)],
 	_default_order       => "ASC",
 
@@ -1346,6 +1348,24 @@ our %schema = (
 			    foreign_key => "persons",
 	 		    look_up => "persons",
 			    hint => "ID of the person the letter was signed by"},
+
+	recipient_addr  => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "postal_addresses",
+			    look_up => "addresses",
+			    hint => "ID of the recipient's postal address"},
+
+	sender_addr     => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "postal_addresses",
+			    look_up => "addresses",
+			    hint => "ID of the sender's postal address"},
+
+	answer_to       => {access => "rw",
+			    data_type => "integer",
+			    foreign_key => "letters",
+			    look_up => "letters",
+			    hint => "ID of the letter to which this is a reply"},
 
 	physical_size   => {access => "rw",
 			    data_type => "string",
