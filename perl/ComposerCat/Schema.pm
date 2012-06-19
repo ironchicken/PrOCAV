@@ -3060,7 +3060,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE scored_for.instrument LIKE ? AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND scored_for.instrument LIKE ? AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY end.year ASC|);
 
@@ -3071,7 +3071,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE scored_for.instrument RLIKE ? AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND scored_for.instrument RLIKE ? AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY end.year ASC|);
 
@@ -3082,7 +3082,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     ORDER BY end.year ASC|, join(' AND ', (('UPPER(?) IN (SELECT UPPER(instrument) FROM scored_for WHERE works.ID=scored_for.work_id)') x scalar @_))));
     };
 
@@ -3093,7 +3093,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     ORDER BY end.year ASC|, join(' OR ', (('UPPER(?) NOT IN (SELECT UPPER(instrument) FROM scored_for WHERE works.ID=scored_for.work_id)') x scalar @_))));
     };
 
@@ -3104,7 +3104,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND (%s) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     ORDER BY end.year ASC|, join(' AND ', (('UPPER(?) NOT IN (SELECT UPPER(instrument) FROM scored_for WHERE works.ID=scored_for.work_id)') x scalar @_))));
     };
 
@@ -3122,7 +3122,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE ((titles.title LIKE ?) OR (titles.transliteration LIKE ?) OR (works.uniform_title LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND ((titles.title LIKE ?) OR (titles.transliteration LIKE ?) OR (works.uniform_title LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY uniform_title ASC|);
 
@@ -3134,7 +3134,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE ((titles.title NOT LIKE ?) OR (titles.transliteration NOT LIKE ?) OR (works.uniform_title NOT LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND ((titles.title NOT LIKE ?) OR (titles.transliteration NOT LIKE ?) OR (works.uniform_title NOT LIKE ?)) AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY uniform_title ASC|);
 
@@ -3146,7 +3146,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY uniform_title_sortable ASC|);
 
@@ -3158,7 +3158,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE catalogues.label = "Op."
+    WHERE works.part_of IS NULL AND catalogues.label = "Op."
     GROUP BY works.ID
     ORDER BY catalogue_numbers.number_position ASC|);
 
@@ -3170,7 +3170,7 @@ sub schema_prepare_statments {
     LEFT JOIN dates AS end ON composition.period_end=end.ID
     LEFT JOIN catalogue_numbers ON catalogue_numbers.work_id=works.ID
     LEFT JOIN catalogues ON catalogue_numbers.catalogue_id = catalogues.ID
-    WHERE (catalogues.label = "Op." OR catalogues.label IS NULL)
+    WHERE works.part_of IS NULL AND (catalogues.label = "Op." OR catalogues.label IS NULL)
     GROUP BY works.ID
     ORDER BY year ASC|);
     
