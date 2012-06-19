@@ -3444,6 +3444,16 @@ sub schema_prepare_statments {
 					  remote_media_group => ['MANY', '_remote_media_groups'],
 					  resource           => ['MANY', '_resources'] };
 
+    $schema{manuscripts}->{_list_order_by_title} =
+	$dbh->prepare_cached(q|SELECT manuscripts.document_id, manuscripts.title, IFNULL(manuscripts.purpose," ") AS purpose, | . date_selector("made") . q|,
+    in_archive.archive_id AS archive_id, archives.abbreviation AS archive_abbr, archives.title AS archive
+    FROM manuscripts
+    LEFT JOIN in_archive ON in_archive.document_id = manuscripts.document_id
+    LEFT JOIN archives ON archives.ID = in_archive.archive_id
+    LEFT JOIN dates AS made ON manuscripts.date_made = made.ID
+    GROUP BY manuscripts.document_id
+    ORDER BY manuscripts.title, manuscripts.purpose|);
+
     ######################################################################################################
     ### PERIOD STATEMENTS
     ######################################################################################################

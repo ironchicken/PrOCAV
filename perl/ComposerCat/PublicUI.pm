@@ -15,7 +15,7 @@ BEGIN {
     our @ISA = qw(Exporter);
     our @EXPORT_OK = qw($home $browse $about $digital_archive $view_work $view_manuscript $view_archive $view_period
                         $view_media_item $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
-                        $fulltext_search $bad_arguments $not_found);
+                        $browse_manuscripts $fulltext_search $bad_arguments $not_found);
 }
 
 use Apache2::Const -compile => qw(:common);
@@ -275,7 +275,57 @@ our $browse_works_by_title = make_api_function(
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'browse-works2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'browse-works2rdf.xsl']} });
 
-our %browse_manuscripts = ();
+our $browse_manuscripts = make_api_function(
+    { uri_pattern         => qr|^/manuscripts/?$|,
+      require_session     => 'public',
+      required_parameters => [qw(order_by)],
+      optional_parameters => [qw(start limit accept)],
+      accept_types        => ['text/html', 'application/xml', 'text/xml'],
+      browse_index        => { index_function => 'manuscripts',
+			       list_path      => 'manuscripts',
+			       index_args     => [qw(order_by)] },
+      generator           => {type => 'saxproc',
+			      proc => sub {
+				  my ($req_data, $dbh, $surrounding) = @_;
+
+				  # select the appropriate statement
+				  # based on the order_by argument
+				  my $st;
+				  if ($req_data->{params}->{order_by} eq 'title') {
+				      $st = ComposerCat::Database::table_info('manuscripts')->{_list_order_by_title};
+				  } elsif ($req_data->{params}->{order_by} eq 'date') {
+				      $st = ComposerCat::Database::table_info('manuscripts')->{_list_order_by_date};
+				  } else {
+				      # FIXME This interface does not
+				      # allow you to return an error
+				      # code from here
+				      return Apache2::Const::HTTP_BAD_REQUEST;
+				  }
+
+				  # execute the statement and return
+				  # the results
+				  $st->execute;
+
+				  my $manuscripts = [];
+				  while (my $manuscript = $st->fetchrow_hashref) {
+				      push @$manuscripts, $manuscript;
+				      if ($surrounding && scalar @$manuscripts >= 2 && $manuscripts->[-2]->{ID} eq $surrounding->{details}->{ID}) {
+					  return { prev_record => $manuscripts->[-3] || undef,
+						   next_record => $manuscripts->[-1],
+						   # position is *not* the offset, and we want the
+                                                   # position of the penultimate element
+						   position    => $#$manuscripts };
+				      }
+				  }
+				  
+				  if ($surrounding) { return { prev_record => $manuscripts->[-2], next_record => undef, position => $#$manuscripts + 1 }; }
+
+				  return make_paged $manuscripts, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'manuscript';
+			      },
+			      rootname => 'manuscripts',
+			      recordname => 'manuscript'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'browse-manuscripts2html.xsl']} });
+
 our %browse_publications = ();
 our %browse_performances = ();
 
