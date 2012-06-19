@@ -302,7 +302,7 @@
        resource="{$ID}">
     <xsl:apply-templates select="title" />
     <xsl:apply-templates select="purpose" />
-    <xsl:apply-templates select="phsyical_size" />
+    <xsl:apply-templates select="physical_size" />
     <xsl:apply-templates select="medium" />
     <xsl:apply-templates select="extent" />
     <xsl:apply-templates select="missing" />
@@ -332,12 +332,21 @@
   </div>
 </xsl:template>
 
-<xsl:template match="work/manuscript/phsyical_size">
-  <div class="field manuscript-phsyical-size">
-    <span class="name">Phsyical_Size</span>
-    <span class="content manuscript-phsyical-size"
+<xsl:template match="work/manuscript/physical_size">
+  <div class="field manuscript-physical-size">
+    <span class="name">Physical size</span>
+    <span class="content manuscript-physical-size"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="composercat:phsyical_size"><xsl:apply-templates /></span>
+	  property="composercat:physical_size"><xsl:apply-templates /></span>
+  </div>
+</xsl:template>
+
+<xsl:template match="work/manuscript/support">
+  <div class="field manuscript-support">
+    <span class="name">Support</span>
+    <span class="content manuscript-support"
+	  about="{$URI_ROOT}/manuscripts/{../ID}"
+	  property="composercat:support"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
@@ -350,12 +359,12 @@
   </div>
 </xsl:template>
 
-<xsl:template match="work/manuscript/extent">
-  <div class="field manuscript-extent">
-    <span class="name">Extent</span>
-    <span class="content manuscript-extent"
+<xsl:template match="work/manuscript/layout">
+  <div class="field manuscript-layout">
+    <span class="name">Layout</span>
+    <span class="content manuscript-layout"
 	  about="{$URI_ROOT}/manuscripts/{../ID}"
-	  property="composercat:extent"><xsl:apply-templates /></span>
+	  property="composercat:layout"><xsl:apply-templates /></span>
   </div>
 </xsl:template>
 
