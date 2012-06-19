@@ -13,7 +13,7 @@ use strict;
 BEGIN {
     use Exporter;
     our @ISA = qw(Exporter);
-    our @EXPORT_OK = qw($home $browse $about $digital_archive $view_work $view_manuscript $view_archive $view_period
+    our @EXPORT_OK = qw($home $browse $about $digital_archive $view_work $view_manuscript $view_letter $view_archive $view_period
                         $view_media_item $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
                         $browse_manuscripts $fulltext_search $bad_arguments $not_found);
 }
@@ -358,6 +358,21 @@ our $view_manuscript = make_api_function(
 			      rootname => 'manuscript'},
       transforms          => {'text/html'           => [$TEMPLATES_DIR . 'manuscript2html.xsl'],
 			      'application/rdf+xml' => [$TEMPLATES_DIR . 'manuscript2rdf.xsl']} });
+
+our $view_letter = make_api_function(
+    { uri_pattern         => qr|^/letters/(?<letter_id>[0-9]+)/?$|,
+      require_session     => 'public',
+      optional_parameters => [qw(accept)],
+      accept_types        => ['text/html', 'application/xml', 'text/xml', 'application/rdf+xml'],
+      respect_browse_idx  => 1,
+      generator           => {type     => 'saxproc',
+			      proc     => sub {
+				  my ($req_data, $dbh) = @_;
+				  return ComposerCat::Database::complete_letter(int($req_data->{url_args}->{letter_id}));
+			      },
+			      rootname => 'letter'},
+      transforms          => {'text/html'           => [$TEMPLATES_DIR . 'letter2html.xsl'],
+			      'application/rdf+xml' => [$TEMPLATES_DIR . 'letter2rdf.xsl']} });
 
 our $view_archive = make_api_function(
     { uri_pattern         => qr|^/archives/(?<archive_id>[0-9]+)/?$|,

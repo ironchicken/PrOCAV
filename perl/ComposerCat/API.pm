@@ -419,7 +419,7 @@ sub make_paged {
 our @DISPATCH_TABLE = ();
 
 sub init {
-    use ComposerCat::PublicUI qw($home $browse $about $digital_archive $view_work $view_manuscript $view_archive $view_period
+    use ComposerCat::PublicUI qw($home $browse $about $digital_archive $view_work $view_manuscript $view_letter $view_archive $view_period
                                  $view_media_item $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
                                  $browse_manuscripts $fulltext_search $bad_arguments $not_found);
 
@@ -433,6 +433,7 @@ sub init {
     	$ComposerCat::PublicUI::digital_archive,
     	$ComposerCat::PublicUI::view_work,
     	$ComposerCat::PublicUI::view_manuscript,
+    	$ComposerCat::PublicUI::view_letter,
     	$ComposerCat::PublicUI::view_archive,
     	$ComposerCat::PublicUI::view_period,
 	$ComposerCat::PublicUI::view_media_item,
