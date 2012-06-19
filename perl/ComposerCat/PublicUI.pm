@@ -15,7 +15,7 @@ BEGIN {
     our @ISA = qw(Exporter);
     our @EXPORT_OK = qw($home $browse $about $digital_archive $view_work $view_manuscript $view_letter $view_archive $view_period
                         $view_media_item $browse_works_by_scored_for $browse_works $browse_works_by_genre $browse_works_by_title
-                        $browse_manuscripts $fulltext_search $bad_arguments $not_found);
+                        $browse_manuscripts $browse_letters $fulltext_search $bad_arguments $not_found);
 }
 
 use Apache2::Const -compile => qw(:common);
@@ -325,6 +325,59 @@ our $browse_manuscripts = make_api_function(
 			      rootname => 'manuscripts',
 			      recordname => 'manuscript'},
       transforms          => {'text/html' => [$TEMPLATES_DIR . 'browse-manuscripts2html.xsl']} });
+
+our $browse_letters = make_api_function(
+    { uri_pattern         => qr|^/letters/?$|,
+      require_session     => 'public',
+      required_parameters => [qw(order_by)],
+      optional_parameters => [qw(start limit accept)],
+      accept_types        => ['text/html', 'application/xml', 'text/xml'],
+      browse_index        => { index_function => 'letters',
+			       list_path      => 'letters',
+			       index_args     => [qw(order_by)] },
+      generator           => {type => 'saxproc',
+			      proc => sub {
+				  my ($req_data, $dbh, $surrounding) = @_;
+
+				  # select the appropriate statement
+				  # based on the order_by argument
+				  my $st;
+				  if ($req_data->{params}->{order_by} eq 'date') {
+				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_date};
+				  } elsif ($req_data->{params}->{order_by} eq 'addressee') {
+				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_addressee};
+				  } elsif ($req_data->{params}->{order_by} eq 'sender') {
+				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_sender};
+				  } else {
+				      # FIXME This interface does not
+				      # allow you to return an error
+				      # code from here
+				      return Apache2::Const::HTTP_BAD_REQUEST;
+				  }
+
+				  # execute the statement and return
+				  # the results
+				  $st->execute;
+
+				  my $letters = [];
+				  while (my $letter = $st->fetchrow_hashref) {
+				      push @$letters, $letter;
+				      if ($surrounding && scalar @$letters >= 2 && $letters->[-2]->{ID} eq $surrounding->{details}->{ID}) {
+					  return { prev_record => $letters->[-3] || undef,
+						   next_record => $letters->[-1],
+						   # position is *not* the offset, and we want the
+                                                   # position of the penultimate element
+						   position    => $#$letters };
+				      }
+				  }
+				  
+				  if ($surrounding) { return { prev_record => $letters->[-2], next_record => undef, position => $#$letters + 1 }; }
+
+				  return make_paged $letters, $req_data->{params}->{start} || 1, $req_data->{params}->{limit} || 25, 'letter';
+			      },
+			      rootname => 'letters',
+			      recordname => 'letter'},
+      transforms          => {'text/html' => [$TEMPLATES_DIR . 'browse-letters2html.xsl']} });
 
 our %browse_publications = ();
 our %browse_performances = ();

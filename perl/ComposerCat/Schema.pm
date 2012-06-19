@@ -3633,6 +3633,45 @@ sub schema_prepare_statments {
     GROUP BY letters.document_id
     ORDER BY composed.year, composed.month, composed.day|);
 
+    $schema{letters}->{_list_order_by_addressee} =
+	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
+    signatory.family_name, signatory.given_name,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM letters
+    LEFT JOIN dates AS composed ON composed.ID = letters.date_composed
+    LEFT JOIN dates AS sent ON sent.ID = letters.date_sent
+    LEFT JOIN persons AS addressee ON addressee.ID = letters.addressee
+    LEFT JOIN persons AS signatory ON signatory.ID = letters.signatory
+    LEFT JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    GROUP BY letters.document_id
+    ORDER BY addressee_family_name, addressee_given_name|);
+
+    $schema{letters}->{_list_order_by_sender} =
+	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
+    addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
+    signatory.family_name, signatory.given_name,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
+    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    FROM letters
+    LEFT JOIN dates AS composed ON composed.ID = letters.date_composed
+    LEFT JOIN dates AS sent ON sent.ID = letters.date_sent
+    LEFT JOIN persons AS addressee ON addressee.ID = letters.addressee
+    LEFT JOIN persons AS signatory ON signatory.ID = letters.signatory
+    LEFT JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
+    LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
+    LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
+    LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
+    GROUP BY letters.document_id
+    ORDER BY sender_family_name, sender_given_name|);
 
     ### PERIOD STATEMENTS
     ######################################################################################################
