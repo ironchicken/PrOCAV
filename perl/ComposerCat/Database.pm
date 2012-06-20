@@ -310,10 +310,10 @@ sub record_exists {
 
     if (defined $record->{ID}) {
 	$schema{$table}->{_ID_exists}->execute($record->{ID});
-	return defined $schema{$table}->{_ID_exists}->fetchrow_arrayref;
+	return $schema{$table}->{_ID_exists}->fetchrow_arrayref;
     } else {
 	$schema{$table}->{_exists}->execute(@{ prepare_nulls($table, $record, '_unique_fields') });
-	return defined $schema{$table}->{_exists}->fetchrow_arrayref;
+	return $schema{$table}->{_exists}->fetchrow_arrayref;
     }
 }
 
