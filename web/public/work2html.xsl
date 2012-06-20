@@ -127,16 +127,17 @@
         </div>
       </xsl:if>
 
+      <xsl:if test="//work/sub_work">
+        <div class="field sub-works">
+	  <span class="name"><xsl:call-template name="sub-works-type" /></span>
+	  <ul class="content sub-works">
+            <xsl:apply-templates select="//sub_work" />
+	  </ul>
+        </div>
+      </xsl:if>
+
       <xsl:apply-templates select="notes" />
     </div>
-
-    <xsl:if test="//work/sub_work">
-      <h3><span class="records-toggle"
-		onclick="composerCat.toggleRecords(event, 'sub-works')">+</span> <xsl:call-template name="sub-works-type" /></h3>
-      <div class="records" id="sub-works">
-        <xsl:apply-templates select="//sub_work" />
-      </div>
-    </xsl:if>
 
     <xsl:if test="//work/manuscript">
       <h3><span class="records-toggle"
@@ -272,13 +273,13 @@
 
 <xsl:template match="work/sub_work">
   <xsl:variable name="sub_work_id">w<xsl:value-of select="//work/ID" />#p<xsl:value-of select="part_position" /></xsl:variable>
-  <div class="work-part"
-       id="{$sub_work_id}"
-       about="{$ID}/{part_position}"
-       typeof="mo:Movement"
-       rev="mo:movement"
-       resource="{$ID}">
-    <h4>
+  <li class="work-part"
+      id="{$sub_work_id}"
+      about="{$ID}/{part_position}"
+      typeof="mo:Movement"
+      rev="mo:movement"
+      resource="{$ID}">
+    <a href="{$URI_ROOT}/sub_works/{ID}">
       <span class="movement-number"
 	    about="{$ID}/{part_position}"
 	    property="mo:movement_number"
@@ -289,8 +290,8 @@
 	    about="{$ID}/{part_position}"
 	    property="dc:title"
 	    lang="en"><xsl:value-of select="uniform_title" /></span>
-    </h4>
-  </div>
+    </a>
+  </li>
 </xsl:template>
 
 <xsl:template match="work/manuscript">
@@ -619,7 +620,7 @@
 <xsl:template name="sub-works-type">
   <xsl:choose>
     <xsl:when test="//genre[1]/genre/text()='opera'">Acts</xsl:when>
-    <xsl:when test="//genre[1]/genre/text()='ballet'">Acts</xsl:when>
+    <xsl:when test="//genre[1]/genre/text()='ballet'">Scenes</xsl:when>
     <xsl:otherwise>Movements</xsl:otherwise>
   </xsl:choose>
 </xsl:template>
