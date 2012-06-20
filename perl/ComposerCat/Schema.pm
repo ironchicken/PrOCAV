@@ -3486,14 +3486,18 @@ sub schema_prepare_statments {
     # letters._full
     $schema{letters}->{_full} =
 	$dbh->prepare_cached(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
-    addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name, signatory.given_name AS signatory_given_name,
-    addressee.family_name AS signatory_family_name, recipient_address.address AS recipient_address, sender_address.address AS sender_address,
-    answers.ID As answers_id, | . date_selector('answers_composed') . q|,letters.original_text, letters.english_text,
-    in_archive.archival_ref_str, in_archive.archival_ref_num, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
-    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent, in_archive.date_acquired, in_archive.date_released, in_archive.access,
-    in_archive.item_status, in_archive.copy_type, in_archive.copyright, in_archive.notes
+    addressee.ID AS addressee_id, addressee.given_name AS addressee_given_name, addressee.family_name AS addressee_family_name,
+    signatory.ID AS signatory_id, signatory.given_name AS signatory_given_name, signatory.family_name AS signatory_family_name,
+    recipient_address.address AS recipient_address, recpt_addr_town.name AS recipient_town, sender_address.address AS sender_address, sender_addr_town.name AS sender_town,
+    answers.document_id As answers_id, | . date_selector('answers_composed') . q|, letters.physical_size, letters.support, letters.medium, letters.layout,
+    letters.language, letters.script, letters.original_text, letters.english_text, letters.notes,
+    in_archive.archival_ref_str, in_archive.archival_ref_num, archives.ID AS archive_id, archives.title AS archive, archives.abbreviation AS archive_abbr,
+    in_archive.date_acquired, in_archive.date_released, in_archive.access, in_archive.item_status, in_archive.copy_type, in_archive.copyright,
+    in_archive.notes, document_pages.ID AS fp_id, fp_aggr.ID AS fp_aggregation_id, fp_aggr.label AS fp_aggregation,
+    fp_aggr.level AS fp_aggr_level, fp_aggr.parent AS fp_aggr_parent
     FROM letters
-    JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN in_archive ON in_archive.document_id = letters.document_id
+    LEFT JOIN archives ON archives.ID = in_archive.archive_id
     LEFT JOIN document_pages ON document_pages.document_id = letters.document_id
     LEFT JOIN in_archive AS page_in_archive ON page_in_archive.page_id = document_pages.ID
     LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
@@ -3503,8 +3507,10 @@ sub schema_prepare_statments {
     LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
     LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
     LEFT JOIN postal_addresses AS recipient_address ON recipient_address.ID = recipient_addr
+    LEFT JOIN towns AS recpt_addr_town ON recpt_addr_town.ID = recipient_address.town_id
     LEFT JOIN postal_addresses AS sender_address ON sender_address.ID = sender_addr
-    LEFT JOIN letters AS answers ON answers.ID = answer_t
+    LEFT JOIN towns AS sender_addr_town ON sender_addr_town.ID = recipient_address.town_id
+    LEFT JOIN letters AS answers ON answers.document_id = letters.answer_to
     LEFT JOIN dates AS answers_composed ON answers.date_composed = answers_composed.ID
     WHERE letters.document_id=?|);
 
@@ -3529,7 +3535,7 @@ sub schema_prepare_statments {
     ORDER BY parent_aggr.label_num, page_number, page_side, page_label|);
 
     # letters._mentions
-    $schema{letter}->{_mentions} =
+    $schema{letters}->{_mentions} =
 	$dbh->prepare(q|SELECT ID, document_id, document_range, mentioned_table, mentioned_id, mentioned_extent, notes
     FROM document_mentions
     WHERE document_id=?|);
@@ -3658,7 +3664,7 @@ sub schema_prepare_statments {
     GROUP BY letters.document_id
     ORDER BY addressee_family_name, addressee_given_name|);
 
-    $schema{letters}->{_list_order_by_sender} =
+    $schema{letters}->{_list_order_by_signatory} =
 	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
     addressee.ID AS addressee_id, addressee.family_name, addressee.given_name, signatory.ID AS signatory_id,
     signatory.family_name, signatory.given_name,

@@ -242,6 +242,7 @@ CREATE TABLE letters (
   signatory         INT,
   recipient_addr    INT,
   sender_addr       INT,
+  answer_to         INT,
   physical_size     VARCHAR(64),
   support           VARCHAR(64), -- e.g. paper
   medium            VARCHAR(64), -- e.g. print, ink, pencil

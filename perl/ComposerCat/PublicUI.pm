@@ -346,8 +346,8 @@ our $browse_letters = make_api_function(
 				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_date};
 				  } elsif ($req_data->{params}->{order_by} eq 'addressee') {
 				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_addressee};
-				  } elsif ($req_data->{params}->{order_by} eq 'sender') {
-				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_sender};
+				  } elsif ($req_data->{params}->{order_by} eq 'signatory') {
+				      $st = ComposerCat::Database::table_info('letters')->{_list_order_by_signatory};
 				  } else {
 				      # FIXME This interface does not
 				      # allow you to return an error
