@@ -259,7 +259,7 @@
 
 <xsl:template match="period/letter">
   <div class="record letter">
-    <xsl:apply-templates select="composed" />
+    <xsl:apply-templates select="composed_year" />
     <xsl:apply-templates select="addressee_family_name" />
     <xsl:apply-templates select="signatory_family_name" />
   </div>
@@ -288,14 +288,14 @@
 <xsl:template match="letter/addressee_family_name">
   <div class="field letter-addressee">
     <span class="name">Addressee</span>
-    <span class="content letter-addressee"><a href="{$URI_ROOT}/persons/{../addressee_id}"><xsl:apply-templates select="../addressee_given_name" /> <xsl:apply-templates select="." /></a></span>
+    <span class="content letter-addressee"><a href="{$URI_ROOT}/persons/{../addressee_id}"><xsl:apply-templates select="../addressee_given_name" /> <xsl:value-of select="." /></a></span>
   </div>
 </xsl:template>
 
 <xsl:template match="letter/signatory_family_name">
   <div class="field letter-signatory">
     <span class="name">Signatory</span>
-    <span class="content letter-signatory"><a href="{$URI_ROOT}/persons/{../signatory_id}"><xsl:apply-templates select="../signatory_given_name" /> <xsl:apply-templates select="." /></a></span>
+    <span class="content letter-signatory"><a href="{$URI_ROOT}/persons/{../signatory_id}"><xsl:apply-templates select="../signatory_given_name" /> <xsl:value-of select="." /></a></span>
   </div>
 </xsl:template>
 
