@@ -84,7 +84,7 @@
 
 <xsl:template match="letter" mode="by-date">
   <li>
-    <a href="{$URI_ROOT}/letters/{document_id}">
+    <a href="{$URI_ROOT}/letters/{ID}">
       <xsl:value-of select="composed_day" />
       <xsl:call-template name="month"><xsl:with-param name="month" select="composed_month" /></xsl:call-template>
       <xsl:value-of select="composed_year" />
@@ -96,7 +96,7 @@
 
 <xsl:template match="letter" mode="by-addressee">
   <li>
-    <a href="{$URI_ROOT}/letters/{document_id}">
+    <a href="{$URI_ROOT}/letters/{ID}">
       <xsl:value-of select="addressee_family_name" />, <xsl:value-of select="addressee_given_name" />
     </a>
     <br /><xsl:value-of select="composed_day" />
@@ -108,7 +108,7 @@
 
 <xsl:template match="letter" mode="by-sender">
   <li>
-    <a href="{$URI_ROOT}/letters/{document_id}">
+    <a href="{$URI_ROOT}/letters/{ID}">
       <xsl:value-of select="sender_family_name" />, <xsl:value-of select="sender_given_name" />
     </a>
     <br /><xsl:value-of select="composed_day" />
