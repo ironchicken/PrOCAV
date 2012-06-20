@@ -1,0 +1,325 @@
+#!/usr/bin/perl
+
+use strict;
+#use warnings;
+
+use ComposerCat::Database qw(make_dbh insert_record table_info record_empty record_different record_exists update_record);
+use AnyData;
+use Data::Dumper;
+
+our $SPA_MDB_CSV = '/home/richard/jobs/pocac/spa-archive-data/';
+our %SPA = (
+    LETTERS          => adTie('CSV', $SPA_MDB_CSV . 'letters.csv', 'r'),
+    FOLDERS          => adTie('CSV', $SPA_MDB_CSV . 'folders.csv', 'r'),
+    LANGUAGES        => adTie('CSV', $SPA_MDB_CSV . 'languages.csv', 'r'),
+    PEOPLE           => adTie('CSV', $SPA_MDB_CSV . 'people.csv', 'r'),
+    PERSON_RELATIONS => adTie('CSV', $SPA_MDB_CSV . 'person_relations.csv', 'r'),
+    POSTAL_ADDRESSES => adTie('CSV', $SPA_MDB_CSV . 'postal_addresses.csv', 'r'),
+    TOWNS            => adTie('CSV', $SPA_MDB_CSV . 'towns.csv', 'r'),
+    COUNTRIES        => adTie('CSV', $SPA_MDB_CSV . 'countries.csv', 'r'));
+
+our %PCDA_LETTERS_IDS = ();
+our %PCDA_PERSONS_IDS = ();
+our %PCDA_ADDRESSES_IDS = ();
+our %PCDA_TOWNS_IDS = ();
+our %PCDA_FOLDER_IDS = ();
+#our %PCDA_LETTERS_REFS = ();
+
+sub trim { my $s = $_[0]; $s =~ s/^\s+//; $s =~ s/\s+$//; return $s; }
+
+sub cache_folder_IDs {
+    my $dbh = make_dbh;
+
+    my $st = $dbh->prepare(q|SELECT ID, label FROM aggregations WHERE parent=3|);
+    $st->execute;
+    while (my $row = $st->fetchrow_hashref) {
+	$PCDA_FOLDER_IDS{$row->{label}} = $row->{ID};
+    }
+}
+
+sub make_pcda_town {
+    my ($spa_town) = @_;
+
+    { name    => $spa_town->{strTown},
+      country => $SPA{COUNTRIES}->{$spa_town->{lngCountryID}}->{strCountryCode} };
+}
+	
+sub ingest_towns {
+    while (my $row = each %{ $SPA{TOWNS} }) {
+	my $town = make_pcda_town $row;
+	my $e = record_exists 'towns', $town;
+	if (!$e) {
+	    $PCDA_TOWNS_IDS{$row->{lngTownID}} = insert_record 'towns', $town;
+	    printf qq|Inserted town #%d: "%s"\n|, $PCDA_TOWNS_IDS{$row->{lngTownID}}, $town->{name};
+	} else {
+	    $PCDA_TOWNS_IDS{$row->{lngTownID}} = $e->{ID};
+	}
+    }
+}
+
+sub make_pcda_address {
+    my ($spa_addr) = @_;
+
+    { address => $spa_addr->{strAddress},
+      town_id => $PCDA_TOWNS_IDS{$spa_addr->{lngTownID}} };
+}
+     
+sub ingest_postal_addresses {
+    while (my $row = each %{ $SPA{POSTAL_ADDRESSES} }) {
+	my $addr = make_pcda_address $row;
+	#my $e = ($addr->{address}) ? record_exists('postal_addresses', $addr) : undef;
+	#if (!$e) {
+	    $PCDA_ADDRESSES_IDS{$row->{lngAddressID}} = insert_record 'postal_addresses', $addr;
+	    printf qq|Inserted postal_address #%d: "%s"\n|, $PCDA_ADDRESSES_IDS{$row->{lngAddressID}}, $addr->{address} || '';
+	#} else {
+	#    $PCDA_ADDRESSES_IDS{$row->{lngAddressID}} = $e->{ID};
+	#}
+    }
+}
+
+sub make_pcda_person {
+    my ($spa_person) = @_;
+
+    { title       => $spa_person->{strTitle},
+      given_name  => trim($spa_person->{strFirstName} . ($spa_person->{strPatronymic}) ? ' ' . $spa_person->{strPatronymic} : ''),
+      family_name => $spa_person->{strLastName},
+      notes       => trim($spa_person->{memBiogNotes} . ($spa_person->{memGeneralNotes}) ? "\n\n" . $spa_person->{memGeneralNotes} : '') };
+}
+
+sub ingest_people {
+    while (my $row = each %{ $SPA{PEOPLE} }) {
+	my $person = make_pcda_person $row;
+	my $e = record_exists 'persons', $person;
+	if (!$e) {
+	    $PCDA_PERSONS_IDS{$row->{lngPersonID}} = insert_record 'persons', $person;
+	    printf qq|Inserted persons #%d: "%s %s"\n|, $PCDA_PERSONS_IDS{$row->{lngPersonID}}, $person->{given_name}, $person->{family_name};
+	} else {
+	    $PCDA_PERSONS_IDS{$row->{lngPersonID}} = $e->{ID};
+	}
+    }
+}
+
+sub month_name_to_int {
+    if ($_[0] =~ /january/i) { return 1; }
+    if ($_[0] =~ /february/i) { return 2; }
+    if ($_[0] =~ /march/i) { return 3; }
+    if ($_[0] =~ /april/i) { return 4; }
+    if ($_[0] =~ /may/i) { return 5; }
+    if ($_[0] =~ /june/i) { return 6; }
+    if ($_[0] =~ /july/i) { return 7; }
+    if ($_[0] =~ /august/i) { return 8; }
+    if ($_[0] =~ /september/i) { return 9; }
+    if ($_[0] =~ /october/i) { return 10; }
+    if ($_[0] =~ /november/i) { return 11; }
+    if ($_[0] =~ /december/i) { return 12; }
+}
+
+sub make_pcda_person_dates {
+    my ($spa_person) = @_;
+
+    if ($spa_person->{strDates} =~ m/([0-9]{4})\s*-\s*([0-9]{4})/) {
+	return ({ year => int $1 }, { year => int $2 });
+    } elsif ($spa_person->{strDates} =~ m|([0-9]{1,2})[./]([0-9]{1,2})[./]([0-9]{4})\s*-\s*([0-9]{1,2})[./]([0-9]{1,2})[./]([0-9]{4})|) {
+	return ({ day => int $1, month => int $2, year => int $3 }, { day => int $4, month => int $5, year => int $6 });
+    } elsif ($spa_person->{strDates} =~ m/([0-9]{1,2})\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s*([0-9]{4})\s*-\s*([0-9]{1,2})\s*(january|february|march|april|may|june|july|august|september|october|november|december)\s*([0-9]{4})/i) {
+	return ({ day => int $1, month => month_name_to_int $2, year => int $3 }, { day => int $4, month => month_name_to_int $5, year => int $6 });
+    } elsif ($spa_person->{strDates} =~ m/d\.\s*([0-9]{4})/) {
+	return (undef, { year => int $1 });
+    } else {
+	return (undef, undef);
+    }
+}
+
+sub ingest_person_dates {
+    while (my $row = each %{ $SPA{PEOPLE} }) {
+	my $pcda_person_id = $PCDA_PERSONS_IDS{$row->{lngPersonID}};
+	next if not $pcda_person_id;
+
+	my ($dt1, $dt2) = make_pcda_person_dates $row;
+	my $birth = insert_record('dates', $dt1) if ($dt1);
+	my $death = insert_record('dates', $dt2) if ($dt2);
+
+	if ($birth && $dt1->{year} && !record_exists('biographical_details', { person_id => $pcda_person_id, start_date => $birth, detail_type => 'birth' })) {
+	    insert_record 'biographical_details', { person_id => $pcda_person_id,
+						    start_date => $birth,
+						    detail_type => 'birth' };
+	    printf qq|Inserted birth #%d (%s-%s-%s) for person #%d\n|, $birth, $dt1->{year}, $dt1->{month}, $dt1->{day}, $pcda_person_id;
+	}
+	if ($death && $dt2->{year} && !record_exists('biographical_details', { person_id => $pcda_person_id, start_date => $death, detail_type => 'death' })) {
+	    insert_record 'biographical_details', { person_id => $pcda_person_id,
+						    start_date => $death,
+						    detail_type => 'death' };
+	    printf qq|Inserted death #%d (%s-%s-%s) for person #%d\n|, $death, $dt2->{year}, $dt2->{month}, $dt2->{day}, $pcda_person_id;
+	}
+    }
+}
+
+sub make_pcda_name {
+    my ($spa_person) = @_;
+
+    { person_id => $PCDA_PERSONS_IDS{$spa_person->{lngPersonID}},
+      name      => $spa_person->{'strPen/StageName'} };
+}
+
+sub ingest_person_other_names {
+    while (my $row = each %{ $SPA{PEOPLE} }) {
+	next if not $PCDA_PERSONS_IDS{$row->{lngPersonID}};
+
+	my $name = make_pcda_name $row;
+	if (!record_exists 'person_names', $name) {
+	    insert_record 'person_names', $name;
+	    printf qq|Inserted name #%d "%s" for person #%d\n|, $_, $name->{name}, $name->{person_id};
+	}
+    }
+}
+
+sub ingest_person_relations {
+    while (my $row = each %{ $SPA{PEOPLE} }) {
+	next if not $PCDA_PERSONS_IDS{$row->{lngPersonID}};
+
+	if ($row->{lngRelationshipID}) {
+	    my $rel = { from_person => $PCDA_PERSONS_IDS{$row->{lngPersonID}},
+			to_person => 1,
+			relation_type => $SPA{PERSON_RELATIONS}->{$row->{lngRelationshipID}}->{strRelToSP} };
+	    if ($rel->{relation_type} && !record_exists('person_relations', $rel)) {
+		insert_record 'person_relations', $rel;
+		printf qq|Inserted relation "%s" from person #%d to SP\n|, $rel->{relation_type}, $rel->{from_person};
+	    }
+	}
+    }
+}
+
+sub new_date {
+    my $dt_str = shift;
+
+    if ($dt_str =~ m|([0-9]{4})/([0-9]{2})/([0-9]{2})|) {
+	return insert_record 'dates', { year => int $1, month => $2, day => $3 };
+	printf qq|Inserted composed date (%s-%s-%s)\n|, $1, $2, $3;
+    } elsif ($dt_str =~ m|([0-9]{4})/([0-9]{2})/xx|) {
+	return insert_record 'dates', { year => int $1, month => $2 };
+	printf qq|Inserted composed date (%s-%s-xx)\n|, $1, $2;
+    }
+}
+
+sub make_pcda_letter {
+    my ($document_id, $spa_letter) = @_;
+
+    { document_id    => $document_id,
+      letters_db_ID  => $spa_letter->{lngDocumentID},
+      date_composed  => new_date($spa_letter->{strDateInfo}),
+      addressee      => $PCDA_PERSONS_IDS{$spa_letter->{lngRecipientID}},
+      signatory      => $PCDA_PERSONS_IDS{$spa_letter->{lngSenderID}},
+      recipient_addr => $PCDA_ADDRESSES_IDS{$spa_letter->{lngRecipientOrgAddressID}},
+      sender_addr    => $PCDA_ADDRESSES_IDS{$spa_letter->{lngSenderOrgAddressID}},
+      language       => $SPA{LANGUAGES}->{$spa_letter->{lngDocumentLanguageID}}->{strLanguageCode} };
+}
+
+sub make_pcda_item {
+    my ($spa_letter) = @_;
+
+    { label     => $spa_letter->{strPageNo},
+      label_num => int $spa_letter->{strPageNo},
+      level     => 'item',
+      parent    => $PCDA_FOLDER_IDS{$SPA{FOLDERS}->{$spa_letter->{intFolderRef}}->{strFolderRef}},
+      archive   => 1 };
+}
+
+sub make_pcda_in_archive {
+    my ($document_id, $page, $item, $spa_letter);
+    if (@_ == 2) {
+	($document_id, $spa_letter) = @_ ;
+    } elsif (@_ == 4) {
+	($document_id, $page, $item, $spa_letter) = @_;
+    }
+
+    if (!$page && !$item) {
+	return { document_id => $document_id,
+		 archive_id  => 1,
+		 item_status => 'original' };
+    } elsif ($page && $item) {
+	return { document_id    => $document_id,
+		 archive_id     => 1,
+		 page_id        => $page->{ID},
+		 aggregation_id => $item->{ID},
+		 item_status    => 'original' };
+    }
+}
+
+sub make_pcda_page {
+    my ($document_id, $spa_letter) = @_;
+
+    { document_id => $document_id,
+      page_number => int $spa_letter->{strPageNo},
+      page_label  => $spa_letter->{strPageNo} };
+}
+
+sub ingest_letters {
+    while (my $row = each %{ $SPA{LETTERS} }) {
+	# first, get a new DOCUMENTS.ID
+	my $document_id = insert_record 'documents', {};
+
+	# add a LETTERS record
+	my $letter = make_pcda_letter $document_id, $row;
+	print "\n" . Dumper($letter) . "\n";
+	my $e = record_exists 'letters', $letter;
+	if (!$e) {
+	    insert_record 'letters', $letter;
+	    $PCDA_LETTERS_IDS{$row->{lngDocumentID}} = $document_id;
+	    printf qq|Inserted letter #%d\n|, $PCDA_LETTERS_IDS{$row->{lngDocumentID}};
+	} else {
+	    $PCDA_LETTERS_IDS{$row->{lngDocumentID}} = $e->{ID};
+	}
+	undef $e;
+
+	# add an IN_ARCHIVE record for the letter
+	my $letter_in_archive = make_pcda_in_archive $document_id, $row;
+	$e = record_exists 'in_archive', $letter_in_archive;
+	if (!$e) {
+	    $letter_in_archive->{ID} = insert_record 'in_archive', $letter_in_archive;
+	    printf qq|Inserted in_archive #%d\n|, $letter_in_archive->{ID};
+	}
+	undef $e;
+
+	# add a DOCUMENT_PAGES record for the letter page
+	my $page = make_pcda_page $document_id, $row;
+	$e = record_exists 'document_pages', $page;
+	if (!$e) {
+	    $page->{ID} = insert_record 'document_pages', $page;
+	    printf qq|Inserted document_pages #%d\n|, $page->{ID};
+	}
+	undef $e;
+
+	# add an AGGREGATIONS (item level) record for the page
+	my $item = make_pcda_item $row;
+	$e = record_exists 'aggregations', $item;
+	if (!$e) {
+	    $item->{ID} = insert_record 'aggregations', $item;
+	    printf qq|Inserted aggregations #%d\n|, $item->{ID};
+	}
+	undef $e;
+
+	# add an IN_ARCHIVE record for the page/item
+	my $page_in_archive = make_pcda_in_archive $document_id, $page, $item, $row;
+	$e = record_exists 'in_archive', $page_in_archive;
+	if (!$e) {
+	    $page_in_archive->{ID} = insert_record 'in_archive', $page_in_archive;
+	    printf qq|Inserted in_archive (for page) #%d\n|, $page_in_archive->{ID};
+	}
+
+	#$PCDA_LETTERS_REFS{$SPA{FOLDERS}->{$spa_letter->{intFolderRef}}->{strFolderRef} . '/' . $row->{strPageNo}} = $document_id;
+    }
+}
+
+sub main {
+    cache_folder_IDs;
+    #make_dbh;
+    ingest_towns;
+    ingest_postal_addresses;
+    ingest_people;
+    ingest_person_dates;
+    #ingest_person_other_names;
+    ingest_person_relations;
+    ingest_letters;
+}
+
+main;
