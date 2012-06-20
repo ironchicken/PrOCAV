@@ -3753,7 +3753,8 @@ sub schema_prepare_statments {
     LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
     -- WHERE composed.year = ? OR sent.year = ?
     WHERE composed.year = ?
-    ORDER BY composed.year, composed.month, composed.day|);
+    ORDER BY composed.year, composed.month, composed.day
+    LIMIT 200|);
 
     $schema{period}->{_performances} =
 	$dbh->prepare_cached(q|SELECT performances.ID, | . date_selector('performed') . q|, venues.name AS venue, venues.city,
