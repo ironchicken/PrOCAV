@@ -3246,7 +3246,8 @@ sub schema_prepare_statments {
     LEFT JOIN persons AS addressee ON letters.addressee = addressee.ID
     LEFT JOIN persons AS signatory ON letters.signatory = signatory.ID
     WHERE in_archive.archive_id=?
-    ORDER BY composed.year, composed.month, composed.day|);
+    ORDER BY composed.year, composed.month, composed.day
+    LIMIT 200|);
 
     $schema{archives}->{_manuscripts} =
 	$dbh->prepare_cached(q|SELECT manuscripts.document_id AS ID, manuscripts.title, manuscripts.purpose, manuscripts.physical_size,
@@ -3642,7 +3643,8 @@ sub schema_prepare_statments {
     LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
     LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
     GROUP BY letters.document_id
-    ORDER BY composed.year, composed.month, composed.day|);
+    ORDER BY composed.year, composed.month, composed.day
+    LIMIT 200|);
 
     $schema{letters}->{_list_order_by_addressee} =
 	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
@@ -3662,7 +3664,8 @@ sub schema_prepare_statments {
     LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
     LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
     GROUP BY letters.document_id
-    ORDER BY addressee_family_name, addressee_given_name|);
+    ORDER BY addressee_family_name, addressee_given_name
+    LIMIT 200|);
 
     $schema{letters}->{_list_order_by_signatory} =
 	$dbh->prepare(q|SELECT letters.document_id AS ID, | . date_selector('composed') . ', ' . date_selector('sent') . q|,
@@ -3682,7 +3685,8 @@ sub schema_prepare_statments {
     LEFT JOIN aggregations AS fp_aggr ON page_in_archive.aggregation_id = fp_aggr.ID
     LEFT JOIN aggregations AS fp_parent_aggr ON fp_parent_aggr.ID = fp_aggr.ID
     GROUP BY letters.document_id
-    ORDER BY sender_family_name, sender_given_name|);
+    ORDER BY signatory_family_name, signatory_given_name
+    LIMIT 200|);
 
     ### PERIOD STATEMENTS
     ######################################################################################################
