@@ -1976,16 +1976,21 @@ our %schema = (
     persons            => {
 	_worksheet => "persons",
 
-	_field_order         => [qw(ID given_name family_name sex nationality notes staff_notes)],
+	_field_order         => [qw(ID title given_name family_name sex nationality notes staff_notes)],
 	_unique_fields       => [qw(ID)],
 	_single_select_field => "ID",
-	_insert_fields       => [qw(given_name family_name sex nationality notes staff_notes)],
+	_insert_fields       => [qw(title given_name family_name sex nationality notes staff_notes)],
 	_order_fields        => [qw(family_name given_name)],
 	_default_order       => "ASC",
 
 	ID              => {access => "ro",
 			    primary_key => 1,
 			    cell_width => 8},
+
+	title           => {access => "rw",
+			    data_type => "string",
+			    width => 32,
+			    cell_width => 10},
 
 	given_name      => {access => "rw",
 			    data_type => "string",

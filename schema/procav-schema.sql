@@ -372,6 +372,7 @@ CREATE TABLE work_sets_text (
 -- persons mentioned in the database
 CREATE TABLE persons (
   ID                INT PRIMARY KEY auto_increment,
+  title             VARCHAR(32),
   given_name        VARCHAR(255),
   family_name       VARCHAR(255),
   sex               ENUM('male', 'female'),
