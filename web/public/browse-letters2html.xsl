@@ -63,7 +63,7 @@
       <ol class="main-content" start="{//start}">
         <xsl:choose>
           <xsl:when test="//param[name='order_by']/value='date'">
-            <xsl:apply-templates select="//letter" mode="by-date" />
+            <xsl:apply-templates select="//letter[composed_year!='']" mode="by-date" />
 	  </xsl:when>
           <xsl:when test="//param[name='order_by']/value='addressee'">
             <xsl:apply-templates select="//letter" mode="by-addressee" />
@@ -82,7 +82,7 @@
 </html>
 </xsl:template>
 
-<xsl:template match="letter" mode="date">
+<xsl:template match="letter" mode="by-date">
   <li>
     <a href="{$URI_ROOT}/letters/{document_id}">
       <xsl:value-of select="composed_day" />
@@ -94,7 +94,7 @@
   </li>
 </xsl:template>
 
-<xsl:template match="letter" mode="addressee">
+<xsl:template match="letter" mode="by-addressee">
   <li>
     <a href="{$URI_ROOT}/letters/{document_id}">
       <xsl:value-of select="addressee_family_name" />, <xsl:value-of select="addressee_given_name" />
@@ -106,7 +106,7 @@
   </li>
 </xsl:template>
 
-<xsl:template match="letter" mode="sender">
+<xsl:template match="letter" mode="by-sender">
   <li>
     <a href="{$URI_ROOT}/letters/{document_id}">
       <xsl:value-of select="sender_family_name" />, <xsl:value-of select="sender_given_name" />
