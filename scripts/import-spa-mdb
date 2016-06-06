@@ -7,7 +7,7 @@ use ComposerCat::Database qw(make_dbh insert_record table_info record_empty reco
 use AnyData;
 use Data::Dumper;
 
-our $SPA_MDB_CSV = '/home/richard/jobs/pocac/spa-archive-data/';
+our $SPA_MDB_CSV = '/path/to/csv/files/';
 our %SPA = (
     LETTERS          => adTie('CSV', $SPA_MDB_CSV . 'letters.csv', 'r'),
     FOLDERS          => adTie('CSV', $SPA_MDB_CSV . 'folders.csv', 'r'),

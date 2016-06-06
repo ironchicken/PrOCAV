@@ -26,7 +26,7 @@ use ComposerCat::Database qw(make_dbh session create_session table_info find_loo
 
 my $PROCAV_DOMAIN = "localhost";
 my $EDITOR_PATH   = "/editor";
-my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/editor/";
+my $TEMPLATES_DIR = "/path/to/composercat/web/editor/";
 
 our %home = (
     uri_pattern => qr/^\/editor\/?$/,

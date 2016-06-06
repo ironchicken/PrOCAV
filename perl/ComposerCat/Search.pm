@@ -27,7 +27,7 @@ use SWISH::Prog::Config;
 use SWISH::Prog::Doc;
 use SWISH::Prog::Native::Searcher;
 
-our $FULLTEXT_INDEX = '/home/richard/jobs/pocac/procav/index';
+our $FULLTEXT_INDEX = '/path/to/composercat/index';
 
 our @page_sources = (
     {path_pattern      => "/works/%d",

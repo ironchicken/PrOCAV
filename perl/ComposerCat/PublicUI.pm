@@ -26,8 +26,8 @@ use ComposerCat::Digitisations qw(mime_type render);
 
 my $PROCAV_DOMAIN = "localhost";
 my $PUBLIC_PATH = "/";
-my $DOCUMENTS_DIR = "/home/richard/jobs/pocac/procav/web/public/";
-my $TEMPLATES_DIR = "/home/richard/jobs/pocac/procav/web/public/";
+my $DOCUMENTS_DIR = "/path/to/composercat/web/public/";
+my $TEMPLATES_DIR = "/path/to/composercat/web/public/";
 
 our $home = make_api_function(
     { uri_pattern         => qr|^/?$|,

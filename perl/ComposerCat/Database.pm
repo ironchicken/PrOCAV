@@ -32,9 +32,9 @@ our $AUTOLOAD;
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
 
-my %db_opts = (database => "DBI:mysql:procav",
-	       user     => "root",
-	       password => "tbatst",
+my %db_opts = (database => "",
+	       user     => "",
+	       password => "",
 	       attrs    => \%db_attrs);
 
 sub make_dbh {
