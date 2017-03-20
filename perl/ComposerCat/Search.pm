@@ -25,7 +25,7 @@ use SWISH::Prog::Indexer;
 use SWISH::Prog::Native::Indexer;
 use SWISH::Prog::Config;
 use SWISH::Prog::Doc;
-use SWISH::Prog::Native::Searcher;
+use SWISH::Prog::Searcher;
 
 our $FULLTEXT_INDEX = '/path/to/composercat/index';
 
@@ -98,7 +98,7 @@ sub search_fulltext_index {
     # double quotes, making them phrases
     $terms =~ s/([A-G])(#|b| sharp| flat|) (major|minor)/"$1$2 $3"/ig;
 
-    my $searcher = SWISH::Prog::Native::Searcher->new(
+    my $searcher = SWISH::Prog::Searcher->new(
 	invindex => $FULLTEXT_INDEX,
 	max_hits => 500);
 

@@ -32,9 +32,9 @@ our $AUTOLOAD;
 my %db_attrs = (RaiseError  => 1,
 		PrintError  => 0);
 
-my %db_opts = (database => "",
-	       user     => "",
-	       password => "",
+my %db_opts = (database => "DBI:mysql:pcda",
+	       user     => "root",
+	       password => "mysql",
 	       attrs    => \%db_attrs);
 
 sub make_dbh {
@@ -473,6 +473,9 @@ sub all_records {
 
     return \%tables;
 }
+
+1;
+__END__
 
 ## The ComposerCat::Database modules also exposes subroutines which allow
 ## access to each table as: TABLE_NAME to retrieve an individual
