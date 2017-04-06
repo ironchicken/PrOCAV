@@ -35,6 +35,8 @@ use XML::Filter::BufferText;
 use XML::Filter::XSLT;
 use XML::SAX::Writer;
 use ComposerCat::Database qw(make_dbh session create_session);
+use ComposerCat::Database::ValueExplanations;
+use ComposerCat::Database::MarkupFilter;
 use Data::Dumper;
 $Data::Dumper::Indent = 0;
 

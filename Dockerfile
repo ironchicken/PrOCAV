@@ -87,6 +87,5 @@ RUN ln -sf /dev/stdout /var/log/apache2/other_vhosts_access.log
 RUN ln -sf /dev/stderr /var/log/apache2/error.log
 
 ENTRYPOINT cd /var/www/pcda/perl \
-	   && perl -e 'use AutoSplit; autosplit("ComposerCat/Database.pm","auto", 0, 1, 1);' \
 	   && service mysql start \
 	   && /usr/sbin/apache2ctl -D FOREGROUND
