@@ -88,4 +88,7 @@ RUN ln -sf /dev/stderr /var/log/apache2/error.log
 
 ENTRYPOINT cd /var/www/pcda/perl \
 	   && service mysql start \
-	   && /usr/sbin/apache2ctl -D FOREGROUND
+   	   && mysql -u root -pmysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'mysql';" \
+	   && service mysql stop \
+	   && /usr/sbin/mysqld --basedir=/usr --datadir=/var/lib/mysql --plugin-dir=/usr/lib/mysql/plugin --sql-mode=NO_ENGINE_SUBSTITUTION --log-error=/var/log/mysql/error.log --pid-file=/var/run/mysqld/mysqld.pid --socket=/var/run/mysqld/mysqld.sock --bind-address=0.0.0.0 --port=3306 --log-syslog=1 --log-syslog-facility=daemon --log-syslog-tag=mysql \
+	   & /usr/sbin/apache2ctl -D FOREGROUND
