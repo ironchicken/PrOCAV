@@ -27,7 +27,7 @@ use SWISH::Prog::Config;
 use SWISH::Prog::Doc;
 use SWISH::Prog::Searcher;
 
-our $FULLTEXT_INDEX = '/path/to/composercat/index';
+our $FULLTEXT_INDEX = '/var/www/pcda/index';
 
 our @page_sources = (
     {path_pattern      => "/works/%d",

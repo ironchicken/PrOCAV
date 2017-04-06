@@ -7,7 +7,7 @@
 
 <xsl:import href="str.replace.xsl" />
 
-<xsl:variable name="URI_ROOT">http://localhost</xsl:variable>
+<xsl:variable name="URI_ROOT">http://172.10.0.2</xsl:variable>
 
 <xsl:template name="page-tools">
   <script type="text/javascript" src="/public/js/jquery-1.7.2.min.js"> //script </script>

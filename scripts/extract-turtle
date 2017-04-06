@@ -1,7 +1,7 @@
 #!/bin/bash
 
-curl -s -H "Accept: text/html" -b "composercat_public_sid=4176FF88-A27B-11E1-9C74-8843D3D48D8E" "http://localhost/$1/$2" |\
+curl -s -H "Accept: text/html" -b "composercat_public_sid=4176FF88-A27B-11E1-9C74-8843D3D48D8E" "http://172.10.0.2/$1/$2" |\
     perl -M"RDF::RDFa::Parser" -M"RDF::Trine::Serializer::Turtle" \
-    -e "my \$rdfa = RDF::RDFa::Parser->new(do { local \$/; <> }, 'http://localhost/$1/$2');" \
+    -e "my \$rdfa = RDF::RDFa::Parser->new(do { local \$/; <> }, 'http://172.10.0.2/$1/$2');" \
     -e "my \$serializer = RDF::Trine::Serializer::Turtle->new;" \
     -e "print \$serializer->serialize_model_to_string(\$rdfa->graph);"

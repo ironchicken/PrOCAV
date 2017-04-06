@@ -24,9 +24,9 @@ use Apache2::Const -compile => qw(:common);
 use JSON;
 use ComposerCat::Database qw(make_dbh session create_session table_info find_look_up);
 
-my $PROCAV_DOMAIN = "localhost";
+my $PROCAV_DOMAIN = "172.10.0.2";
 my $EDITOR_PATH   = "/editor";
-my $TEMPLATES_DIR = "/path/to/composercat/web/editor/";
+my $TEMPLATES_DIR = "/var/www/pcda/web/editor/";
 
 our %home = (
     uri_pattern => qr/^\/editor\/?$/,

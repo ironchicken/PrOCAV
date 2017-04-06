@@ -80,7 +80,7 @@ sub test_editor_front_page {
 }
 
 sub test_handler {
-    my $r = Apache2::FakeRequest->new(hostname => 'localhost');
+    my $r = Apache2::FakeRequest->new(hostname => '172.10.0.2');
     handler($r);
 }
 
@@ -218,7 +218,7 @@ sub test_auto_resource_inserter {
 }
 
 sub test_make_api_function {
-    my $TEMPLATES_DIR = "/path/to/composercat/web/public/";
+    my $TEMPLATES_DIR = "/var/www/pcda/web/public/";
 
     my $browse_works_by_instrumentation = make_api_function(
 	{ uri_pattern         => qr/^\/works\/?$/,
@@ -278,7 +278,7 @@ sub test_sax_machines_xslt {
     # 	    if $self->{Parser};
     # }
 
-    my $TEMPLATES_DIR = "/path/to/composercat/web/public/";
+    my $TEMPLATES_DIR = "/var/www/pcda/web/public/";
 
     #my $xslt_filt = XML::Filter::XSLT->new( Source => { SystemId => $TEMPLATES_DIR . 'work2html.xsl' } );
     #$xslt_filt->set_stylesheet_uri($TEMPLATES_DIR . 'work2html.xsl');

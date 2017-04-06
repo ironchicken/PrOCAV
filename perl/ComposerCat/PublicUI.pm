@@ -24,10 +24,10 @@ use ComposerCat::API qw(make_api_function make_paged);
 use ComposerCat::Search qw(search_fulltext_index);
 use ComposerCat::Digitisations qw(mime_type render);
 
-my $PROCAV_DOMAIN = "localhost";
+my $PROCAV_DOMAIN = "172.10.0.2";
 my $PUBLIC_PATH = "/";
-my $DOCUMENTS_DIR = "/path/to/composercat/web/public/";
-my $TEMPLATES_DIR = "/path/to/composercat/web/public/";
+my $DOCUMENTS_DIR = "/var/www/pcda/web/public/";
+my $TEMPLATES_DIR = "/var/www/pcda/web/public/";
 
 our $home = make_api_function(
     { uri_pattern         => qr|^/?$|,
